@@ -29,7 +29,7 @@ cd LicitacionesUV
 
 ## 3. Instalación de Dependencias
 
-Abre tu terminal y ejecuta:
+Ejecuta el comando de instalacion:
 
 ```bash
 npm install
