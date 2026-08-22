@@ -29,12 +29,22 @@ cd LicitacionesUV
 
 ## 3. Instalación de Dependencias
 
-Abre tu terminal y ejecuta:
+
+### 3.1. Validación previa del entorno
+
+Antes de instalar, valida que tu entorno cumpla los requisitos de la sección 1:
 
 ```bash
-npm install
+node --version
+npm --version
 ```
 
+- Si `node --version` devuelve una versión **inferior a 20.19**, detén el proceso: la instalación fallará y el proyecto no podrá ejecutarse.
+- Si `npm` no está disponible, instala Node.js desde su sitio oficial antes de continuar.
+
+### 3.2. Instalación de paquetes
+
+Con el entorno validado, abre tu terminal y ejecuta:
 > El instalador valida automáticamente la versión de Node.js al iniciar y cancela la instalación si el entorno no es compatible.
 
 ---
