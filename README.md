@@ -29,11 +29,13 @@ cd LicitacionesUV
 
 ## 3. Instalación de Dependencias
 
-Ejecuta el comando de instalacion:
+Abre tu terminal y ejecuta:
 
 ```bash
 npm install
 ```
+
+> El instalador valida automáticamente la versión de Node.js al iniciar y cancela la instalación si el entorno no es compatible.
 
 ---
 
