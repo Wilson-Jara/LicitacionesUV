@@ -1,3 +1,8 @@
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+
 # Logs
 logs
 *.log
@@ -8,8 +13,10 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+build/
 dist
 dist-ssr
+.cache/
 *.local
 
 # Editor directories and files
