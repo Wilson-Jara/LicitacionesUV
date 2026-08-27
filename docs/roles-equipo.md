@@ -50,7 +50,7 @@ Responsabilidades:
 - Cuidar el diseño responsive y la accesibilidad.
 - Implementar estados de carga, vacío y error cuando corresponda.
 
-### 4.  Benjamin lazo (@lazo1838k) - Backend Developer / Integrations
+### 4. Benjamin lazo (@lazo1838k) - Backend Developer / Integrations
 
 **En palabras simples:** prepara la futura parte del sistema que guardará información y se comunicará con el frontend.
 

@@ -1,0 +1,49 @@
+# Dependencias
+node_modules/
+
+# Archivos de compilación y caché
+dist/
+dist-ssr/
+build/
+coverage/
+.cache/
+.vite/
+
+# Archivos de bloqueo de paquetes
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+pnpm-lock.yaml
+
+# Archivos de entorno y credenciales
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Recursos generados y binarios
+public/*.svg
+src/assets/*.svg
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.pdf
+
+# Configuración local y de editores
+*.local
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.sw?
