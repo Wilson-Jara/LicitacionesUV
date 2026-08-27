@@ -29,10 +29,10 @@ Revisión realizada el 22 de agosto de 2026:
 
 ## 3. Funcionalidad existente
 
-La pantalla actual de `src/App.jsx` es la demo estándar de Vite:
+La pantalla actual de `src/app/App.jsx` es la demo estándar de Vite:
 
 - Muestra una composición visual con `hero.png`, el logo de React y el logo de Vite.
-- Muestra el título `Get started` y un mensaje sobre editar `src/App.jsx`.
+- Muestra el título `Get started` y un mensaje sobre editar `src/app/App.jsx`.
 - Incluye un contador local que inicia en cero y aumenta al pulsar un botón.
 - Incluye enlaces externos a la documentación de Vite y React.
 - Incluye enlaces sociales de la comunidad de Vite: GitHub, Discord, X y Bluesky.
@@ -46,34 +46,36 @@ No debe asumirse que el contador, los enlaces o la interfaz actual forman parte 
 
 1. `index.html` define el documento HTML, el favicon, el título y el elemento `<div id="root">`.
 2. `src/main.jsx` importa los estilos globales y monta `<App />` dentro de `StrictMode` usando `createRoot`.
-3. `src/App.jsx` contiene actualmente todo el componente de demostración y su estado local.
+3. `src/app/App.jsx` contiene actualmente todo el componente de demostración y su estado local.
 4. `src/index.css` contiene variables, reset básico, tipografía, layout global y soporte de tema.
-5. `src/App.css` contiene los estilos específicos de la demo.
+5. `src/app/App.css` contiene los estilos específicos de la demo.
 6. Vite resuelve los módulos, procesa JSX/CSS y sirve los archivos de `public/` desde la raíz.
 
 ## 5. Inventario de archivos relevantes
 
-| Archivo | Responsabilidad actual |
-|---|---|
-| `index.html` | Punto de entrada HTML; actualmente tiene `lang="en"` y título `licitacionesuv`. |
-| `src/main.jsx` | Punto de montaje de React. |
-| `src/App.jsx` | Componente raíz; demo de Vite con contador y enlaces. |
-| `src/index.css` | Estilos globales, variables de color, tipografías y responsive básico. |
-| `src/App.css` | Estilos de la demo de la pantalla principal. |
-| `src/assets/hero.png` | Imagen decorativa de la plantilla. |
-| `src/assets/react.svg` | Logo de React usado por la demo. |
-| `src/assets/vite.svg` | Logo de Vite usado por la demo. |
-| `public/icons.svg` | Sprite SVG con iconos de documentación y redes sociales. |
-| `public/favicon.svg` | Favicon actual. |
-| `vite.config.js` | Configuración mínima de Vite con `@vitejs/plugin-react`. |
-| `eslint.config.js` | ESLint flat config para JS/JSX, reglas recomendadas y hooks de React. |
-| `package.json` | Metadatos y scripts del proyecto. |
-| `package-lock.json` | Versiones bloqueadas de dependencias. |
-| `.env.example` | Plantilla de variables; solo documenta `VITE_API_URL` comentada. |
-| `.gitignore` | Excluye dependencias, entornos, builds, cachés, logs y configuración local. |
-| `README.md` | Requisitos, instalación pretendida y flujo de trabajo Git. |
-| `CONTEXTO_IA.md` | Este documento, destinado a orientar a asistentes de IA. |
-| `docs/roles-equipo.md` | Roles, participación, dependencias y flujo de trabajo del equipo. |
+| Archivo                | Responsabilidad actual                                                          |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| `index.html`           | Punto de entrada HTML; actualmente tiene `lang="en"` y título `licitacionesuv`. |
+| `src/main.jsx`         | Punto de montaje de React.                                                      |
+| `src/app/App.jsx`      | Componente raíz; demo de Vite con contador y enlaces.                           |
+| `src/index.css`        | Estilos globales, variables de color, tipografías y responsive básico.          |
+| `src/app/App.css`      | Estilos de la demo de la pantalla principal.                                    |
+| `src/assets/hero.png`  | Imagen decorativa de la plantilla.                                              |
+| `src/assets/react.svg` | Logo de React usado por la demo.                                                |
+| `src/assets/vite.svg`  | Logo de Vite usado por la demo.                                                 |
+| `public/icons.svg`     | Sprite SVG con iconos de documentación y redes sociales.                        |
+| `public/favicon.svg`   | Favicon actual.                                                                 |
+| `vite.config.js`       | Configuración mínima de Vite con `@vitejs/plugin-react`.                        |
+| `eslint.config.js`     | ESLint flat config para JS/JSX, reglas recomendadas y hooks de React.           |
+| `package.json`         | Metadatos y scripts del proyecto.                                               |
+| `package-lock.json`    | Versiones bloqueadas de dependencias.                                           |
+| `.env.example`         | Plantilla de variables; solo documenta `VITE_API_URL` comentada.                |
+| `.gitignore`           | Excluye dependencias, entornos, builds, cachés, logs y configuración local.     |
+| `.prettierrc`          | Configuración de formato del proyecto.                                          |
+| `.prettierignore`      | Archivos y carpetas excluidos del formateo.                                     |
+| `README.md`            | Requisitos, instalación pretendida y flujo de trabajo Git.                      |
+| `CONTEXTO_IA.md`       | Este documento, destinado a orientar a asistentes de IA.                        |
+| `docs/roles-equipo.md` | Roles, participación, dependencias y flujo de trabajo del equipo.               |
 
 ## 6. Stack y dependencias
 
@@ -83,6 +85,7 @@ No debe asumirse que el contador, los enlaces o la interfaz actual forman parte 
 - Vite efectivo en la instalación revisada: `8.2.1` (declarado como `^8.2.0`).
 - Vite React plugin efectivo: `6.0.5` (declarado como `^6.0.4`).
 - ESLint efectivo: `10.8.1` (declarado como `^10.8.0`).
+- Prettier efectivo: `3.9.6` (declarado como `^3.9.6`).
 - Módulos ES habilitados mediante `"type": "module"`.
 - No hay librerías de UI, routing, formularios, validación, fechas, HTTP o testing.
 
@@ -94,6 +97,8 @@ Desde la raíz del proyecto:
 npm install
 npm run dev
 npm run lint
+npm run format
+npm run format:check
 npm run build
 npm run preview
 ```
@@ -102,6 +107,8 @@ Scripts definidos:
 
 - `dev`: inicia el servidor de desarrollo de Vite.
 - `lint`: ejecuta ESLint sobre el repositorio.
+- `format`: aplica automáticamente el formato con Prettier.
+- `format:check`: verifica el formato sin modificar archivos.
 - `build`: crea el bundle de producción en `dist/`.
 - `preview`: sirve localmente el build de producción.
 
@@ -156,6 +163,8 @@ Los nombres y usuarios públicos del equipo pueden documentarse cuando exista au
 
 ## 11. Reglas de trabajo para futuras IAs
 
+- **Modo por defecto: dar instrucciones, no modificar archivos.** La IA debe explicar los pasos, comandos y contenido que el usuario debe realizar por sí mismo. Aunque el usuario lo pida directamente, la IA debe ofrecer las instrucciones en lugar de crear, editar o borrar archivos del proyecto.
+- Solo se permite modificar archivos cuando el usuario lo solicite de forma explícita e inequívoca, o cuando exista un acuerdo previo que autorice la edición directa.
 - Leer este archivo, `README.md`, `package.json` y los archivos afectados antes de editar.
 - Verificar primero el estado real del código y no asumir funcionalidades que no existan.
 - Hacer cambios pequeños y enfocados.
@@ -179,6 +188,8 @@ Después de cualquier cambio relevante en código, arquitectura, dependencias, c
 6. Revisar el diff completo antes de finalizar.
 
 La IA no debe agregar un registro de tareas, roadmap o historial privado al contexto. La actualización debe describir cómo está el proyecto después del cambio, no qué trabajo interno se está planificando.
+
+La IA que realice un cambio autorizado en el repositorio es responsable de actualizar directamente este archivo en la misma entrega cuando el cambio afecte código, arquitectura, dependencias, configuración, comandos o estructura de archivos. Si el cambio no afecta el contexto técnico, debe verificarlo y conservarlo sin modificaciones innecesarias.
 
 ## 13. Documentación relacionada
 
