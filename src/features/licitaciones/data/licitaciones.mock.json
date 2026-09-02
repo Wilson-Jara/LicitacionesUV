@@ -1,0 +1,56 @@
+[
+  {
+    "id": "licitacion-001",
+    "title": "Servicio de mantenimiento de infraestructura",
+    "amount": 12500000,
+    "currency": "CLP",
+    "institution": "Universidad de Valparaíso",
+    "closingDate": "2026-09-30",
+    "type": "publica"
+  },
+  {
+    "id": "licitacion-002",
+    "title": "Adquisición de equipamiento tecnológico",
+    "amount": 8700000,
+    "currency": "CLP",
+    "institution": "Empresa privada de servicios",
+    "closingDate": "2026-10-15",
+    "type": "privada"
+  },
+  {
+    "id": "licitacion-003",
+    "title": "Consultoría en seguridad de la información",
+    "amount": 4500000,
+    "currency": "CLP",
+    "institution": "Ministerio del Interior",
+    "closingDate": "2026-11-01",
+    "type": "publica"
+  },
+  {
+    "id": "licitacion-004",
+    "title": "Desarrollo de sistema de gestión interna",
+    "amount": 15000000,
+    "currency": "CLP",
+    "institution": "Banco Internacional",
+    "closingDate": "2026-12-20",
+    "type": "privada"
+  },
+  {
+    "id": "licitacion-005",
+    "title": "Renovación de licencias de software",
+    "amount": 3200000,
+    "currency": "CLP",
+    "institution": "Municipalidad de Viña del Mar",
+    "closingDate": "2026-09-15",
+    "type": "publica"
+  },
+  {
+    "id": "licitacion-006",
+    "title": "Auditoría financiera anual",
+    "amount": 6000000,
+    "currency": "CLP",
+    "institution": "Corporación Privada",
+    "closingDate": "2026-10-05",
+    "type": "privada"
+  }
+]
