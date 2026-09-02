@@ -47,7 +47,16 @@ Para ejecutar el entorno local, necesitas:
 - **Runtime:** Node.js 20.19+ o 22.12+
 - **Gestor de paquetes:** npm 10+
 - **Stack principal:** React 19, Vite 8, ESLint 10
+- **Pruebas:** runner nativo de Node (`node --test`)
 - **Editor recomendado:** Visual Studio Code
+
+### Wrapper y línea base reproducible
+
+Al ser un proyecto Node.js, el equivalente al wrapper `./gradlew` de Gradle es el propio `npm`, complementado con los mecanismos de reproducibilidad del proyecto:
+
+- **`package-lock.json`:** bloquea el árbol de dependencias para installs 100% reproducibles.
+- **`engines` en `package.json`:** declara las versiones mínimas de Node.js y npm requeridas.
+- **SemVer explícito:** las dependencias se declaran con versión exacta (`19.2.8`, sin rangos `^`/`~`), de modo que todos los entornos usen exactamente la misma versión.
 
 ---
 
@@ -75,7 +84,24 @@ Si tu versión de Node.js es menor a la 20.19, actualízala antes de continuar.
 npm install
 ```
 
-### 4. Ejecutar entorno de desarrollo
+### 4. Comando único integrador
+
+El proyecto expone un comando único que **limpia, compila, prueba y empaqueta** (equivalente a `./gradlew clean build`):
+
+```bash
+npm run verify
+```
+
+Equivale a ejecutar en secuencia:
+
+```bash
+npm run clean   # elimina artefactos de build (dist/)
+npm run lint    # análisis estático con ESLint
+npm run test    # pruebas con el runner nativo de Node
+npm run build   # compilación y empaquetado con Vite
+```
+
+### 5. Ejecutar entorno de desarrollo
 
 ```bash
 npm run dev
@@ -114,8 +140,7 @@ Antes de crear un Pull Request, ejecuta:
 
 ```bash
 npm run format:check
-npm run lint
-npm run build
+npm run verify
 ```
 
 El formateo no debe cambiar la lógica de la aplicación, únicamente la presentación del código.
