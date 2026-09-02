@@ -86,7 +86,7 @@ npm install
 
 ### 4. Comando único integrador
 
-El proyecto expone un comando único que **limpia, compila, prueba y empaqueta** (equivalente a `./gradlew clean build`):
+El proyecto expone un comando único que **limpia, verifica el formato, compila, prueba y empaqueta** (equivalente a `./gradlew clean build`):
 
 ```bash
 npm run verify
@@ -95,10 +95,11 @@ npm run verify
 Equivale a ejecutar en secuencia:
 
 ```bash
-npm run clean   # elimina artefactos de build (dist/)
-npm run lint    # análisis estático con ESLint
-npm run test    # pruebas con el runner nativo de Node
-npm run build   # compilación y empaquetado con Vite
+npm run clean        # elimina artefactos de build (dist/)
+npm run lint         # análisis estático con ESLint
+npm run format:check # verifica el formato unificado (falla si hay desviaciones, ideal para CI/CD)
+npm run test         # pruebas con el runner nativo de Node
+npm run build        # compilación y empaquetado con Vite
 ```
 
 ### 5. Ejecutar entorno de desarrollo
@@ -150,9 +151,10 @@ La configuración se encuentra en:
 Antes de crear un Pull Request, ejecuta:
 
 ```bash
-npm run format:check
 npm run verify
 ```
+
+El comando `verify` ya incluye la verificación de formato (`format:check`), por lo que el build falla si algún archivo no cumple el formato unificado del equipo.
 
 El formateo no debe cambiar la lógica de la aplicación, únicamente la presentación del código.
 

@@ -25,12 +25,13 @@ describe('Linea base reproducible (smoke tests)', () => {
     assert.match(pkg.engines?.npm ?? '', /^>=\d+\.\d+\.\d+$/, 'falta engines.npm')
   })
 
-  it('expone el comando unico verify (clean + lint + test + build)', () => {
-    for (const script of ['clean', 'lint', 'test', 'build', 'verify']) {
+  it('expone el comando unico verify (clean + lint + format:check + test + build)', () => {
+    for (const script of ['clean', 'lint', 'test', 'build', 'format', 'format:check', 'verify']) {
       assert.ok(pkg.scripts?.[script], `falta el script "${script}"`)
     }
     assert.match(pkg.scripts.verify, /clean/)
     assert.match(pkg.scripts.verify, /lint/)
+    assert.match(pkg.scripts.verify, /format:check/)
     assert.match(pkg.scripts.verify, /test/)
     assert.match(pkg.scripts.verify, /build/)
   })
