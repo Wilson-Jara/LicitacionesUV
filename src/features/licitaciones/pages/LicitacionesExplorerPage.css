@@ -1,0 +1,34 @@
+.licitaciones-explorer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0 24px 48px;
+  box-sizing: border-box;
+}
+
+.licitaciones-header {
+  text-align: center;
+  padding: 48px 0 24px;
+}
+
+.licitaciones-header h1 {
+  font-size: 40px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--text-h), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.licitaciones-header p {
+  font-size: 18px;
+  color: var(--text);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.licitaciones-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}

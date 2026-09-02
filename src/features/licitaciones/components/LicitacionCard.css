@@ -1,0 +1,114 @@
+.licitacion-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.licitacion-card:hover {
+  transform: translateY(-4px);
+  box-shadow: rgba(0, 0, 0, 0.15) 0 15px 25px -5px, rgba(0, 0, 0, 0.1) 0 8px 10px -6px;
+  border-color: var(--accent-border);
+}
+
+@media (prefers-color-scheme: dark) {
+  .licitacion-card:hover {
+    box-shadow: rgba(0, 0, 0, 0.5) 0 15px 25px -5px, rgba(0, 0, 0, 0.3) 0 8px 10px -6px;
+  }
+}
+
+.licitacion-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), #e879f9);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.licitacion-card:hover::before {
+  opacity: 1;
+}
+
+.licitacion-card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.licitacion-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.licitacion-badge.publica {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.licitacion-badge.privada {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.licitacion-title {
+  margin: 0;
+  font-size: 20px;
+  font-family: var(--heading);
+  font-weight: 600;
+  color: var(--text-h);
+  line-height: 1.3;
+}
+
+.licitacion-details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.licitacion-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.licitacion-detail-label {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.licitacion-detail-value {
+  font-size: 16px;
+  color: var(--text-h);
+  font-weight: 500;
+}
+
+.licitacion-detail-value.amount {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+}
