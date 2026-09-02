@@ -107,6 +107,17 @@ npm run build   # compilación y empaquetado con Vite
 npm run dev
 ```
 
+### Variables de entorno
+
+El proyecto documenta sus variables en `.env.example`. Para configurar tu entorno local:
+
+```bash
+cp .env.example .env
+```
+
+- Cada variable está documentada con su **nombre**, **formato** y **obligatoriedad** dentro de `.env.example`.
+- Los archivos `.env` reales nunca se suben al repositorio (excluidos por `.gitignore`), igual que certificados y llaves privadas (`*.pem`, `*.key`, `*.p12`, `*.pfx`).
+
 ---
 
 ## Formateo de código
