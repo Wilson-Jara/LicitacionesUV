@@ -1,44 +1,44 @@
-import { useState } from 'react';
-import PropTypes from 'prop-types';
-import { useAuth } from '../hooks/useAuth';
-import './AuthModal.css';
+import { useState } from 'react'
+import PropTypes from 'prop-types'
+import { useAuth } from '../hooks/useAuth'
+import './AuthModal.css'
 
 function AuthModal({ isOpen, onClose }) {
-  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [isLoginMode, setIsLoginMode] = useState(true)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-  });
-  const [errors, setErrors] = useState({});
-  const { login, register } = useAuth();
+  })
+  const [errors, setErrors] = useState({})
+  const { login, register } = useAuth()
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
     // Clear error when user types
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: '' }))
     }
-  };
+  }
 
   const validateForm = () => {
-    const newErrors = {};
-    if (!isLoginMode && !formData.name.trim()) newErrors.name = 'El nombre es obligatorio';
-    if (!formData.email.trim()) newErrors.email = 'El correo es obligatorio';
-    if (!formData.password) newErrors.password = 'La contraseña es obligatoria';
+    const newErrors = {}
+    if (!isLoginMode && !formData.name.trim()) newErrors.name = 'El nombre es obligatorio'
+    if (!formData.email.trim()) newErrors.email = 'El correo es obligatorio'
+    if (!formData.password) newErrors.password = 'La contraseña es obligatoria'
     if (!isLoginMode && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      newErrors.confirmPassword = 'Las contraseñas no coinciden'
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (validateForm()) {
       if (isLoginMode) {
         // Simulated Login
@@ -46,27 +46,27 @@ function AuthModal({ isOpen, onClose }) {
           name: formData.email.split('@')[0],
           email: formData.email,
           photoUrl: `https://ui-avatars.com/api/?name=${formData.email.split('@')[0]}&background=random`,
-        });
+        })
       } else {
         // Simulated Register
         register({
           name: formData.name,
           email: formData.email,
           photoUrl: `https://ui-avatars.com/api/?name=${formData.name}&background=random`,
-        });
+        })
       }
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const handleSocialLogin = (provider) => {
     login({
       name: `Usuario ${provider}`,
       email: `usuario@${provider.toLowerCase()}.com`,
       photoUrl: `https://ui-avatars.com/api/?name=Usuario+${provider}&background=random`,
-    });
-    onClose();
-  };
+    })
+    onClose()
+  }
 
   return (
     <div className="auth-modal-overlay">
@@ -74,9 +74,7 @@ function AuthModal({ isOpen, onClose }) {
         <button className="auth-modal-close" onClick={onClose}>
           &times;
         </button>
-        <h2 className="auth-modal-title">
-          {isLoginMode ? 'Iniciar sesión' : 'Crear cuenta'}
-        </h2>
+        <h2 className="auth-modal-title">{isLoginMode ? 'Iniciar sesión' : 'Crear cuenta'}</h2>
 
         <form onSubmit={handleSubmit} className="auth-modal-form">
           {!isLoginMode && (
@@ -161,9 +159,9 @@ function AuthModal({ isOpen, onClose }) {
               type="button"
               className="btn-toggle-mode"
               onClick={() => {
-                setIsLoginMode(!isLoginMode);
-                setErrors({});
-                setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+                setIsLoginMode(!isLoginMode)
+                setErrors({})
+                setFormData({ name: '', email: '', password: '', confirmPassword: '' })
               }}
             >
               {isLoginMode ? 'Crear cuenta' : 'Iniciar sesión'}
@@ -172,12 +170,12 @@ function AuthModal({ isOpen, onClose }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 AuthModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-};
+}
 
-export default AuthModal;
+export default AuthModal
