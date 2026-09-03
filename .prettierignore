@@ -15,10 +15,11 @@ npm-shrinkwrap.json
 yarn.lock
 pnpm-lock.yaml
 
-# Archivos de entorno y credenciales
+# Archivos de entorno y credenciales (sin parser en Prettier)
 .env
 .env.*
-!.env.example
+.env.example
+.gitignore
 
 # Logs
 *.log
