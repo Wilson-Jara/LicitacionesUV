@@ -1,0 +1,13 @@
+# Normaliza los fines de linea para todo el equipo (consistente con Prettier: LF)
+* text=auto eol=lf
+
+# Archivos binarios (nunca normalizar)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.pdf binary

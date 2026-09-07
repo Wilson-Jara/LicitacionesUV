@@ -3,6 +3,15 @@
 .env.*
 !.env.example
 
+# Certificates, keys and secrets
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Test coverage
+coverage/
+
 # Logs
 logs
 *.log
@@ -24,6 +33,7 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
