@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
-import { LicitacionList } from '../components/LicitacionList'
 import mockData from '../data/licitaciones.mock.json'
 import './LicitacionesExplorerPage.css'
 
@@ -38,8 +37,6 @@ function LicitacionesExplorerPage() {
         <div className="licitaciones-content">
           <LicitacionList licitaciones={filteredData} />
         </div>
-      <div className="licitaciones-content">
-        <LicitacionList licitaciones={mockData} />
       </div>
     </section>
   )
