@@ -1,10 +1,10 @@
-# 🏛️ LicitacionesUV: Plataforma de Filtrado y Centralización de Licitaciones Privadas
+# 🏛️ LicitacionesUV: Plataforma de Filtrado y Centralización de Licitaciones
 
 Plataforma web desarrollada en **React + Vite** diseñada para centralizar, filtrar y optimizar la búsqueda de oportunidades comerciales y licitaciones publicadas por empresas privadas, recopiladas de forma automatizada mediante técnicas de web scraping.
 
 ---
 
-## 📌 Descripción del Proyecto
+## 📌 Descripción del sistema
 
 ### ¿Qué es?
 
@@ -23,6 +23,112 @@ Actualmente, la información de compras y contrataciones privadas se encuentra d
 1. **Recolección:** Un scraper extrae periódicamente los datos públicos de portales autorizados (empresa convocante, fechas de apertura y cierre, rubro, ubicación, bases y enlaces oficiales).
 2. **Filtrado y Procesamiento:** La plataforma clasifica las licitaciones por sector, palabras clave, fechas y montos estimados.
 3. **Visualización y Gestión:** A través de la interfaz web, el usuario filtra, prioriza y hace seguimiento de las convocatorias que se ajustan a su perfil de negocio.
+
+---
+
+## 🧭 Historias de Usuario
+
+Todas las historias están registradas como GitHub Issues.
+
+| ID    | Nombre                                                | Issue               |
+| ----- | ----------------------------------------------------- | ------------------- |
+| US-01 | Registrarse en la plataforma                          | #16                 |
+| US-02 | Iniciar sesión                                        | #16                 |
+| US-03 | Explorar licitaciones publicadas                      | #17                 |
+| US-04 | Filtrar licitaciones por palabra clave, región y tipo | #18                 |
+| US-05 | Acceder a la fuente oficial de una licitación         | #17                 |
+| US-06 | Guardar licitaciones en favoritos                     | — (issue por crear) |
+| US-07 | Gestionar perfil de usuario                           | — (issue por crear) |
+| US-08 | Recibir alertas de convocatorias de interés           | — (issue por crear) |
+
+> Cada issue mantiene el formato: `US-XX: [nombre]` + enunciado _Como [actor], quiero [acción], para [beneficio]_ + criterios de aceptación (CA1, CA2, ...).
+
+---
+
+## 🚦 Requisitos Extrafuncionales
+
+Ver: [ReqExtrafuncionales.md](ReqExtrafuncionales.md)
+
+---
+
+## 🧱 Entidades del Dominio
+
+| Entidad        | Descripción                                                      | Atributos principales                                                                                                                          |
+| -------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Licitación** | Oportunidad de contratación publicada por un organismo o empresa | `id`, `título`, `institución convocante`, `monto`, `moneda`, `fecha de cierre`, `tipo` (pública/privada), `región`, `url de la fuente oficial` |
+| **Usuario**    | Persona registrada que consulta y sigue licitaciones             | `id`, `nombre`, `email`, `proveedor de autenticación` (local, Google, GitHub)                                                                  |
+| **Favorito**   | Licitación guardada por un usuario para seguimiento              | `id usuario`, `id licitación`, `fecha de guardado`                                                                                             |
+| **Región**     | División territorial usada para filtrar y categorizar            | `id`, `nombre`                                                                                                                                 |
+
+**Relaciones:**
+
+- Un **Usuario** guarda muchas **Licitaciones** como **Favoritos** (1:N a través de Favorito).
+- Una **Licitación** pertenece a una **Región** (N:1).
+- Un **Favorito** referencia exactamente a un **Usuario** y a una **Licitación**.
+
+```mermaid
+erDiagram
+    USUARIO ||--o{ FAVORITO : guarda
+    LICITACION ||--o{ FAVORITO : "es guardada en"
+    REGION ||--o{ LICITACION : agrupa
+    USUARIO {
+        string id
+        string nombre
+        string email
+        string proveedorAuth
+    }
+    LICITACION {
+        string id
+        string titulo
+        string institucion
+        number monto
+        string moneda
+        date fechaCierre
+        string tipo
+        string regionId
+        string urlFuente
+    }
+    FAVORITO {
+        string idUsuario
+        string idLicitacion
+        date fechaGuardado
+    }
+    REGION {
+        string id
+        string nombre
+    }
+```
+
+---
+
+## 🖼️ Mockups
+
+| Mockup                                                | Historia de usuario relacionada |
+| ----------------------------------------------------- | ------------------------------- |
+| (por subir) Modal de autenticación (login / registro) | US-01, US-02                    |
+| (por subir) Explorador de licitaciones con tarjetas   | US-03, US-05                    |
+| (por subir) Panel de filtros lateral                  | US-04                           |
+| (por subir) Mis favoritos                             | US-06                           |
+
+---
+
+## 🏗️ Diseño Arquitectónico
+
+Ver: [Arquitectura.md](Arquitectura.md)
+
+La aplicación se construye como una **SPA en React** organizada bajo el enfoque **Feature-Driven** (`src/features/{licitaciones, auth, favoritos}`), con módulos compartidos en `src/shared` y configuración central de rutas en `src/app`.
+
+---
+
+## 👥 Responsabilidades del Equipo
+
+| Integrante                      | Rol                                  | Ítems de la rúbrica a cargo                                                         |
+| ------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------- |
+| Wilson Jara (@Wilson-Jara)      | Project Manager / Analista funcional | 1.1 Historias de Usuario (Issues), README.md, coordinación y trazabilidad           |
+| Vicente Garcia (@Vixoooooo19)   | Tech Lead / Arquitecto de software   | 2.1 Diseño Arquitectónico (Arquitectura.md), 2.2 Diagrama de Arquitectura           |
+| Vicente Saa (@Reinald-Code)     | Frontend Developer / UI              | 2.3 Mockups (consistencia con HU)                                                   |
+| Benjamin Lazo (@lazo1838k)      | Backend Developer / Integraciones    | 2.4 Entidades del dominio, 1.2 Requisitos Extrafuncionales (ReqExtrafuncionales.md) |
+| Mauricio Henriquez (@MauricioH) | QA Engineer / DevOps                 | Revisión de coherencia entre artefactos (HU ↔ REF ↔ módulos ↔ mockups)              |
 
 ---
 
@@ -56,7 +162,7 @@ Al ser un proyecto Node.js, el equivalente al wrapper `./gradlew` de Gradle es e
 
 - **`package-lock.json`:** bloquea el árbol de dependencias para installs 100% reproducibles.
 - **`engines` en `package.json`:** declara las versiones mínimas de Node.js y npm requeridas.
-- **SemVer explícito:** las dependencias se declaran con versión exacta (`19.2.8`, sin rangos `^`/`~`), de modo que todos los entornos usen exactamente la misma versión.
+- **SemVer explícito:** las dependencias se declaran con versión exacta (`19.2.8`, sin rangos `^`/`~`), de modo que todos los entornos usan exactamente la misma versión.
 
 ---
 
