@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import PropTypes from 'prop-types'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import './AuthModal.css'
+import './LoginPage.css'
 
-function AuthModal({ isOpen, onClose }) {
+function LoginPage() {
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -14,13 +14,11 @@ function AuthModal({ isOpen, onClose }) {
   })
   const [errors, setErrors] = useState({})
   const { login, register } = useAuth()
-
-  if (!isOpen) return null
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-    // Limpiar error al escribir
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }))
     }
@@ -54,7 +52,7 @@ function AuthModal({ isOpen, onClose }) {
           photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=0E1B38&color=ffffff`,
         })
       }
-      onClose()
+      navigate('/licitaciones')
     }
   }
 
@@ -64,133 +62,131 @@ function AuthModal({ isOpen, onClose }) {
       email: `usuario@${provider.toLowerCase()}.com`,
       photoUrl: `https://ui-avatars.com/api/?name=Usuario+${provider}&background=0E1B38&color=ffffff`,
     })
-    onClose()
+    navigate('/licitaciones')
   }
 
   return (
-    <div className="auth-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
-      <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="auth-modal-close" onClick={onClose} aria-label="Cerrar modal">
-          &times;
-        </button>
-
-        {/* Columna Izquierda: Identidad Institucional (Wireframe Figma) */}
-        <div className="auth-modal-brand">
-          <div className="brand-header">
-            <div className="brand-shield" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <div className="login-page">
+      {/* Columna Izquierda: Identidad Institucional (Figma Wireframe) */}
+      <div className="login-brand-panel">
+        <div className="login-brand-header">
+          <Link to="/" className="login-brand-badge" title="Ir al inicio">
+            <div className="login-shield" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.54-3.13 8.78-7 9.88-3.87-1.1-7-5.34-7-9.88V6.3l7-3.12zM11 7h2v6h-2V7zm0 8h2v2h-2v-2z" />
               </svg>
             </div>
-            <div className="brand-header-text">
-              <span className="brand-republic">REPÚBLICA DE CHILE</span>
-              <span className="brand-institution">UNIVERSIDAD DE VALPARAÍSO</span>
+            <div className="login-brand-titles">
+              <span className="login-republic">REPÚBLICA DE CHILE</span>
+              <span className="login-institution">UNIVERSIDAD DE VALPARAÍSO</span>
             </div>
+          </Link>
+        </div>
+
+        <div className="login-gold-bar" aria-hidden="true"></div>
+
+        <div className="login-brand-main">
+          <h1 className="login-title">
+            Sistema de
+            <span>Gestión de</span>
+            <span>Licitaciones</span>
+          </h1>
+          <p className="login-description">
+            Plataforma centralizada para la consulta, seguimiento y postulación a procesos de compra
+            universitaria.
+          </p>
+        </div>
+
+        <div className="login-metrics">
+          <div className="metric-box">
+            <span className="metric-number">100%</span>
+            <span className="metric-label">En línea</span>
           </div>
-
-          <div className="brand-gold-bar" aria-hidden="true"></div>
-
-          <div className="brand-main">
-            <h1 className="brand-title">
-              Sistema de
-              <span>Gestión de</span>
-              <span>Licitaciones</span>
-            </h1>
-            <p className="brand-description">
-              Plataforma centralizada para la consulta, seguimiento y postulación a procesos de
-              compra universitaria.
-            </p>
+          <div className="metric-box">
+            <span className="metric-number">24/7</span>
+            <span className="metric-label">Disponibilidad</span>
           </div>
-
-          <div className="brand-metrics">
-            <div className="metric-item">
-              <span className="metric-val">100%</span>
-              <span className="metric-lbl">En línea</span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-val">24/7</span>
-              <span className="metric-lbl">Disponibilidad</span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-val">OFICIAL</span>
-              <span className="metric-lbl">Transparencia</span>
-            </div>
-          </div>
-
-          <div className="brand-footer">
-            <span>© 2026 Universidad de Valparaíso · Todos los derechos reservados</span>
+          <div className="metric-box">
+            <span className="metric-number">OFICIAL</span>
+            <span className="metric-label">Transparencia</span>
           </div>
         </div>
 
-        {/* Columna Derecha: Formulario de Acceso */}
-        <div className="auth-modal-body">
-          <div className="auth-form-header">
-            <span className="auth-overline">MÓDULO DE ACCESO</span>
-            <h2 className="auth-modal-title">
-              {isLoginMode ? 'Bienvenido al sistema' : 'Crear cuenta'}
+        <div className="login-brand-footer">
+          <span>© 2026 Universidad de Valparaíso · Todos los derechos reservados</span>
+        </div>
+      </div>
+
+      {/* Columna Derecha: Formulario de Acceso */}
+      <div className="login-form-panel">
+        <div className="login-form-container">
+          <div className="login-form-header">
+            <span className="login-overline">MÓDULO DE ACCESO</span>
+            <h2 className="login-heading">
+              {isLoginMode ? 'Bienvenido al sistema' : 'Crear cuenta institucional'}
             </h2>
-            <p className="auth-subtitle">
+            <p className="login-subheading">
               {isLoginMode
                 ? 'Ingrese sus credenciales institucionales para continuar'
-                : 'Complete el formulario para solicitar acceso a la plataforma'}
+                : 'Complete sus datos para solicitar una cuenta en el sistema'}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-modal-form" noValidate>
+          <form onSubmit={handleSubmit} className="login-form" noValidate>
             {!isLoginMode && (
-              <div className="form-group">
-                <label htmlFor="modal-name">NOMBRE COMPLETO</label>
+              <div className="form-field">
+                <label htmlFor="page-name">NOMBRE COMPLETO</label>
                 <input
                   type="text"
-                  id="modal-name"
+                  id="page-name"
                   name="name"
                   placeholder="Ej. Juan Pérez"
                   value={formData.name}
                   onChange={handleChange}
-                  className={errors.name ? 'input-error' : ''}
+                  className={errors.name ? 'field-error' : ''}
                 />
-                {errors.name && <span className="error-text">{errors.name}</span>}
+                {errors.name && <span className="field-error-msg">{errors.name}</span>}
               </div>
             )}
 
-            <div className="form-group">
-              <label htmlFor="modal-email">CORREO ELECTRÓNICO</label>
+            <div className="form-field">
+              <label htmlFor="page-email">CORREO ELECTRÓNICO</label>
               <input
                 type="email"
-                id="modal-email"
+                id="page-email"
                 name="email"
                 placeholder="usuario@uv.cl"
                 value={formData.email}
                 onChange={handleChange}
-                className={errors.email ? 'input-error' : ''}
+                className={errors.email ? 'field-error' : ''}
                 autoComplete="email"
               />
-              {errors.email && <span className="error-text">{errors.email}</span>}
+              {errors.email && <span className="field-error-msg">{errors.email}</span>}
             </div>
 
-            <div className="form-group">
-              <label htmlFor="modal-password">CONTRASEÑA</label>
-              <div className="password-input-wrapper">
+            <div className="form-field">
+              <label htmlFor="page-password">CONTRASEÑA</label>
+              <div className="field-password-wrapper">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  id="modal-password"
+                  id="page-password"
                   name="password"
                   placeholder="••••••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  className={errors.password ? 'input-error' : ''}
+                  className={errors.password ? 'field-error' : ''}
                   autoComplete={isLoginMode ? 'current-password' : 'new-password'}
                 />
                 <button
                   type="button"
-                  className="btn-toggle-password"
+                  className="field-toggle-btn"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
                   title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
                 >
                   {showPassword ? (
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                      <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                      <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
                     </svg>
                   ) : (
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -199,36 +195,36 @@ function AuthModal({ isOpen, onClose }) {
                   )}
                 </button>
               </div>
-              {errors.password && <span className="error-text">{errors.password}</span>}
+              {errors.password && <span className="field-error-msg">{errors.password}</span>}
             </div>
 
             {!isLoginMode && (
-              <div className="form-group">
-                <label htmlFor="modal-confirmPassword">CONFIRMAR CONTRASEÑA</label>
+              <div className="form-field">
+                <label htmlFor="page-confirmPassword">CONFIRMAR CONTRASEÑA</label>
                 <input
                   type="password"
-                  id="modal-confirmPassword"
+                  id="page-confirmPassword"
                   name="confirmPassword"
                   placeholder="••••••••••••"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={errors.confirmPassword ? 'input-error' : ''}
+                  className={errors.confirmPassword ? 'field-error' : ''}
                   autoComplete="new-password"
                 />
                 {errors.confirmPassword && (
-                  <span className="error-text">{errors.confirmPassword}</span>
+                  <span className="field-error-msg">{errors.confirmPassword}</span>
                 )}
               </div>
             )}
 
             {isLoginMode && (
-              <div className="forgot-password-link">
+              <div className="field-forgot-link">
                 <button
                   type="button"
-                  className="btn-forgot-password"
+                  className="btn-link-forgot"
                   onClick={() =>
                     alert(
-                      'Para restablecer su contraseña institucional, comuníquese con soporte TI.',
+                      'Para restablecer su contraseña institucional, comuníquese con el soporte TI.',
                     )
                   }
                 >
@@ -237,31 +233,31 @@ function AuthModal({ isOpen, onClose }) {
               </div>
             )}
 
-            <button type="submit" className="btn-submit">
+            <button type="submit" className="login-submit-btn">
               {isLoginMode ? 'Ingresar' : 'Registrarse'}
             </button>
           </form>
 
-          {/* Caja de Aviso Institucional de Figma */}
-          <div className="institutional-notice">
-            <div className="notice-icon" aria-hidden="true">
+          {/* Aviso Institucional */}
+          <div className="login-notice-card">
+            <div className="notice-card-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
               </svg>
             </div>
-            <p className="notice-text">
+            <p className="notice-card-text">
               Para acceder debe contar con una cuenta institucional activa. Si presenta problemas
               para ingresar, contacte a soporte técnico.
             </p>
           </div>
 
-          {/* Métodos Alternativos / Sociales preservados */}
-          <div className="social-login">
-            <p>O continúa con</p>
-            <div className="social-buttons">
+          {/* Inicio con Proveedores */}
+          <div className="login-social-section">
+            <p className="social-divider">O continúa con</p>
+            <div className="social-group">
               <button
                 type="button"
-                className="btn-social google"
+                className="btn-social-item google"
                 onClick={() => handleSocialLogin('Google')}
               >
                 <svg
@@ -292,7 +288,7 @@ function AuthModal({ isOpen, onClose }) {
               </button>
               <button
                 type="button"
-                className="btn-social github"
+                className="btn-social-item github"
                 onClick={() => handleSocialLogin('GitHub')}
               >
                 <svg
@@ -309,12 +305,12 @@ function AuthModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          <div className="auth-modal-footer">
+          <div className="login-mode-switch">
             <p>
               {isLoginMode ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?'}
               <button
                 type="button"
-                className="btn-toggle-mode"
+                className="btn-switch-action"
                 onClick={() => {
                   setIsLoginMode(!isLoginMode)
                   setErrors({})
@@ -326,10 +322,10 @@ function AuthModal({ isOpen, onClose }) {
             </p>
           </div>
 
-          <div className="auth-system-status">
-            <span className="status-links">Términos · Privacidad</span>
-            <span className="status-indicator">
-              <span className="status-dot"></span>
+          <div className="login-bottom-bar">
+            <span className="bottom-links">Términos y Condiciones · Privacidad</span>
+            <span className="bottom-status">
+              <span className="dot-green"></span>
               Sistema Operativo
             </span>
           </div>
@@ -339,9 +335,4 @@ function AuthModal({ isOpen, onClose }) {
   )
 }
 
-AuthModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-}
-
-export default AuthModal
+export default LoginPage

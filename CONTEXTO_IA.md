@@ -9,89 +9,91 @@
 - **Tipo:** aplicación web cliente.
 - **Idioma de negocio/documentación:** español.
 - **Propósito declarado:** crear, centralizar y gestionar licitaciones universitarias, además de comparar ofertas y ayudar a seleccionar la mejor propuesta de proveedores.
-- **Estado real actual:** prototipo generado desde la plantilla de React + Vite. El dominio de licitaciones aún no está implementado.
-
-La descripción del `README.md` representa la intención del producto, no funcionalidades disponibles actualmente. La fuente de verdad para el comportamiento actual es el código de `src/`.
+- **Estado real actual:** aplicación web en React con enrutamiento (`react-router-dom`), interfaz y módulo de acceso basados en el wireframe oficial de Figma de la Universidad de Valparaíso, explorador de licitaciones con filtros sincronizados en URL y gestión de favoritos.
 
 ## 2. Estado verificado
 
-Revisión realizada el 22 de agosto de 2026:
+Revisión realizada en septiembre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- No hay pruebas automatizadas configuradas.
-- No hay backend, base de datos, autenticación, autorización ni manejo de usuarios.
-- No hay router ni navegación interna.
-- No hay llamadas HTTP, cliente API ni persistencia en `localStorage` o `sessionStorage`.
-- No hay modelos, tipos, validaciones de dominio ni módulos de licitaciones/proveedores/ofertas.
-- `node_modules/` está instalado localmente, pero está excluido del repositorio.
-- `dist/` se genera durante el build y está excluido del repositorio.
+- `npm run test`: suite de smoke tests pasando (4/4 tests).
+- `npm run format:check`: pasa con formato consistente Prettier.
+- `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
+- Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro).
+- Router con navegación interna (`react-router-dom` v7).
+- Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
+- `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
 
-La pantalla actual de `src/app/App.jsx` es la demo estándar de Vite:
-
-- Muestra una composición visual con `hero.png`, el logo de React y el logo de Vite.
-- Muestra el título `Get started` y un mensaje sobre editar `src/app/App.jsx`.
-- Incluye un contador local que inicia en cero y aumenta al pulsar un botón.
-- Incluye enlaces externos a la documentación de Vite y React.
-- Incluye enlaces sociales de la comunidad de Vite: GitHub, Discord, X y Bluesky.
-- Usa un sprite SVG desde `public/icons.svg` para algunos iconos.
-- Es responsive hasta cierto punto mediante media queries a `1024px`.
-- Adapta colores a modo claro/oscuro mediante `prefers-color-scheme`.
-
-No debe asumirse que el contador, los enlaces o la interfaz actual forman parte del producto final.
+- **Módulo de Autenticación Institucional (Figma Wireframes):**
+  - Modal de autenticación (`AuthModal`) y página dedicada de acceso (`LoginPage` en `/login`).
+  - Diseño _split-screen_: panel izquierdo con identidad institucional de la Universidad de Valparaíso / República de Chile, escudo, métricas en línea y colores oficiales (Azul Marino `#0E1B38` y Dorado `#C59B27`).
+  - Panel derecho con formulario de acceso ("Módulo de Acceso"), campos de correo institucional y contraseña con botón para alternar visibilidad, aviso de soporte institucional, enlaces a términos e indicador de estado operativo.
+  - Alternancia entre inicio de sesión y registro de cuenta.
+  - Accesos sociales simulados con Google y GitHub.
+  - Validación de campos con mensajes de error.
+- **Explorador de Licitaciones:**
+  - Header Hero institucional con sobretítulo dorado, estadísticas clave del portal y tipografía institucional.
+  - Barra lateral de filtros (`FilterSidebar`) con la estética de Figma: sobretítulo dorado, buscador con limpieza rápida, selectores estilizados, botones _pills_ de tipo, chips interactivos de filtros activos con eliminación individual, aviso informativo institucional y estado sincronizado con URL.
+  - Tarjetas de licitación (`LicitacionCard`) con iconos vectoriales, indicador de estado por puntos (verde para Pública, ámbar para Privada), etiqueta de región y botón de acción.
+  - Lista de licitaciones (`LicitacionList`) con estado vacío ilustrado y botón directo de restablecimiento de filtros.
+  - Barra de resumen de resultados y alternancia de filtros para dispositivos móviles.
+- **Favoritos:**
+  - Página `/favoritos` para visualizar licitaciones guardadas.
+- **Barra de Navegación (`Navbar`):**
+  - Cabecera institucional con isotipo UV, enlaces a licitaciones/favoritos, información de usuario logueado con avatar y botón de acceso modal.
 
 ## 4. Arquitectura y flujo de entrada
 
-1. `index.html` define el documento HTML, el favicon, el título y el elemento `<div id="root">`.
-2. `src/main.jsx` importa los estilos globales y monta `<App />` dentro de `StrictMode` usando `createRoot`.
-3. `src/app/App.jsx` contiene actualmente todo el componente de demostración y su estado local.
-4. `src/index.css` contiene variables, reset básico, tipografía, layout global y soporte de tema.
-5. `src/app/App.css` contiene los estilos específicos de la demo.
-6. Vite resuelve los módulos, procesa JSX/CSS y sirve los archivos de `public/` desde la raíz.
+1. `index.html` define el documento HTML, favicon y contenedor `#root`.
+2. `src/main.jsx` importa `index.css` y monta `<App />`.
+3. `src/app/App.jsx` envuelve la aplicación en `AuthProvider` y `BrowserRouter`.
+4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/favoritos`, 404).
+5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
+6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
 
 ## 5. Inventario de archivos relevantes
 
-| Archivo                | Responsabilidad actual                                                          |
-| ---------------------- | ------------------------------------------------------------------------------- |
-| `index.html`           | Punto de entrada HTML; actualmente tiene `lang="en"` y título `licitacionesuv`. |
-| `src/main.jsx`         | Punto de montaje de React.                                                      |
-| `src/app/App.jsx`      | Componente raíz; demo de Vite con contador y enlaces.                           |
-| `src/index.css`        | Estilos globales, variables de color, tipografías y responsive básico.          |
-| `src/app/App.css`      | Estilos de la demo de la pantalla principal.                                    |
-| `src/assets/hero.png`  | Imagen decorativa de la plantilla.                                              |
-| `src/assets/react.svg` | Logo de React usado por la demo.                                                |
-| `src/assets/vite.svg`  | Logo de Vite usado por la demo.                                                 |
-| `public/icons.svg`     | Sprite SVG con iconos de documentación y redes sociales.                        |
-| `public/favicon.svg`   | Favicon actual.                                                                 |
-| `vite.config.js`       | Configuración mínima de Vite con `@vitejs/plugin-react`.                        |
-| `eslint.config.js`     | ESLint flat config para JS/JSX, reglas recomendadas y hooks de React.           |
-| `package.json`         | Metadatos y scripts del proyecto.                                               |
-| `package-lock.json`    | Versiones bloqueadas de dependencias.                                           |
-| `.env.example`         | Plantilla de variables; solo documenta `VITE_API_URL` comentada.                |
-| `.gitignore`           | Excluye dependencias, entornos, builds, cachés, logs y configuración local.     |
-| `.prettierrc`          | Configuración de formato del proyecto.                                          |
-| `.prettierignore`      | Archivos y carpetas excluidos del formateo.                                     |
-| `README.md`            | Requisitos, instalación pretendida y flujo de trabajo Git.                      |
-| `CONTEXTO_IA.md`       | Este documento, destinado a orientar a asistentes de IA.                        |
-| `docs/roles-equipo.md` | Roles, participación, dependencias y flujo de trabajo del equipo.               |
+| Archivo                                                        | Responsabilidad actual                                              |
+| -------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `index.html`                                                   | Punto de entrada HTML.                                              |
+| `src/main.jsx`                                                 | Punto de montaje de React.                                          |
+| `src/app/App.jsx`                                              | Componente raíz con proveedores de Auth y Router.                   |
+| `src/app/routes/AppRoutes.jsx`                                 | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).    |
+| `src/app/layouts/PublicLayout.jsx`                             | Layout principal con Navbar y contenedor de páginas.                |
+| `src/index.css`                                                | Variables globales de diseño institucional UV, reset y tipografía.  |
+| `src/features/auth/components/AuthModal.jsx`                   | Modal de inicio de sesión/registro con split-screen de Figma.       |
+| `src/features/auth/components/AuthModal.css`                   | Estilos del modal institucional.                                    |
+| `src/features/auth/pages/LoginPage.jsx`                        | Página completa de inicio de sesión según wireframe de Figma.       |
+| `src/features/auth/pages/LoginPage.css`                        | Estilos de la página de inicio de sesión.                           |
+| `src/features/auth/hooks/useAuth.js`                           | Hook de consumo del contexto de autenticación.                      |
+| `src/app/providers/AuthProvider.jsx`                           | Proveedor de estado de autenticación.                               |
+| `src/shared/components/Navbar.jsx`                             | Barra de navegación institucional con escudo y acciones de usuario. |
+| `src/shared/components/Navbar.css`                             | Estilos del Navbar.                                                 |
+| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                    |
+| `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                          |
+| `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                           |
+| `src/features/licitaciones/components/LicitacionCard.jsx`      | Tarjeta individual de licitación.                                   |
+| `src/features/licitaciones/components/LicitacionList.jsx`      | Lista de licitaciones.                                              |
+| `src/features/favoritos/pages/MisFavoritosPage.jsx`            | Página de licitaciones favoritas.                                   |
+| `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                   |
+| `CONTEXTO_IA.md`                                               | Contexto técnico actualizado para asistentes de IA.                 |
 
 ## 6. Stack y dependencias
 
-- Node.js requerido según `README.md`: `20.19+` o `22.12+`.
+- Node.js requerido: `>=20.19.0`.
 - React `19.2.8`.
 - React DOM `19.2.8`.
-- Vite efectivo en la instalación revisada: `8.2.1` (declarado como `^8.2.0`).
-- Vite React plugin efectivo: `6.0.5` (declarado como `^6.0.4`).
-- ESLint efectivo: `10.8.1` (declarado como `^10.8.0`).
-- Prettier efectivo: `3.9.6` (declarado como `^3.9.6`).
+- React Router DOM `7.18.2`.
+- PropTypes `15.8.1`.
+- Vite `8.2.1`.
+- ESLint `10.8.1`.
+- Prettier `3.9.6`.
 - Módulos ES habilitados mediante `"type": "module"`.
-- No hay librerías de UI, routing, formularios, validación, fechas, HTTP o testing.
 
 ## 7. Comandos de desarrollo
-
-Desde la raíz del proyecto:
 
 ```bash
 npm install
@@ -99,20 +101,11 @@ npm run dev
 npm run lint
 npm run format
 npm run format:check
+npm run test
 npm run build
+npm run verify
 npm run preview
 ```
-
-Scripts definidos:
-
-- `dev`: inicia el servidor de desarrollo de Vite.
-- `lint`: ejecuta ESLint sobre el repositorio.
-- `format`: aplica automáticamente el formato con Prettier.
-- `format:check`: verifica el formato sin modificar archivos.
-- `build`: crea el bundle de producción en `dist/`.
-- `preview`: sirve localmente el build de producción.
-
-El `README.md` recomienda validar primero `node --version` y `npm --version`. No existe script de test.
 
 ## 8. Convenciones observadas
 

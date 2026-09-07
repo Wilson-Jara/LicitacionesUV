@@ -4,162 +4,498 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(10, 20, 40, 0.72);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .auth-modal {
-  background: #fff;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 400px;
-  padding: 2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 880px;
   position: relative;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 24px 48px -12px rgba(10, 20, 45, 0.35);
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  overflow: hidden;
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .auth-modal-close {
   position: absolute;
-  top: 10px;
-  right: 15px;
-  background: none;
+  top: 14px;
+  right: 18px;
+  background: rgba(15, 23, 42, 0.06);
   border: none;
-  font-size: 1.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  color: #666;
+  color: #64748b;
+  transition: all 0.2s;
+  z-index: 10;
 }
 
 .auth-modal-close:hover {
-  color: #000;
+  background: rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+}
+
+/* ========================================================
+   COLUMNA IZQUIERDA: IDENTIDAD INSTITUCIONAL (FIGMA)
+   ======================================================== */
+.auth-modal-brand {
+  background: linear-gradient(155deg, #091226 0%, #0e1b38 50%, #152852 100%);
+  color: #ffffff;
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.auth-modal-brand::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top right, rgba(197, 155, 39, 0.12), transparent 60%);
+  pointer-events: none;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.brand-shield {
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(197, 155, 39, 0.4);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c59b27;
+  flex-shrink: 0;
+}
+
+.brand-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-republic {
+  font-size: 10px;
+  font-weight: 700;
+  color: #c59b27;
+  letter-spacing: 1px;
+}
+
+.brand-institution {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.brand-gold-bar {
+  width: 36px;
+  height: 3px;
+  background: #c59b27;
+  border-radius: 2px;
+  margin: 32px 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.brand-main {
+  position: relative;
+  z-index: 1;
+}
+
+.brand-title {
+  margin: 0 0 16px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-description {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.brand-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 32px 0 24px;
+  padding: 16px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-val {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.metric-lbl {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.brand-footer {
+  font-size: 11px;
+  color: #64748b;
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================================
+   COLUMNA DERECHA: FORMULARIO DE ACCESO
+   ======================================================== */
+.auth-modal-body {
+  padding: 40px 36px 32px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.auth-form-header {
+  margin-bottom: 24px;
+}
+
+.auth-overline {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c59b27;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 6px;
 }
 
 .auth-modal-title {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  color: #333;
+  margin: 0 0 6px;
+  color: #0e1b38;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.auth-subtitle {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0;
 }
 
 .auth-modal-form .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 14px;
 }
 
 .auth-modal-form label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.5px;
 }
 
 .auth-modal-form input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #0f172a;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 .auth-modal-form input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  background-color: #ffffff;
+  border-color: #0e1b38;
+  box-shadow: 0 0 0 3px rgba(14, 27, 56, 0.12);
+}
+
+.auth-modal-form input.input-error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 40px;
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.btn-toggle-password:hover {
+  color: #0e1b38;
+}
+
+.forgot-password-link {
+  text-align: right;
+  margin: -4px 0 12px;
+}
+
+.btn-forgot-password {
+  background: none;
+  border: none;
+  color: #0e1b38;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.btn-forgot-password:hover {
+  color: #c59b27;
 }
 
 .error-text {
-  color: #dc3545;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+  color: #ef4444;
+  font-size: 11px;
+  margin-top: 4px;
   display: block;
 }
 
 .btn-submit {
   width: 100%;
-  padding: 0.75rem;
-  background: #007bff;
-  color: white;
+  padding: 12px;
+  background: #0e1b38;
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  margin-top: 1rem;
-  font-weight: bold;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(14, 27, 56, 0.2);
 }
 
 .btn-submit:hover {
-  background: #0056b3;
+  background: #182d5a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(14, 27, 56, 0.25);
 }
 
+/* Caja de Aviso Institucional (Figma) */
+.institutional-notice {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.notice-icon {
+  color: #1e40af;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.notice-text {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #1e40af;
+  margin: 0;
+}
+
+/* Inicio Social */
 .social-login {
-  margin-top: 1.5rem;
+  margin-top: 20px;
   text-align: center;
 }
 
 .social-login p {
-  color: #666;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
+  color: #94a3b8;
+  font-size: 12px;
+  margin-bottom: 12px;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .social-login p::before,
 .social-login p::after {
   content: '';
-  display: block;
-  width: 30%;
+  flex: 1;
   height: 1px;
-  background: #ccc;
-  position: absolute;
-  top: 50%;
+  background: #e2e8f0;
 }
 
 .social-login p::before {
-  left: 0;
+  margin-right: 12px;
 }
 
 .social-login p::after {
-  right: 0;
+  margin-left: 12px;
 }
 
 .social-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 10px;
 }
 
 .btn-social {
   flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 12px;
   font-weight: 500;
-  transition: background-color 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
 }
 
 .btn-social:hover {
-  background: #f8f9fa;
+  background: #f8fafc;
+  border-color: #94a3b8;
 }
 
 .auth-modal-footer {
-  margin-top: 1.5rem;
+  margin-top: 18px;
   text-align: center;
-  font-size: 0.875rem;
-  color: #666;
+  font-size: 12px;
+  color: #64748b;
 }
 
 .btn-toggle-mode {
   background: none;
   border: none;
-  color: #007bff;
+  color: #0e1b38;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 700;
   padding: 0;
-  margin-left: 0.25rem;
+  margin-left: 6px;
+  transition: color 0.2s;
 }
 
 .btn-toggle-mode:hover {
+  color: #c59b27;
   text-decoration: underline;
+}
+
+.auth-system-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  background-color: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .auth-modal {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+  }
+
+  .auth-modal-brand {
+    display: none;
+  }
+
+  .auth-modal-body {
+    padding: 32px 24px 24px;
+  }
 }
