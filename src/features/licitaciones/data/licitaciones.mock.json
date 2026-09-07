@@ -6,7 +6,8 @@
     "currency": "CLP",
     "institution": "Universidad de Valparaíso",
     "closingDate": "2026-09-30",
-    "type": "publica"
+    "type": "publica",
+    "region": "valparaiso"
   },
   {
     "id": "licitacion-002",
@@ -15,7 +16,8 @@
     "currency": "CLP",
     "institution": "Empresa privada de servicios",
     "closingDate": "2026-10-15",
-    "type": "privada"
+    "type": "privada",
+    "region": "metropolitana"
   },
   {
     "id": "licitacion-003",
@@ -24,7 +26,8 @@
     "currency": "CLP",
     "institution": "Ministerio del Interior",
     "closingDate": "2026-11-01",
-    "type": "publica"
+    "type": "publica",
+    "region": "metropolitana"
   },
   {
     "id": "licitacion-004",
@@ -33,7 +36,8 @@
     "currency": "CLP",
     "institution": "Banco Internacional",
     "closingDate": "2026-12-20",
-    "type": "privada"
+    "type": "privada",
+    "region": "biobio"
   },
   {
     "id": "licitacion-005",
@@ -42,7 +46,8 @@
     "currency": "CLP",
     "institution": "Municipalidad de Viña del Mar",
     "closingDate": "2026-09-15",
-    "type": "publica"
+    "type": "publica",
+    "region": "valparaiso"
   },
   {
     "id": "licitacion-006",
@@ -51,6 +56,7 @@
     "currency": "CLP",
     "institution": "Corporación Privada",
     "closingDate": "2026-10-05",
-    "type": "privada"
+    "type": "privada",
+    "region": "antofagasta"
   }
 ]
