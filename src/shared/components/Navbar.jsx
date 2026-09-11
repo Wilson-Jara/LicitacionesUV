@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import AuthModal from '../../features/auth/components/AuthModal'
+import ThemeToggle from './ThemeToggle'
 import './Navbar.css'
 
 function Navbar() {
@@ -27,6 +28,7 @@ function Navbar() {
         <nav className="navbar__links">
           <Link to="/licitaciones">Licitaciones</Link>
           <Link to="/favoritos">Favoritos</Link>
+          <ThemeToggle />
           {user ? (
             <div className="navbar__user">
               <img src={user.photoUrl} alt="User Avatar" className="navbar__avatar" />
