@@ -103,12 +103,15 @@ erDiagram
 
 ## 🖼️ Mockups
 
-| Mockup                                                | Historia de usuario relacionada |
-| ----------------------------------------------------- | ------------------------------- |
-| (por subir) Modal de autenticación (login / registro) | US-01, US-02                    |
-| (por subir) Explorador de licitaciones con tarjetas   | US-03, US-05                    |
-| (por subir) Panel de filtros lateral                  | US-04                           |
-| (por subir) Mis favoritos                             | US-06                           |
+Los mockups de aprobaciones (CR-302) son prototipos HTML de baja fidelidad: se abren directamente en el navegador desde [`docs/mockups/`](docs/mockups/).
+
+| Mockup | Archivo | Historia de usuario relacionada |
+| ----------------------------------------------------- | ------------------------------------------------------------ | ------------------------------- |
+| Explorador de licitaciones con tarjetas | (Figma, por subir) | US-03, US-05 |
+| Panel de filtros lateral | (Figma, por subir) | US-04 |
+| Mis favoritos | (Figma, por subir) | US-06 |
+| Bandeja de aprobaciones pendientes (CR-302) | [`docs/mockups/CR-302-bandeja-aprobaciones.html`](docs/mockups/CR-302-bandeja-aprobaciones.html) | US-09, US-11 |
+| Panel de umbrales y subrogancias (CR-302) | [`docs/mockups/CR-302-panel-umbrales-subrogancias.html`](docs/mockups/CR-302-panel-umbrales-subrogancias.html) | US-10, US-11 |
 
 ---
 
