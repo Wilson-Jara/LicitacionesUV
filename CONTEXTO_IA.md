@@ -29,7 +29,7 @@ Revisión realizada en septiembre de 2026:
 
 - **Módulo de Autenticación Institucional (Figma Wireframes):**
   - Modal de autenticación (`AuthModal`) y página dedicada de acceso (`LoginPage` en `/login`).
-  - Diseño _split-screen_: panel izquierdo con identidad institucional de la Universidad de Valparaíso / República de Chile, escudo, métricas en línea y colores oficiales (Azul Marino `#0E1B38` y Dorado `#C59B27`).
+  - Diseño _split-screen_: panel izquierdo con identidad institucional de la Universidad de Valparaíso / República de Chile, escudo, métricas en línea y colores oficiales (Azul Marino `#0E1B38` y Dorado `#C59B27`); los paneles de marca permanecen navy en ambos temas.
   - Panel derecho con formulario de acceso ("Módulo de Acceso"), campos de correo institucional y contraseña con botón para alternar visibilidad, aviso de soporte institucional, enlaces a términos e indicador de estado operativo.
   - Alternancia entre inicio de sesión y registro de cuenta.
   - Accesos sociales simulados con Google y GitHub.
@@ -44,12 +44,18 @@ Revisión realizada en septiembre de 2026:
   - Página `/favoritos` para visualizar licitaciones guardadas.
 - **Barra de Navegación (`Navbar`):**
   - Cabecera institucional con isotipo UV, enlaces a licitaciones/favoritos, información de usuario logueado con avatar y botón de acceso modal.
+- **Temas Claro/Oscuro:**
+  - Alternancia de tema mediante atributo `data-theme` en `<html>`, con variables CSS duplicadas por tema en `src/index.css`.
+  - Script inline en `index.html` que aplica el tema guardado o la preferencia del sistema antes del montaje de React, evitando el flash de tema incorrecto.
+  - Persistencia de la elección en `localStorage` (clave `licitacionesuv-theme`).
+  - Botón de alternancia accesible (`ThemeToggle` con `aria-label` y `aria-pressed`) en la barra de navegación.
+  - Los componentes usan variables semánticas (`--card-bg`, `--surface-soft`, `--border-strong`, etc.); los hex restantes pertenecen a paneles de marca navy que permanecen oscuros en ambos temas.
 
 ## 4. Arquitectura y flujo de entrada
 
 1. `index.html` define el documento HTML, favicon y contenedor `#root`.
 2. `src/main.jsx` importa `index.css` y monta `<App />`.
-3. `src/app/App.jsx` envuelve la aplicación en `AuthProvider` y `BrowserRouter`.
+3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider` y `BrowserRouter`.
 4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/favoritos`, 404).
 5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
 6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
@@ -70,8 +76,12 @@ Revisión realizada en septiembre de 2026:
 | `src/features/auth/pages/LoginPage.css`                        | Estilos de la página de inicio de sesión.                           |
 | `src/features/auth/hooks/useAuth.js`                           | Hook de consumo del contexto de autenticación.                      |
 | `src/app/providers/AuthProvider.jsx`                           | Proveedor de estado de autenticación.                               |
+| `src/app/providers/ThemeProvider.jsx`                          | Proveedor de tema claro/oscuro con persistencia en localStorage.    |
 | `src/shared/components/Navbar.jsx`                             | Barra de navegación institucional con escudo y acciones de usuario. |
 | `src/shared/components/Navbar.css`                             | Estilos del Navbar.                                                 |
+| `src/shared/components/ThemeToggle.jsx`                        | Botón accesible de alternancia de tema claro/oscuro.                |
+| `src/shared/components/ThemeToggle.css`                        | Estilos del botón de tema.                                          |
+| `src/shared/hooks/useTheme.js`                                 | Hook de consumo del contexto de tema.                               |
 | `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                    |
 | `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                          |
 | `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                           |

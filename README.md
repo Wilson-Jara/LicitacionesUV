@@ -268,38 +268,74 @@ El formateo no debe cambiar la lógica de la aplicación, únicamente la present
 
 ## 🌿 Flujo de Trabajo en Git
 
+El proyecto usa un modelo de ramas con dos ramas permanentes:
+
+- **`main`**: rama de producción. Contiene únicamente versiones estables y verificadas. Está protegida: nadie trabaja sobre ella directamente.
+- **`develop`**: rama de integración. Aquí convergen todas las funcionalidades terminadas y revisadas. Es la base desde la que se crean todas las ramas de trabajo.
+
+```text
+main      ──────■────────────────■──────►  (solo merges de release/hotfix)
+                ▲                ▲
+develop       ──■──■────■───────■──────►  (integra features vía PR)
+                  ▲  ▲
+feat/41-…   ───────■──■──────────────►  (ramas de trabajo)
+```
+
 ### Gestión de Ramas
 
-Nunca trabajes directo sobre `main`. Crea ramas descriptivas asociadas a un Issue:
+Nunca trabajes directo sobre `main` ni sobre `develop`. Toda tarea (Issue) se desarrolla en su propia rama, creada **siempre desde `develop`**:
 
 ```bash
-git checkout main
+git checkout develop
 git pull
 git checkout -b feat/[numero-issue]-[descripcion-corta]
 ```
 
+Convención de nombres según el tipo de tarea:
+
+| Tipo     | Uso                                     | Ejemplo                        |
+| -------- | --------------------------------------- | ------------------------------ |
+| `feat/`  | Nueva funcionalidad                     | `feat/41-modo-oscuro-claro`    |
+| `fix/`   | Corrección de un bug                    | `fix/25-filtro-fecha-invalido` |
+| `docs/`  | Documentación                           | `docs/30-actualizar-readme`    |
+| `chore/` | Tareas de mantenimiento o configuración | `chore/8-actualizar-gitignore` |
+
 ### Registro de Cambios (Commits)
 
-Usa mensajes atómicos e imperativos:
+Usa mensajes atómicos e imperativos que describan el efecto del cambio, no el archivo modificado:
 
 ```bash
 git add .
-git commit -m "Agrega filtros por fecha de expiracion y categoria"
+git commit -m "Agrega boton de alternancia de tema oscuro y claro"
 ```
 
 ### Publicación y Pull Request
+
+Publica la rama y abre el Pull Request **hacia `develop`** (nunca hacia `main`):
 
 ```bash
 git push -u origin feat/[numero-issue]-[descripcion-corta]
 ```
 
-Abre el Pull Request hacia `main` usando la convención:
+El PR debe incluir: propósito, resumen de cambios, cómo se verificó y el Issue que cierra:
 
 ```text
 Closes #[número_issue]
 ```
 
-> **Regla:** El Pull Request requiere la revisión y aprobación de al menos otro integrante del equipo antes del merge.
+> **Regla:** El Pull Request requiere la revisión y aprobación de al menos otro integrante del equipo antes del merge. El autor nunca aprueba su propio PR.
+
+### ¿Cuándo se fusiona `develop` hacia `main`?
+
+La integración de `develop` → `main` **no ocurre con cada feature**. Solo se realiza cuando el equipo decide cerrar una **versión entregable** (por ejemplo, al término de un hito de evaluación o un corte de sprint). El procedimiento es:
+
+1. Verificar que `develop` está estable y que `npm run verify` pasa completo.
+2. Abrir un Pull Request `develop` → `main` con un resumen de todo lo integrado desde el último corte.
+3. Revisión de al menos otro integrante que no participó en los cambios a integrar.
+4. Merge a `main` y, si corresponde, crear un tag de versión (`git tag -a v0.X.0 -m "..."`).
+5. Mantener `develop` como base de trabajo para el siguiente ciclo.
+
+Para correcciones urgentes detectadas en producción se crea una rama `hotfix/[descripcion]` **desde `main`**, se integra a `main` y luego se sincroniza con `develop` (`git checkout develop && git merge main`).
 
 ---
 
