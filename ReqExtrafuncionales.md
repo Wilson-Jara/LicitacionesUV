@@ -8,11 +8,11 @@ Catálogo de requisitos no funcionales del sistema, clasificados según **ISO 25
 
 ## 1. Resumen de priorización
 
-| Prioridad | REF             | Enfoque                                                                                                                                        |
-| --------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🔴 Alta   | REF-01 a REF-04 | Condiciones críticas del producto: rendimiento, seguridad y disponibilidad. **Abordados explícitamente en** [Arquitectura.md](Arquitectura.md) |
-| 🟡 Media  | REF-05 a REF-11 | Forma de construir: calidad del código, stack tecnológico y reproducibilidad del proyecto                                                      |
-| 🟢 Baja   | REF-12 a REF-13 | Mejoras de experiencia y accesibilidad que no bloquean la línea base                                                                           |
+| Prioridad | REF                              | Enfoque                                                                                                                                                               |
+| --------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 Alta   | REF-01 a REF-04, REF-14 a REF-16 | Condiciones críticas del producto: rendimiento, seguridad, disponibilidad y flujo de aprobaciones. **Abordados explícitamente en** [Arquitectura.md](Arquitectura.md) |
+| 🟡 Media  | REF-05 a REF-11                  | Forma de construir: calidad del código, stack tecnológico y reproducibilidad del proyecto                                                                             |
+| 🟢 Baja   | REF-12 a REF-13                  | Mejoras de experiencia y accesibilidad que no bloquean la línea base                                                                                                  |
 
 ---
 
@@ -26,6 +26,9 @@ Catálogo de requisitos no funcionales del sistema, clasificados según **ISO 25
 | REF-02 | Calidad de servicio (Seguridad)      | Las acciones privadas (guardar favoritos, gestionar perfil) requieren sesión de usuario iniciada (autenticación obligatoria)                                                              |
 | REF-03 | Calidad de servicio (Seguridad)      | Credenciales y secretos nunca se versionan: variables de entorno documentadas en `.env.example` y excluidas del repositorio por `.gitignore` (incluye `*.pem`, `*.key`, `*.p12`, `*.pfx`) |
 | REF-04 | Calidad de servicio (Disponibilidad) | El sistema debe estar disponible al menos el 99% del tiempo en horario laboral (08:00–20:00)                                                                                              |
+| REF-14 | Calidad de servicio (Mantenibilidad) | Los umbrales y niveles de aprobación se modifican mediante configuración, sin cambios de código                                                                                           |
+| REF-15 | Calidad de servicio (Confiabilidad)  | Toda decisión de aprobación queda registrada con aprobador efectivo, nivel, fecha y calidad (titular o subrogante)                                                                        |
+| REF-16 | Calidad de servicio                  | La resolución del aprobador efectivo considera delegaciones vigentes por fecha                                                                                                            |
 
 ### Prioridad Media — calidad de construcción
 
