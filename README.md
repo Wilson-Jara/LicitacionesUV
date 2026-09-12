@@ -40,6 +40,9 @@ Todas las historias están registradas como GitHub Issues.
 | US-06 | Guardar licitaciones en favoritos                     | — (issue por crear) |
 | US-07 | Gestionar perfil de usuario                           | — (issue por crear) |
 | US-08 | Recibir alertas de convocatorias de interés           | — (issue por crear) |
+| US-09 | Aprobar o rechazar una licitación según el monto      | #55 (CR-302)        |
+| US-10 | Configurar umbrales de aprobación por unidad          | #56 (CR-302)        |
+| US-11 | Gestionar subrogancias con vigencia                   | #57 (CR-302)        |
 
 > Cada issue mantiene el formato: `US-XX: [nombre]` + enunciado _Como [actor], quiero [acción], para [beneficio]_ + criterios de aceptación (CA1, CA2, ...).
 
