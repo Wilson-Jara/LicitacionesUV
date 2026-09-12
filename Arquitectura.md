@@ -32,18 +32,24 @@ flowchart TB
             L["Licitaciones<br/>explorador + filtros + tarjetas"]
             A["Auth<br/>AuthModal + useAuth"]
             F["Favoritos<br/>MisFavoritosPage"]
+            AP["Aprobaciones<br/>nivel según monto + aprobador efectivo"]
         end
         Shared["Shared (src/shared)<br/>Navbar y UI común"]
+        Conf["Configuración<br/>umbrales y subrogancias (datos)"]
     end
     Datos["Fuente de datos<br/>licitaciones.mock.json<br/>(Fase 2: scraper/API con mismo contrato)"]
 
     Rutas --> L
     Rutas --> F
+    Rutas --> AP
     Providers --> A
     A --> Shared
     Shared --> L
     L --> Datos
     F --> Datos
+    AP --> L
+    AP --> Conf
+    AP -.consulta sesión.-> A
     F -.consulta sesión.-> A
 ```
 
@@ -80,6 +86,12 @@ flowchart TB
 - **Responsabilidad:** proveer UI transversal (p. ej. `Navbar` con estado dinámico de sesión) reutilizable por todos los features.
 - **Ofrece a otros módulos:** componentes comunes sin lógica de dominio.
 - **Depende de:** Autenticación (para mostrar avatar/botón de login según sesión); ningún feature depende de él de forma cíclica.
+
+### Módulo 6: Aprobaciones (`features/aprobaciones`)
+
+- **Responsabilidad:** gestionar el flujo de aprobación de licitaciones: determinar el nivel requerido según monto y unidad, resolver el aprobador efectivo considerando subrogancias vigentes, y registrar las decisiones.
+- **Ofrece a otros módulos:** consulta de "¿quién aprueba y en qué nivel?" para una licitación, y registro de decisiones de aprobación.
+- **Depende de:** Licitaciones (datos de la licitación y su monto), Autenticación (identidad del usuario que aprueba) y la configuración del sistema (umbrales y delegaciones tratados como datos). No depende de Favoritos.
 
 ## 4. Decisiones de Diseño
 
@@ -118,6 +130,20 @@ flowchart TB
 - **Alternativas consideradas:** Gradle wrapper (no aplica a JavaScript); scripts manuales sueltos (descartados: no reproducibles ni verificables en PR).
 - **Impacto:** tooling del repositorio completo y flujo de PR del equipo (REF-11).
 
+### Decisión 6: Umbrales de aprobación como datos configurables, no constantes
+
+- **Decisión:** los rangos de monto que determinan el nivel de aprobación (jefe de unidad / dirección económica / rectoría) se modelan como datos de configuración por unidad (entidad `UmbralAprobacion`) y no como constantes en el código.
+- **Motivación:** REF de mantenibilidad del CR-302 (regla R4: "la normativa cambia y los umbrales se actualizan"). Mantenerlos como datos permite ajustar los montos y niveles sin recompilar ni redeploy.
+- **Alternativas consideradas:** fijar los umbrales como constantes hardcodeadas en el módulo (descartada: requiere cambios de código y nuevo despliegue ante cada cambio de normativa); configuración global única (descartada: no permite las variantes por facultad/unidad de la regla R2).
+- **Impacto:** módulo Aprobaciones (consume `UmbralAprobacion`), módulo Configuración/Datos (los provee) y las futuras HU de administración de umbrales.
+
+### Decisión 7: Resolución del aprobador efectivo como regla centralizada
+
+- **Decisión:** la determinación de quién aprueba (titular o subrogante vigente según la fecha de la solicitud, entidad `Delegacion`) se implementa como una regla única dentro del módulo Aprobaciones, expuesta como servicio de consulta.
+- **Motivación:** REF de confiabilidad del CR-302 (regla R3: las delegaciones tienen fecha de inicio y término y pueden cambiar). Centralizarla garantiza que todas las vistas consulten el mismo criterio y evita contradicciones entre el titular y el subrogante.
+- **Alternativas consideradas:** resolver el aprobador efectivo en cada vista/componente (descartada: criterio duplicado y difícil de mantener/auditar); cachear la delegación vigente en el cliente (descartada: riesgo de aprobar con un delegado que ya venció).
+- **Impacto:** módulo Aprobaciones (servicio de consulta "¿quién aprueba y en qué nivel?"), módulo de datos (entidades `Delegacion` y `Aprobacion`) y las vistas de bandeja de aprobaciones.
+
 ## 5. Trazabilidad REF ↔ Módulos ↔ HU
 
 | REF (Alta)                  | Módulo que lo aborda                                      | HU relacionadas     |
@@ -126,3 +152,5 @@ flowchart TB
 | REF-02 Seguridad (sesión)   | Autenticación + Favoritos                                 | US-01, US-02, US-06 |
 | REF-03 Seguridad (secretos) | Línea base del repositorio (`.env.example`, `.gitignore`) | Transversal         |
 | REF-04 Disponibilidad       | Estilo SPA desplegable como estáticos                     | Transversal         |
+| REF-Alta Mantenibilidad (umbrales)  | Aprobaciones + Configuración (Decisión 6)          | US-10               |
+| REF-Alta Confiabilidad (auditoría)  | Aprobaciones (Decisión 7)                          | US-09, US-11        |
