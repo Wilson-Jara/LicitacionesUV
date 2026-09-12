@@ -56,24 +56,39 @@ Ver: [ReqExtrafuncionales.md](ReqExtrafuncionales.md)
 
 ## 🧱 Entidades del Dominio
 
-| Entidad        | Descripción                                                      | Atributos principales                                                                                                                          |
-| -------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Licitación** | Oportunidad de contratación publicada por un organismo o empresa | `id`, `título`, `institución convocante`, `monto`, `moneda`, `fecha de cierre`, `tipo` (pública/privada), `región`, `url de la fuente oficial` |
-| **Usuario**    | Persona registrada que consulta y sigue licitaciones             | `id`, `nombre`, `email`, `proveedor de autenticación` (local, Google, GitHub)                                                                  |
-| **Favorito**   | Licitación guardada por un usuario para seguimiento              | `id usuario`, `id licitación`, `fecha de guardado`                                                                                             |
-| **Región**     | División territorial usada para filtrar y categorizar            | `id`, `nombre`                                                                                                                                 |
+| Entidad              | Descripción                                                           | Atributos principales                                                                                                                                    |
+| -------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Licitación**       | Oportunidad de contratación publicada por un organismo o empresa      | `id`, `título`, `institución convocante`, `monto`, `moneda`, `fecha de cierre`, `tipo` (pública/privada), `región`, `unidad`, `url de la fuente oficial` |
+| **Usuario**          | Persona registrada que consulta y sigue licitaciones                  | `id`, `nombre`, `email`, `proveedor de autenticación` (local, Google, GitHub)                                                                            |
+| **Favorito**         | Licitación guardada por un usuario para seguimiento                   | `id usuario`, `id licitación`, `fecha de guardado`                                                                                                       |
+| **Región**           | División territorial usada para filtrar y categorizar                 | `id`, `nombre`                                                                                                                                           |
+| **Unidad**           | Unidad o facultad que agrupa licitaciones y umbrales de aprobación    | `id`, `nombre`, `tipo` (lista predefinida: facultad, dirección, rectoría)                                                                                |
+| **Aprobación**       | Decisión de aprobación emitida sobre una licitación                   | `id`, `id licitación`, `id aprobador efectivo`, `nivel`, `decisión`, `comentario`, `fecha`                                                               |
+| **Delegación**       | Subrogancia de un titular a un subrogante por un período determinado  | `id`, `id titular`, `id subrogante`, `fecha inicio`, `fecha término`                                                                                     |
+| **UmbralAprobación** | Rango de monto que define el nivel de aprobación requerido por unidad | `id`, `id unidad`, `monto mínimo` (inclusivo), `monto máximo` (exclusivo), `nivel aprobador`                                                             |
 
 **Relaciones:**
 
 - Un **Usuario** guarda muchas **Licitaciones** como **Favoritos** (1:N a través de Favorito).
 - Una **Licitación** pertenece a una **Región** (N:1).
 - Un **Favorito** referencia exactamente a un **Usuario** y a una **Licitación**.
+- Un **Usuario** aprueba muchas **Aprobaciones** (1:N).
+- Una **Licitación** recibe muchas **Aprobaciones** (1:N).
+- Una **Delegación** referencia a dos **Usuarios** (titular y subrogante).
+- Un **UmbralAprobación** pertenece a una **Unidad** y define el nivel según rangos de monto.
+- Una **Licitación** pertenece a una **Unidad** (N:1).
 
 ```mermaid
 erDiagram
     USUARIO ||--o{ FAVORITO : guarda
     LICITACION ||--o{ FAVORITO : "es guardada en"
     REGION ||--o{ LICITACION : agrupa
+    UNIDAD ||--o{ LICITACION : agrupa
+    UNIDAD ||--o{ UMBRAL_APROBACION : define
+    USUARIO ||--o{ APROBACION : aprueba
+    LICITACION ||--o{ APROBACION : recibe
+    USUARIO ||--o{ DELEGACION : "es titular de"
+    USUARIO ||--o{ DELEGACION : "es subrogante de"
     USUARIO {
         string id
         string nombre
@@ -89,6 +104,7 @@ erDiagram
         date fechaCierre
         string tipo
         string regionId
+        string unidadId
         string urlFuente
     }
     FAVORITO {
@@ -100,6 +116,34 @@ erDiagram
         string id
         string nombre
     }
+    UNIDAD {
+        string id
+        string nombre
+        string tipo
+    }
+    APROBACION {
+        string id
+        string idLicitacion
+        string idAprobadorEfectivo
+        number nivel
+        string decision
+        string comentario
+        date fecha
+    }
+    DELEGACION {
+        string id
+        string idTitular
+        string idSubrogante
+        date fechaInicio
+        date fechaTermino
+    }
+    UMBRAL_APROBACION {
+        string id
+        string idUnidad
+        number montoMinimo
+        number montoMaximo
+        number nivelAprobador
+    }
 ```
 
 ---
@@ -108,13 +152,13 @@ erDiagram
 
 Los mockups de aprobaciones (CR-302) son prototipos HTML de baja fidelidad: se abren directamente en el navegador desde [`docs/mockups/`](docs/mockups/).
 
-| Mockup | Archivo | Historia de usuario relacionada |
-| ----------------------------------------------------- | ------------------------------------------------------------ | ------------------------------- |
-| Explorador de licitaciones con tarjetas | (Figma, por subir) | US-03, US-05 |
-| Panel de filtros lateral | (Figma, por subir) | US-04 |
-| Mis favoritos | (Figma, por subir) | US-06 |
-| Bandeja de aprobaciones pendientes (CR-302) | [`docs/mockups/CR-302-bandeja-aprobaciones.html`](docs/mockups/CR-302-bandeja-aprobaciones.html) | US-09, US-11 |
-| Panel de umbrales y subrogancias (CR-302) | [`docs/mockups/CR-302-panel-umbrales-subrogancias.html`](docs/mockups/CR-302-panel-umbrales-subrogancias.html) | US-10, US-11 |
+| Mockup                                      | Archivo                                                                                                        | Historia de usuario relacionada |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Explorador de licitaciones con tarjetas     | (Figma, por subir)                                                                                             | US-03, US-05                    |
+| Panel de filtros lateral                    | (Figma, por subir)                                                                                             | US-04                           |
+| Mis favoritos                               | (Figma, por subir)                                                                                             | US-06                           |
+| Bandeja de aprobaciones pendientes (CR-302) | [`docs/mockups/CR-302-bandeja-aprobaciones.html`](docs/mockups/CR-302-bandeja-aprobaciones.html)               | US-09, US-11                    |
+| Panel de umbrales y subrogancias (CR-302)   | [`docs/mockups/CR-302-panel-umbrales-subrogancias.html`](docs/mockups/CR-302-panel-umbrales-subrogancias.html) | US-10, US-11                    |
 
 ---
 
