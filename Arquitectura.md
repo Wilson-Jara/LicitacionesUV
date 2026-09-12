@@ -146,11 +146,12 @@ flowchart TB
 
 ## 5. Trazabilidad REF ↔ Módulos ↔ HU
 
-| REF (Alta)                  | Módulo que lo aborda                                      | HU relacionadas     |
-| --------------------------- | --------------------------------------------------------- | ------------------- |
-| REF-01 Rendimiento          | Licitaciones (filtrado en cliente)                        | US-03, US-04        |
-| REF-02 Seguridad (sesión)   | Autenticación + Favoritos                                 | US-01, US-02, US-06 |
-| REF-03 Seguridad (secretos) | Línea base del repositorio (.env.example, .gitignore)     | Transversal         |
-| REF-04 Disponibilidad       | Estilo SPA desplegable como estáticos                     | Transversal         |
-| REF-14 Mantenibilidad       | Aprobaciones + Configuración (Decisión 6)                 | US-10               |
-| REF-15 Confiabilidad        | Aprobaciones (Decisión 7)                                 | US-09, US-11        |
+| REF (Alta)                  | Módulo que lo aborda                                  | HU relacionadas     |
+| --------------------------- | ----------------------------------------------------- | ------------------- |
+| REF-01 Rendimiento          | Licitaciones (filtrado en cliente)                    | US-03, US-04        |
+| REF-02 Seguridad (sesión)   | Autenticación + Favoritos                             | US-01, US-02, US-06 |
+| REF-03 Seguridad (secretos) | Línea base del repositorio (.env.example, .gitignore) | Transversal         |
+| REF-04 Disponibilidad       | Estilo SPA desplegable como estáticos                 | Transversal         |
+| REF-14 Mantenibilidad       | Aprobaciones + Configuración (Decisión 6)             | US-10               |
+| REF-15 Confiabilidad        | Aprobaciones (registro de decisiones de aprobación)   | US-09, US-11        |
+| REF-16 Fiabilidad           | Aprobaciones (Decisión 7)                             | US-09, US-11        |

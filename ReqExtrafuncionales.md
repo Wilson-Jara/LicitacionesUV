@@ -28,7 +28,7 @@ Catálogo de requisitos no funcionales del sistema, clasificados según **ISO 25
 | REF-04 | Calidad de servicio (Disponibilidad) | El sistema debe estar disponible al menos el 99% del tiempo en horario laboral (08:00–20:00)                                                                                              |
 | REF-14 | Calidad de servicio (Mantenibilidad) | Los umbrales y niveles de aprobación se modifican mediante configuración, sin cambios de código                                                                                           |
 | REF-15 | Calidad de servicio (Confiabilidad)  | Toda decisión de aprobación queda registrada con aprobador efectivo, nivel, fecha y calidad (titular o subrogante)                                                                        |
-| REF-16 | Calidad de servicio                  | La resolución del aprobador efectivo considera delegaciones vigentes por fecha                                                                                                            |
+| REF-16 | Calidad de servicio (Fiabilidad)     | La resolución del aprobador efectivo considera delegaciones vigentes por fecha                                                                                                            |
 
 ### Prioridad Media — calidad de construcción
 

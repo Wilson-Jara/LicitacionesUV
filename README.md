@@ -59,10 +59,10 @@ Ver: [ReqExtrafuncionales.md](ReqExtrafuncionales.md)
 | **Usuario**          | Persona registrada que consulta y sigue licitaciones                  | `id`, `nombre`, `email`, `proveedor de autenticación` (local, Google, GitHub)                                                                            |
 | **Favorito**         | Licitación guardada por un usuario para seguimiento                   | `id usuario`, `id licitación`, `fecha de guardado`                                                                                                       |
 | **Región**           | División territorial usada para filtrar y categorizar                 | `id`, `nombre`                                                                                                                                           |
-| **Unidad**           | Unidad o facultad que agrupa licitaciones y umbrales de aprobación    | `id`, `nombre`, `tipo`                                                                                                                                   |
+| **Unidad**           | Unidad o facultad que agrupa licitaciones y umbrales de aprobación    | `id`, `nombre`, `tipo` (lista predefinida: facultad, dirección, rectoría)                                                                                |
 | **Aprobación**       | Decisión de aprobación emitida sobre una licitación                   | `id`, `id licitación`, `id aprobador efectivo`, `nivel`, `decisión`, `comentario`, `fecha`                                                               |
 | **Delegación**       | Subrogancia de un titular a un subrogante por un período determinado  | `id`, `id titular`, `id subrogante`, `fecha inicio`, `fecha término`                                                                                     |
-| **UmbralAprobación** | Rango de monto que define el nivel de aprobación requerido por unidad | `id`, `id unidad`, `monto mínimo`, `monto máximo`, `nivel aprobador`                                                                                     |
+| **UmbralAprobación** | Rango de monto que define el nivel de aprobación requerido por unidad | `id`, `id unidad`, `monto mínimo` (inclusivo), `monto máximo` (exclusivo), `nivel aprobador`                                                             |
 
 **Relaciones:**
 
@@ -80,7 +80,7 @@ erDiagram
     USUARIO ||--o{ FAVORITO : guarda
     LICITACION ||--o{ FAVORITO : "es guardada en"
     REGION ||--o{ LICITACION : agrupa
-    UNIDAD ||--o{ LICITACION : recibe
+    UNIDAD ||--o{ LICITACION : agrupa
     UNIDAD ||--o{ UMBRAL_APROBACION : define
     USUARIO ||--o{ APROBACION : aprueba
     LICITACION ||--o{ APROBACION : recibe
@@ -149,13 +149,13 @@ erDiagram
 
 Los mockups de aprobaciones (CR-302) son prototipos HTML de baja fidelidad: se abren directamente en el navegador desde [`docs/mockups/`](docs/mockups/).
 
-| Mockup | Archivo | Historia de usuario relacionada |
-| ----------------------------------------------------- | ------------------------------------------------------------ | ------------------------------- |
-| Explorador de licitaciones con tarjetas | (Figma, por subir) | US-03, US-05 |
-| Panel de filtros lateral | (Figma, por subir) | US-04 |
-| Mis favoritos | (Figma, por subir) | US-06 |
-| Bandeja de aprobaciones pendientes (CR-302) | [`docs/mockups/CR-302-bandeja-aprobaciones.html`](docs/mockups/CR-302-bandeja-aprobaciones.html) | US-09, US-11 |
-| Panel de umbrales y subrogancias (CR-302) | [`docs/mockups/CR-302-panel-umbrales-subrogancias.html`](docs/mockups/CR-302-panel-umbrales-subrogancias.html) | US-10, US-11 |
+| Mockup                                      | Archivo                                                                                                        | Historia de usuario relacionada |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Explorador de licitaciones con tarjetas     | (Figma, por subir)                                                                                             | US-03, US-05                    |
+| Panel de filtros lateral                    | (Figma, por subir)                                                                                             | US-04                           |
+| Mis favoritos                               | (Figma, por subir)                                                                                             | US-06                           |
+| Bandeja de aprobaciones pendientes (CR-302) | [`docs/mockups/CR-302-bandeja-aprobaciones.html`](docs/mockups/CR-302-bandeja-aprobaciones.html)               | US-09, US-11                    |
+| Panel de umbrales y subrogancias (CR-302)   | [`docs/mockups/CR-302-panel-umbrales-subrogancias.html`](docs/mockups/CR-302-panel-umbrales-subrogancias.html) | US-10, US-11                    |
 
 ---
 
