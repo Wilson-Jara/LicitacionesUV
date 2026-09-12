@@ -89,9 +89,9 @@ flowchart TB
 
 ### Módulo 6: Aprobaciones (`features/aprobaciones`)
 
-- **Responsabilidad:** gestionar el flujo de aprobación de licitaciones: determinar el nivel requerido según monto y unidad, resolver el aprobador efectivo considerando subrogancias vigentes, y registrar las decisiones.
-- **Ofrece a otros módulos:** consulta de "¿quién aprueba y en qué nivel?" para una licitación, y registro de decisiones de aprobación.
-- **Depende de:** Licitaciones (datos de la licitación y su monto), Autenticación (identidad del usuario que aprueba) y la configuración del sistema (umbrales y delegaciones tratados como datos). No depende de Favoritos.
+- **Responsabilidad:** manejar el flujo de aprobación de licitaciones: según el monto y la unidad se determina el nivel que corresponde, se resuelve quién aprueba considerando las subrogancias vigentes y se guarda la decisión.
+- **Ofrece a otros módulos:** una consulta de quién aprueba una licitación y en qué nivel, y el registro de las decisiones tomadas.
+- **Depende de:** Licitaciones (el monto de la licitación), Autenticación (la identidad de quien aprueba) y los datos de configuración (umbrales y subrogancias). No tiene relación con Favoritos.
 
 ## 4. Decisiones de Diseño
 
@@ -130,19 +130,19 @@ flowchart TB
 - **Alternativas consideradas:** Gradle wrapper (no aplica a JavaScript); scripts manuales sueltos (descartados: no reproducibles ni verificables en PR).
 - **Impacto:** tooling del repositorio completo y flujo de PR del equipo (REF-11).
 
-### Decisión 6: Umbrales de aprobación como datos configurables, no constantes
+### Decisión 6: Umbrales de aprobación como configuración
 
-- **Decisión:** los rangos de monto que determinan el nivel de aprobación (jefe de unidad / dirección económica / rectoría) se modelan como datos de configuración por unidad (entidad `UmbralAprobacion`) y no como constantes en el código.
-- **Motivación:** REF de mantenibilidad del CR-302 (regla R4: "la normativa cambia y los umbrales se actualizan"). Mantenerlos como datos permite ajustar los montos y niveles sin recompilar ni redeploy.
-- **Alternativas consideradas:** fijar los umbrales como constantes hardcodeadas en el módulo (descartada: requiere cambios de código y nuevo despliegue ante cada cambio de normativa); configuración global única (descartada: no permite las variantes por facultad/unidad de la regla R2).
-- **Impacto:** módulo Aprobaciones (consume `UmbralAprobacion`), módulo Configuración/Datos (los provee) y las futuras HU de administración de umbrales.
+- **Decisión:** los rangos de monto que definen el nivel de aprobación (jefe de unidad, dirección económica, rectoría) se manejan como datos configurables por unidad (entidad UmbralAprobacion), no como constantes en el código.
+- **Motivación:** la regla R4 del CR-302: la normativa cambia y los umbrales se actualizan. Si son datos, se ajustan sin modificar ni volver a desplegar código.
+- **Alternativas consideradas:** dejar los umbrales fijos en el código (descartada: cada cambio de normativa exige un cambio de código y un nuevo despliegue); un solo umbral global (descartada: no cubre las variantes por facultad/unidad de la regla R2).
+- **Impacto:** módulo Aprobaciones (lee los umbrales), módulo Configuración (los entrega) y las futuras pantallas de administración de umbrales.
 
-### Decisión 7: Resolución del aprobador efectivo como regla centralizada
+### Decisión 7: Resolución del aprobador efectivo centralizada
 
-- **Decisión:** la determinación de quién aprueba (titular o subrogante vigente según la fecha de la solicitud, entidad `Delegacion`) se implementa como una regla única dentro del módulo Aprobaciones, expuesta como servicio de consulta.
-- **Motivación:** REF de confiabilidad del CR-302 (regla R3: las delegaciones tienen fecha de inicio y término y pueden cambiar). Centralizarla garantiza que todas las vistas consulten el mismo criterio y evita contradicciones entre el titular y el subrogante.
-- **Alternativas consideradas:** resolver el aprobador efectivo en cada vista/componente (descartada: criterio duplicado y difícil de mantener/auditar); cachear la delegación vigente en el cliente (descartada: riesgo de aprobar con un delegado que ya venció).
-- **Impacto:** módulo Aprobaciones (servicio de consulta "¿quién aprueba y en qué nivel?"), módulo de datos (entidades `Delegacion` y `Aprobacion`) y las vistas de bandeja de aprobaciones.
+- **Decisión:** decidir quién aprueba (titular o su subrogante, según la fecha de la solicitud y la entidad Delegacion) se implementa como una sola regla dentro del módulo Aprobaciones y se expone como consulta.
+- **Motivación:** la regla R3 del CR-302: las delegaciones tienen fecha de inicio y fin, y pueden cambiar. Al centralizar, todas las vistas usan el mismo criterio y no hay contradicciones sobre quién aprueba.
+- **Alternativas consideradas:** resolver el aprobador efectivo en cada vista (descartada: se repite la lógica y es difícil de mantener y auditar); guardar la delegación vigente en el cliente (descartada: riesgo de aprobar con un subrogante cuya delegación ya venció).
+- **Impacto:** módulo Aprobaciones (regla de consulta de aprobador), módulo de datos (entidades Delegacion y Aprobacion) y las vistas de bandeja de aprobaciones.
 
 ## 5. Trazabilidad REF ↔ Módulos ↔ HU
 
@@ -150,7 +150,7 @@ flowchart TB
 | --------------------------- | --------------------------------------------------------- | ------------------- |
 | REF-01 Rendimiento          | Licitaciones (filtrado en cliente)                        | US-03, US-04        |
 | REF-02 Seguridad (sesión)   | Autenticación + Favoritos                                 | US-01, US-02, US-06 |
-| REF-03 Seguridad (secretos) | Línea base del repositorio (`.env.example`, `.gitignore`) | Transversal         |
+| REF-03 Seguridad (secretos) | Línea base del repositorio (.env.example, .gitignore)     | Transversal         |
 | REF-04 Disponibilidad       | Estilo SPA desplegable como estáticos                     | Transversal         |
-| REF-Alta Mantenibilidad (umbrales)  | Aprobaciones + Configuración (Decisión 6)          | US-10               |
-| REF-Alta Confiabilidad (auditoría)  | Aprobaciones (Decisión 7)                          | US-09, US-11        |
+| REF-14 Mantenibilidad       | Aprobaciones + Configuración (Decisión 6)                 | US-10               |
+| REF-15 Confiabilidad        | Aprobaciones (Decisión 7)                                 | US-09, US-11        |
