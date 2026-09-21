@@ -89,7 +89,7 @@ Revisión realizada en septiembre de 2026:
 | `src/features/licitaciones/components/LicitacionList.jsx`      | Lista de licitaciones.                                              |
 | `src/features/favoritos/pages/MisFavoritosPage.jsx`            | Página de licitaciones favoritas.                                   |
 | `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                   |
-| `CONTEXTO_IA.md`                                               | Contexto técnico actualizado para asistentes de IA.                 |
+| `docs/AI_context.md`                                            | Contexto técnico actualizado para asistentes de IA.                 |
 
 ## 6. Stack y dependencias
 
