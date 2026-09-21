@@ -47,7 +47,7 @@ Todas las historias están registradas como GitHub Issues.
 
 ## 🚦 Requisitos Extrafuncionales
 
-Ver: [ReqExtrafuncionales.md](ReqExtrafuncionales.md)
+Ver: [ReqExtrafuncionales.md](docs/ReqExtrafuncionales.md)
 
 ---
 
@@ -114,7 +114,7 @@ erDiagram
 
 ## 🏗️ Diseño Arquitectónico
 
-Ver: [Arquitectura.md](Arquitectura.md)
+Ver: [Arquitectura.md](docs/Arquitectura.md)
 
 La aplicación se construye como una **SPA en React** organizada bajo el enfoque **Feature-Driven** (`src/features/{licitaciones, auth, favoritos}`), con módulos compartidos en `src/shared` y configuración central de rutas en `src/app`.
 
