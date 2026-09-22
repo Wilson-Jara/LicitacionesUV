@@ -375,6 +375,17 @@ Closes #[número_issue]
 
 > **Regla:** El Pull Request requiere la revisión y aprobación de al menos otro integrante del equipo antes del merge. El autor nunca aprueba su propio PR.
 
+### Verificación automática y protección de ramas
+
+El repositorio aplica controles automáticos para que ningún cambio llegue a las ramas permanentes sin validación:
+
+- **Integración continua (CI):** el workflow `.github/workflows/verify.yml` ejecuta `npm run verify` en cada Pull Request hacia `main` y `develop`. Si lint, formato, pruebas o build fallan, el PR queda bloqueado.
+- **Protección de ramas:** `main` y `develop` exigen al menos **1 aprobación de un revisor distinto del autor** y el estado de CI en verde antes del merge.
+- **Plantilla de Pull Request:** `.github/pull_request_template.md` recuerda completar propósito, resumen, cómo se verificó y el issue que cierra.
+- **Plantillas de issues:** `.github/ISSUE_TEMPLATE/` incluye historia de usuario, tarea/chore y bug, con _Definition of Ready_ (DoR) y _Definition of Done_ (DoD).
+
+> **Regla:** no se fusiona un PR sin revisión de un par y sin que `npm run verify` pase en CI.
+
 ### ¿Cuándo se fusiona `develop` hacia `main`?
 
 La integración de `develop` → `main` **no ocurre con cada feature**. Solo se realiza cuando el equipo decide cerrar una **versión entregable** (por ejemplo, al término de un hito de evaluación o un corte de sprint). El procedimiento es:
