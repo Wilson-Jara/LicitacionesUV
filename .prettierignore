@@ -29,6 +29,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Recursos generados y binarios
+docs/mockups/
 public/*.svg
 src/assets/*.svg
 *.png
