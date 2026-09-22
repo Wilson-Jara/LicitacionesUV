@@ -415,6 +415,26 @@ Prueban manualmente antes de cada demo, pero no hay ni un caso de prueba escrito
 
 Lo ubicamos en **nivel 1 (Inicial)**. Entregaron las 4 iteraciones pero a pura pasada, y de hecho las últimas 2 demos se atrasaron y el equipo lo echa a los "cambios de último minuto", o sea responden con sobreesfuerzo y no con proceso. Tienen cosas del nivel 2 empezadas (tablero, sprints, Git, actas), pero ninguna terminada, falta el registro y la trazabilidad. Lo que más les falta para subir a nivel 2: criterios de aceptación en todos los requisitos, registrar los cambios, identificar la versión que entregan y dejar constancia de las pruebas.
 
+## Actividad · Parte 2: Propuesta de mejora para nivel 2
+
+En parejas · 12 minutos. Propuesta de dos acciones para llevar a Aurora hacia el Nivel 2 de madurez (Gestionado), atacando brechas distintas, sin comprar software ni sumar personas, y con indicadores calculables con los registros existentes del equipo.
+
+### Propuesta de mejoras (Tabla de acciones)
+
+| Campo                   | Acción 1 (Gestión de Configuración y Calidad)                                                                                                                                                                     | Acción 2 (Gestión de Requisitos y Control)                                                                                                                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Brecha**              | Los cambios en código/documentación se integran sin validación ni revisión previa, generando fallos en producción y desorden en el repositorio.                                                                   | Las tareas se inician e implementan sin criterios de aceptación ni requisitos claros, produciendo retrabajo e incertidumbre en las entregas.                                                                    |
+| **Acción**              | Establecer **reglas de protección de rama (`main`)** en GitHub exigiendo aprobación de al menos un par y ejecución de la suite de pruebas (`npm run verify`) antes de consolidar cambios.                         | Implementar una **plantilla estandarizada de tareas/issues** que exija definir la _Definition of Ready_ (DoR: criterios de aceptación) y _Definition of Done_ (DoD: verificación de QA) para cada tarea.        |
+| **Responsable y plazo** | **Tech Lead / QA**, Plazo: 3 días                                                                                                                                                                                 | **Project Manager / Analista**, Plazo: 5 días (1 semana)                                                                                                                                                        |
+| **Evidencia esperada**  | • Regla de _Branch Protection_ activa en el repositorio.<br>• Plantilla de Pull Request (`pull_request_template.md`) con _checklist_ de verificación.                                                             | • Plantilla oficial de tareas en `.github/ISSUE_TEMPLATE/`.<br>• Tablero de proyecto (Kanban) con tareas que incluyen criterios de aceptación y DoD antes de iniciar.                                           |
+| **Indicador**           | **Tasa de integraciones seguras:** Medido como la cantidad de PRs fusionados que contaron con aprobación previa de un par y pruebas pasadas, sobre el total de PRs del sprint (extraído del historial de GitHub). | **Tasa de entregas sin retrabajo:** Medido como la cantidad de tareas cerradas que cumplieron los criterios de aceptación al primer intento sin ser reabiertas por errores (extraído del estado de los Issues). |
+
+### Cumplimiento de condiciones
+
+- **Brechas distintas:** La Acción 1 aborda la Gestión de Configuración y Calidad de Integración del software, mientras que la Acción 2 aborda la Gestión y Control de Requisitos del proyecto.
+- **Sin compras ni personal nuevo:** Ambas acciones operan al 100% sobre la infraestructura existente de GitHub, plantillas Markdown y scripts del repositorio (`npm run verify`).
+- **Indicadores calculables:** Los indicadores se obtienen directamente de los registros nativos de GitHub (historial de Pull Requests e Issues).
+
 ## Registro de Prompts e Iteraciones con IA
 
 ## Prompr
