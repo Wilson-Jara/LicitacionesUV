@@ -14,7 +14,12 @@ import {
 export const FavoritosContext = createContext(null)
 
 function getStorage() {
-  return typeof window === 'undefined' ? null : window.localStorage
+  if (typeof window === 'undefined') return null
+  try {
+    return window.localStorage
+  } catch {
+    return null
+  }
 }
 
 export const FavoritosProvider = ({ children }) => {
