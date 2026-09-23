@@ -1,13 +1,10 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
-import AuthModal from '../../features/auth/components/AuthModal'
 import ThemeToggle from './ThemeToggle'
 import './Navbar.css'
 
 function Navbar() {
-  const { user, logout } = useAuth()
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { user, logout, openAuthModal } = useAuth()
 
   return (
     <>
@@ -40,13 +37,12 @@ function Navbar() {
               </button>
             </div>
           ) : (
-            <button onClick={() => setIsModalOpen(true)} className="navbar__btn-login">
+            <button onClick={openAuthModal} className="navbar__btn-login">
               Iniciar sesión
             </button>
           )}
         </nav>
       </header>
-      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </>
   )
 }

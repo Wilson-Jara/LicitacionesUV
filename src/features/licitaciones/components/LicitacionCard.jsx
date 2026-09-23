@@ -1,4 +1,6 @@
 import PropTypes from 'prop-types'
+import { useAuth } from '../../auth/hooks/useAuth'
+import { useFavoritos } from '../../favoritos/hooks/useFavoritos'
 import './LicitacionCard.css'
 
 const REGION_NAMES = {
@@ -9,7 +11,10 @@ const REGION_NAMES = {
 }
 
 export function LicitacionCard({ licitacion }) {
-  const { title, amount, currency, institution, closingDate, type, region } = licitacion
+  const { id, title, amount, currency, institution, closingDate, type, region } = licitacion
+  const { user, openAuthModal } = useAuth()
+  const { isFavorito, agregarFavorito, quitarFavorito } = useFavoritos()
+  const guardado = isFavorito(id)
 
   const formattedAmount = new Intl.NumberFormat('es-CL', {
     style: 'currency',
@@ -27,6 +32,19 @@ export function LicitacionCard({ licitacion }) {
 
   const isPublica = type === 'publica'
   const regionLabel = REGION_NAMES[region] || region
+
+  // CA1 (REF-02): sin sesión no se guarda; se abre el modal de autenticación
+  const handleToggleFavorito = () => {
+    if (!user) {
+      openAuthModal()
+      return
+    }
+    if (guardado) {
+      quitarFavorito(id)
+    } else {
+      agregarFavorito(licitacion)
+    }
+  }
 
   return (
     <article className="licitacion-card">
@@ -74,16 +92,30 @@ export function LicitacionCard({ licitacion }) {
       </div>
 
       <div className="licitacion-card-footer">
-        <button
-          type="button"
-          className="btn-card-action"
-          onClick={() => alert(`Consultando bases de la licitación: ${title}`)}
-        >
-          <span>Consultar bases</span>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-          </svg>
-        </button>
+        <div className="licitacion-card-actions">
+          <button
+            type="button"
+            className={`btn-card-favorite ${guardado ? 'is-saved' : ''}`}
+            onClick={handleToggleFavorito}
+            aria-pressed={guardado}
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+            <span>{guardado ? 'Quitar' : 'Guardar'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn-card-action"
+            onClick={() => alert(`Consultando bases de la licitación: ${title}`)}
+          >
+            <span>Consultar bases</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+            </svg>
+          </button>
+        </div>
       </div>
     </article>
   )
@@ -91,7 +123,7 @@ export function LicitacionCard({ licitacion }) {
 
 LicitacionCard.propTypes = {
   licitacion: PropTypes.shape({
-    id: PropTypes.string,
+    id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     amount: PropTypes.number.isRequired,
     currency: PropTypes.string,

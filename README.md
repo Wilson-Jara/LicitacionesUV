@@ -37,9 +37,9 @@ Todas las historias están registradas como GitHub Issues.
 | US-03 | Explorar licitaciones publicadas                      | #17                 |
 | US-04 | Filtrar licitaciones por palabra clave, región y tipo | #18                 |
 | US-05 | Acceder a la fuente oficial de una licitación         | #17                 |
-| US-06 | Guardar licitaciones en favoritos                     | — (issue por crear) |
+| US-06 | Guardar licitaciones en favoritos                     | #42                 |
 | US-07 | Gestionar perfil de usuario                           | — (issue por crear) |
-| US-08 | Recibir alertas de convocatorias de interés           | — (issue por crear) |
+| US-08 | Recibir alertas de convocatorias de interés           | #48                 |
 | US-09 | Aprobar o rechazar una licitación según el monto      | #55 (CR-302)        |
 | US-10 | Configurar umbrales de aprobación por unidad          | #56 (CR-302)        |
 | US-11 | Gestionar subrogancias con vigencia                   | #57 (CR-302)        |
