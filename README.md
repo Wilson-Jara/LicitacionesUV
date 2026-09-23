@@ -46,6 +46,8 @@ Todas las historias están registradas como GitHub Issues.
 
 > Cada issue mantiene el formato: `US-XX: [nombre]` + enunciado _Como [actor], quiero [acción], para [beneficio]_ + criterios de aceptación (CA1, CA2, ...).
 
+> Los criterios de aceptación de las historias abiertas y su trazabilidad con los requisitos extrafuncionales (REF) están en [docs/CriteriosAceptacion.md](docs/CriteriosAceptacion.md).
+
 ---
 
 ## 🚦 Requisitos Extrafuncionales
@@ -385,6 +387,15 @@ El repositorio aplica controles automáticos para que ningún cambio llegue a la
 - **Plantillas de issues:** `.github/ISSUE_TEMPLATE/` incluye historia de usuario, tarea/chore y bug, con _Definition of Ready_ (DoR) y _Definition of Done_ (DoD).
 
 > **Regla:** no se fusiona un PR sin revisión de un par y sin que `npm run verify` pase en CI.
+
+### Asignación del revisor
+
+El revisor no se define como _assignee_ del issue (ese rol corresponde a quien implementa), sino que se registra en dos lugares:
+
+- **En el tablero (planificación):** el Project incluye un campo personalizado **"Revisor"** donde se indica qué integrante revisará la entrega.
+- **En el Pull Request (ejecución):** al abrir el PR se solicita la revisión en el panel **Reviewers**; ahí queda registrada la aprobación.
+
+El revisor debe ser **distinto del autor**: GitHub no permite aprobar el PR propio y la protección de rama exige al menos 1 aprobación de un par.
 
 ### ¿Cuándo se fusiona `develop` hacia `main`?
 
