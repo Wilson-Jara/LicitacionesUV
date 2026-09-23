@@ -46,6 +46,7 @@ Todas las historias están registradas como GitHub Issues.
 
 > Cada issue mantiene el formato: `US-XX: [nombre]` + enunciado _Como [actor], quiero [acción], para [beneficio]_ + criterios de aceptación (CA1, CA2, ...).
 
+> Los criterios de aceptación de las historias abiertas y su trazabilidad con los REF están en [docs/CriteriosAceptacion.md](docs/CriteriosAceptacion.md).
 ---
 
 ## 🚦 Requisitos Extrafuncionales

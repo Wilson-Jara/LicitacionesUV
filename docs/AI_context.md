@@ -98,6 +98,7 @@ Revisión realizada en septiembre de 2026:
 | `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                  |
 | `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                   |
 | `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                            |
+| `docs/CriteriosAceptacion.md`                                  | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.     |
 | `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                 |
 | `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.      |
 | `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                            |
