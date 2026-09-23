@@ -6,9 +6,11 @@ export const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
   const login = (userData) => {
     setUser(userData)
+    setIsAuthModalOpen(false)
   }
 
   const logout = () => {
@@ -17,13 +19,20 @@ export const AuthProvider = ({ children }) => {
 
   const register = (userData) => {
     setUser(userData)
+    setIsAuthModalOpen(false)
   }
+
+  const openAuthModal = () => setIsAuthModalOpen(true)
+  const closeAuthModal = () => setIsAuthModalOpen(false)
 
   const value = {
     user,
     login,
     logout,
     register,
+    isAuthModalOpen,
+    openAuthModal,
+    closeAuthModal,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

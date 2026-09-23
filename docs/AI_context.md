@@ -17,11 +17,12 @@ Revisión realizada en septiembre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests pasando (4/4 tests).
+- `npm run test`: suite de smoke tests y de persistencia de favoritos pasando (11/11 tests).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
-- Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro).
+- Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
+- Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Router con navegación interna (`react-router-dom` v7).
 - Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
 - `node_modules/` y `dist/` excluidos del control de versiones.
@@ -38,11 +39,13 @@ Revisión realizada en septiembre de 2026:
 - **Explorador de Licitaciones:**
   - Header Hero institucional con sobretítulo dorado, estadísticas clave del portal y tipografía institucional.
   - Barra lateral de filtros (`FilterSidebar`) con la estética de Figma: sobretítulo dorado, buscador con limpieza rápida, selectores estilizados, botones _pills_ de tipo, chips interactivos de filtros activos con eliminación individual, aviso informativo institucional y estado sincronizado con URL.
-  - Tarjetas de licitación (`LicitacionCard`) con iconos vectoriales, indicador de estado por puntos (verde para Pública, ámbar para Privada), etiqueta de región y botón de acción.
+  - Tarjetas de licitación (`LicitacionCard`) con iconos vectoriales, indicador de estado por puntos (verde para Pública, ámbar para Privada), etiqueta de región, botón de acción y botón Guardar/Quitar favorito.
   - Lista de licitaciones (`LicitacionList`) con estado vacío ilustrado y botón directo de restablecimiento de filtros.
   - Barra de resumen de resultados y alternancia de filtros para dispositivos móviles.
 - **Favoritos:**
-  - Página `/favoritos` para visualizar licitaciones guardadas.
+  - Botón "Guardar / Quitar" en `LicitacionCard`; sin sesión, al intentar guardar se abre el modal de autenticación (REF-02).
+  - Persistencia local por usuario en `localStorage` (clave `licitacionesuv-favoritos`) con el par `idLicitacion` + `fechaGuardado`.
+  - Página `/favoritos` (`MisFavoritosPage`) que lista las licitaciones guardadas con título, monto y fecha de cierre mediante `LicitacionCard`, permite quitarlas al instante y muestra estado vacío cuando no hay favoritos (o invitación a iniciar sesión si no hay sesión).
 - **Barra de Navegación (`Navbar`):**
   - Cabecera institucional con isotipo UV, enlaces a licitaciones/favoritos, información de usuario logueado con avatar y botón de acceso modal.
 - **Temas Claro/Oscuro:**
@@ -56,44 +59,49 @@ Revisión realizada en septiembre de 2026:
 
 1. `index.html` define el documento HTML, favicon y contenedor `#root`.
 2. `src/main.jsx` importa `index.css` y monta `<App />`.
-3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider` y `BrowserRouter`.
+3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider` y `BrowserRouter`.
 4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/favoritos`, 404).
 5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
 6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
 
 ## 5. Inventario de archivos relevantes
 
-| Archivo                                                        | Responsabilidad actual                                                         |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `index.html`                                                   | Punto de entrada HTML.                                                         |
-| `src/main.jsx`                                                 | Punto de montaje de React.                                                     |
-| `src/app/App.jsx`                                              | Componente raíz con proveedores de Auth y Router.                              |
-| `src/app/routes/AppRoutes.jsx`                                 | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).               |
-| `src/app/layouts/PublicLayout.jsx`                             | Layout principal con Navbar y contenedor de páginas.                           |
-| `src/index.css`                                                | Variables globales de diseño institucional UV, reset y tipografía.             |
-| `src/features/auth/components/AuthModal.jsx`                   | Modal de inicio de sesión/registro con split-screen de Figma.                  |
-| `src/features/auth/components/AuthModal.css`                   | Estilos del modal institucional.                                               |
-| `src/features/auth/pages/LoginPage.jsx`                        | Página completa de inicio de sesión según wireframe de Figma.                  |
-| `src/features/auth/pages/LoginPage.css`                        | Estilos de la página de inicio de sesión.                                      |
-| `src/features/auth/hooks/useAuth.js`                           | Hook de consumo del contexto de autenticación.                                 |
-| `src/app/providers/AuthProvider.jsx`                           | Proveedor de estado de autenticación.                                          |
-| `src/app/providers/ThemeProvider.jsx`                          | Proveedor de tema claro/oscuro con persistencia en localStorage.               |
-| `src/shared/components/Navbar.jsx`                             | Barra de navegación institucional con escudo y acciones de usuario.            |
-| `src/shared/components/Navbar.css`                             | Estilos del Navbar.                                                            |
-| `src/shared/components/ThemeToggle.jsx`                        | Botón accesible de alternancia de tema claro/oscuro.                           |
-| `src/shared/components/ThemeToggle.css`                        | Estilos del botón de tema.                                                     |
-| `src/shared/hooks/useTheme.js`                                 | Hook de consumo del contexto de tema.                                          |
-| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                               |
-| `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                                     |
-| `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                                      |
-| `src/features/licitaciones/components/LicitacionCard.jsx`      | Tarjeta individual de licitación.                                              |
-| `src/features/licitaciones/components/LicitacionList.jsx`      | Lista de licitaciones.                                                         |
-| `src/features/favoritos/pages/MisFavoritosPage.jsx`            | Página de licitaciones favoritas.                                              |
-| `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                              |
-| `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                            |
-| `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`. |
-| `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                       |
-| `.github/ISSUE_TEMPLATE/`                                      | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                     |
+| Archivo                                                        | Responsabilidad actual                                                              |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `index.html`                                                   | Punto de entrada HTML.                                                              |
+| `src/main.jsx`                                                 | Punto de montaje de React.                                                          |
+| `src/app/App.jsx`                                              | Componente raíz con proveedores de Auth, Favoritos y Router.                        |
+| `src/app/routes/AppRoutes.jsx`                                 | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                    |
+| `src/app/layouts/PublicLayout.jsx`                             | Layout principal con Navbar, contenedor de páginas y modal de autenticación global. |
+| `src/index.css`                                                | Variables globales de diseño institucional UV, reset y tipografía.                  |
+| `src/features/auth/components/AuthModal.jsx`                   | Modal de inicio de sesión/registro con split-screen de Figma.                       |
+| `src/features/auth/components/AuthModal.css`                   | Estilos del modal institucional.                                                    |
+| `src/features/auth/pages/LoginPage.jsx`                        | Página completa de inicio de sesión según wireframe de Figma.                       |
+| `src/features/auth/pages/LoginPage.css`                        | Estilos de la página de inicio de sesión.                                           |
+| `src/features/auth/hooks/useAuth.js`                           | Hook de consumo del contexto de autenticación.                                      |
+| `src/app/providers/AuthProvider.jsx`                           | Proveedor de estado de autenticación y del modal de acceso global.                  |
+| `src/app/providers/FavoritosProvider.jsx`                      | Proveedor de favoritos con persistencia en localStorage por usuario.                |
+| `src/features/favoritos/hooks/useFavoritos.js`                 | Hook de consumo del contexto de favoritos.                                          |
+| `src/features/favoritos/data/favoritosStorage.js`              | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).         |
+| `src/app/providers/ThemeProvider.jsx`                          | Proveedor de tema claro/oscuro con persistencia en localStorage.                    |
+| `src/shared/components/Navbar.jsx`                             | Barra de navegación institucional con escudo y acciones de usuario.                 |
+| `src/shared/components/Navbar.css`                             | Estilos del Navbar.                                                                 |
+| `src/shared/components/ThemeToggle.jsx`                        | Botón accesible de alternancia de tema claro/oscuro.                                |
+| `src/shared/components/ThemeToggle.css`                        | Estilos del botón de tema.                                                          |
+| `src/shared/hooks/useTheme.js`                                 | Hook de consumo del contexto de tema.                                               |
+| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                                    |
+| `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                                          |
+| `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                                           |
+| `src/features/licitaciones/components/LicitacionCard.jsx`      | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                 |
+| `src/features/licitaciones/components/LicitacionList.jsx`      | Lista de licitaciones.                                                              |
+| `src/features/favoritos/pages/MisFavoritosPage.jsx`            | Página de favoritos: listado, estado vacío y quitar licitaciones.                   |
+| `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                  |
+| `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                   |
+| `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                            |
+| `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                 |
+| `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.      |
+| `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                            |
+| `.github/ISSUE_TEMPLATE/`                                      | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                          |
 
 ## 6. Stack y dependencias
 
