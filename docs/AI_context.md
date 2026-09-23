@@ -17,7 +17,7 @@ Revisión realizada en septiembre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests y de persistencia de favoritos pasando (12/12 tests).
+- `npm run test`: suite de smoke tests, persistencia de favoritos y búsqueda pasando (15/15 tests).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
@@ -38,7 +38,7 @@ Revisión realizada en septiembre de 2026:
   - Validación de campos con mensajes de error.
 - **Explorador de Licitaciones:**
   - Header Hero institucional con sobretítulo dorado, estadísticas clave del portal y tipografía institucional.
-  - Barra lateral de filtros (`FilterSidebar`) con la estética de Figma: sobretítulo dorado, buscador con limpieza rápida, selectores estilizados, botones _pills_ de tipo, chips interactivos de filtros activos con eliminación individual, aviso informativo institucional y estado sincronizado con URL.
+  - Barra lateral de filtros (`FilterSidebar`) con la estética de Figma: sobretítulo dorado, buscador con limpieza rápida, búsqueda por título, selectores estilizados, botones _pills_ de tipo, chips interactivos de filtros activos con eliminación individual, aviso informativo institucional y estado sincronizado con URL.
   - Tarjetas de licitación (`LicitacionCard`) con iconos vectoriales, indicador de estado por puntos (verde para Pública, ámbar para Privada), etiqueta de región, botón de acción y botón Guardar/Quitar favorito.
   - Lista de licitaciones (`LicitacionList`) con estado vacío ilustrado y botón directo de restablecimiento de filtros.
   - Barra de resumen de resultados y alternancia de filtros para dispositivos móviles.
@@ -90,6 +90,7 @@ Revisión realizada en septiembre de 2026:
 | `src/shared/components/ThemeToggle.css`                        | Estilos del botón de tema.                                                          |
 | `src/shared/hooks/useTheme.js`                                 | Hook de consumo del contexto de tema.                                               |
 | `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                                    |
+| `src/features/licitaciones/licitacionFilters.js`               | Filtrado por título, región y tipo.                                                 |
 | `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                                          |
 | `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                                           |
 | `src/features/licitaciones/components/LicitacionCard.jsx`      | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                 |
@@ -98,6 +99,7 @@ Revisión realizada en septiembre de 2026:
 | `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                  |
 | `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                   |
 | `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                            |
+| `tests/licitacionFilters.test.js`                              | Pruebas de búsqueda y combinación de filtros.                                       |
 | `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                 |
 | `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.      |
 | `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                            |
