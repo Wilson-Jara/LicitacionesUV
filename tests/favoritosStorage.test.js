@@ -70,6 +70,31 @@ describe('favoritosStorage', () => {
     )
   })
 
+  it('descarta registros corruptos y normaliza solo favoritos con idLicitacion válida', () => {
+    const storage = createMemoryStorage({
+      [FAVORITOS_STORAGE_KEY]: JSON.stringify({
+        u1: [
+          { idLicitacion: 'licitacion-001', fechaGuardado: '2026-09-22T10:00:00.000Z' },
+          { idLicitacion: '', fechaGuardado: 'x' },
+          { idLicitacion: '   ', fechaGuardado: 'x' },
+          { idLicitacion: 42, fechaGuardado: 'x' },
+          { fechaGuardado: 'x' },
+          null,
+          'texto',
+          { idLicitacion: 'licitacion-002' },
+          { idLicitacion: 'licitacion-001', fechaGuardado: 'duplicado' },
+        ],
+      }),
+    })
+
+    assert.deepEqual(readFavoritosStore(storage), {
+      u1: [
+        { idLicitacion: 'licitacion-001', fechaGuardado: '2026-09-22T10:00:00.000Z' },
+        { idLicitacion: 'licitacion-002', fechaGuardado: null },
+      ],
+    })
+  })
+
   it('persiste y vuelve a leer el store completo', () => {
     const storage = createMemoryStorage()
     const store = { u1: [{ idLicitacion: 'a', fechaGuardado: '2026-09-22T10:00:00.000Z' }] }

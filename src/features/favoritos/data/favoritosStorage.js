@@ -4,21 +4,41 @@ export function getUserId(user) {
   return user ? user.email || user.name || null : null
 }
 
+function normalizeFavorito(favorito) {
+  if (!favorito || typeof favorito !== 'object') return null
+  const { idLicitacion, fechaGuardado } = favorito
+  if (typeof idLicitacion !== 'string' || idLicitacion.trim() === '') return null
+  return {
+    idLicitacion,
+    fechaGuardado: typeof fechaGuardado === 'string' ? fechaGuardado : null,
+  }
+}
+
+function normalizeFavoritos(lista) {
+  if (!Array.isArray(lista)) return []
+  const vistos = new Set()
+  const normalizados = []
+  for (const favorito of lista) {
+    const normalizado = normalizeFavorito(favorito)
+    if (!normalizado || vistos.has(normalizado.idLicitacion)) continue
+    vistos.add(normalizado.idLicitacion)
+    normalizados.push(normalizado)
+  }
+  return normalizados
+}
+
 export function readFavoritosStore(storage) {
   if (!storage) return {}
   try {
     const raw = storage.getItem(FAVORITOS_STORAGE_KEY)
     const parsed = raw ? JSON.parse(raw) : {}
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? Object.fromEntries(
-          Object.entries(parsed).map(([id, favoritos]) => [
-            id,
-            Array.isArray(favoritos)
-              ? favoritos.filter((favorito) => favorito && typeof favorito === 'object')
-              : [],
-          ]),
-        )
-      : {}
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+    const store = {}
+    for (const [userId, lista] of Object.entries(parsed)) {
+      if (!userId) continue
+      store[userId] = normalizeFavoritos(lista)
+    }
+    return store
   } catch {
     // localStorage bloqueado o corrupto: se parte sin favoritos
     return {}

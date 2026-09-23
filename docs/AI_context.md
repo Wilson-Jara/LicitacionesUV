@@ -17,7 +17,7 @@ Revisión realizada en septiembre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests y de persistencia de favoritos pasando (11/11 tests).
+- `npm run test`: suite de smoke tests y de persistencia de favoritos pasando (12/12 tests).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
