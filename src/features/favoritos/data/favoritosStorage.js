@@ -9,7 +9,16 @@ export function readFavoritosStore(storage) {
   try {
     const raw = storage.getItem(FAVORITOS_STORAGE_KEY)
     const parsed = raw ? JSON.parse(raw) : {}
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? Object.fromEntries(
+          Object.entries(parsed).map(([id, favoritos]) => [
+            id,
+            Array.isArray(favoritos)
+              ? favoritos.filter((favorito) => favorito && typeof favorito === 'object')
+              : [],
+          ]),
+        )
+      : {}
   } catch {
     // localStorage bloqueado o corrupto: se parte sin favoritos
     return {}
