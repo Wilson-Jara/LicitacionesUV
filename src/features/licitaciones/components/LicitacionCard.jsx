@@ -1,40 +1,30 @@
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useFavoritos } from '../../favoritos/hooks/useFavoritos'
+import {
+  formatLicitacionAmount,
+  formatLicitacionDate,
+  getRegionLabel,
+  isLicitacionCerrada,
+} from '../licitacionUtils.js'
 import './LicitacionCard.css'
-
-const REGION_NAMES = {
-  valparaiso: 'Valparaíso',
-  metropolitana: 'Metropolitana',
-  biobio: 'Biobío',
-  antofagasta: 'Antofagasta',
-}
 
 export function LicitacionCard({ licitacion }) {
   const { id, title, amount, currency, institution, closingDate, type, region } = licitacion
   const { user, openAuthModal } = useAuth()
   const { isFavorito, agregarFavorito, quitarFavorito } = useFavoritos()
   const guardado = isFavorito(id)
-
-  const formattedAmount = new Intl.NumberFormat('es-CL', {
-    style: 'currency',
-    currency: currency || 'CLP',
-    maximumFractionDigits: 0,
-  }).format(amount)
-
-  // Parsing the date as UTC to avoid local timezone offset issues shifting it by a day
-  const formattedDate = new Intl.DateTimeFormat('es-CL', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'UTC',
-  }).format(new Date(`${closingDate}T00:00:00Z`))
+  const cerrada = isLicitacionCerrada(closingDate)
+  const formattedAmount = formatLicitacionAmount(amount, currency)
+  const formattedDate = formatLicitacionDate(closingDate)
 
   const isPublica = type === 'publica'
-  const regionLabel = REGION_NAMES[region] || region
+  const regionLabel = getRegionLabel(region)
 
   // CA1 (REF-02): sin sesión no se guarda; se abre el modal de autenticación
   const handleToggleFavorito = () => {
+    if (cerrada && !guardado) return
     if (!user) {
       openAuthModal()
       return
@@ -56,7 +46,11 @@ export function LicitacionCard({ licitacion }) {
           </span>
           {regionLabel && <span className="licitacion-region-badge">{regionLabel}</span>}
         </div>
-        <h3 className="licitacion-title">{title}</h3>
+        <h3 className="licitacion-title">
+          <Link className="licitacion-title-link" to={`/licitaciones/${id}`}>
+            {title}
+          </Link>
+        </h3>
       </header>
 
       <div className="licitacion-details">
@@ -97,24 +91,22 @@ export function LicitacionCard({ licitacion }) {
             type="button"
             className={`btn-card-favorite ${guardado ? 'is-saved' : ''}`}
             onClick={handleToggleFavorito}
+            disabled={cerrada && !guardado}
             aria-pressed={guardado}
+            title={cerrada && !guardado ? 'Licitación cerrada' : undefined}
           >
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
-            <span>{guardado ? 'Quitar' : 'Guardar'}</span>
+            <span>{cerrada && !guardado ? 'Cerrada' : guardado ? 'Quitar' : 'Guardar'}</span>
           </button>
 
-          <button
-            type="button"
-            className="btn-card-action"
-            onClick={() => alert(`Consultando bases de la licitación: ${title}`)}
-          >
-            <span>Consultar bases</span>
+          <Link className="btn-card-action" to={`/licitaciones/${id}`}>
+            <span>Ver detalle</span>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
               <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
             </svg>
-          </button>
+          </Link>
         </div>
       </div>
     </article>
