@@ -1,0 +1,212 @@
+.licitacion-detail {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 32px 64px;
+  box-sizing: border-box;
+}
+
+.licitacion-detail-back {
+  display: inline-flex;
+  margin-bottom: 20px;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.licitacion-detail-back:hover {
+  color: var(--accent-hover);
+}
+
+.licitacion-detail-card {
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
+.licitacion-detail-header {
+  padding: 40px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: var(--primary-contrast);
+}
+
+.licitacion-detail-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.licitacion-detail-type,
+.licitacion-detail-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.licitacion-detail-type {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.licitacion-detail-status.is-open {
+  background: rgba(45, 212, 167, 0.2);
+  color: #b9ffe9;
+}
+
+.licitacion-detail-status.is-closed {
+  background: rgba(248, 113, 113, 0.2);
+  color: #ffd0d0;
+}
+
+.licitacion-detail-header h1 {
+  margin: 0;
+  color: inherit;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.1;
+}
+
+.licitacion-detail-header p {
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 17px;
+}
+
+.licitacion-detail-data {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--border);
+}
+
+.licitacion-detail-data > div {
+  min-width: 0;
+  padding: 24px 28px;
+  background: var(--card-bg);
+}
+
+.licitacion-detail-data dt {
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.licitacion-detail-data dd {
+  margin: 0;
+  color: var(--text-h);
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.licitacion-detail-data .licitacion-detail-amount {
+  color: var(--accent-hover);
+  font-size: 24px;
+}
+
+.licitacion-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 28px;
+}
+
+.licitacion-detail-favorite,
+.licitacion-detail-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.licitacion-detail-favorite {
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.licitacion-detail-favorite:hover:not(:disabled),
+.licitacion-detail-favorite.is-saved {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--primary-dark);
+}
+
+.licitacion-detail-favorite:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.licitacion-detail-source {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-contrast);
+}
+
+.licitacion-detail-source:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-light);
+}
+
+.licitacion-detail-notice {
+  margin: 0 28px 28px;
+  padding: 12px 14px;
+  border: 1px solid var(--danger-border);
+  border-radius: 8px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .licitacion-detail {
+    padding: 24px 16px 48px;
+  }
+
+  .licitacion-detail-header {
+    padding: 28px 22px;
+  }
+
+  .licitacion-detail-data {
+    grid-template-columns: 1fr;
+  }
+
+  .licitacion-detail-actions {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 22px;
+  }
+
+  .licitacion-detail-favorite,
+  .licitacion-detail-source {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .licitacion-detail-notice {
+    margin: 0 22px 22px;
+  }
+}

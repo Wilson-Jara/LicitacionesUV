@@ -109,6 +109,15 @@
   letter-spacing: -0.2px;
 }
 
+.licitacion-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.licitacion-title-link:hover {
+  color: var(--accent-hover);
+}
+
 .licitacion-details {
   display: grid;
   grid-template-columns: 1fr;
@@ -172,6 +181,7 @@
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 
 .btn-card-action:hover {
@@ -212,4 +222,9 @@
   background: var(--accent);
   border-color: var(--accent);
   color: var(--primary-dark);
+}
+
+.btn-card-favorite:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
