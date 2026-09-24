@@ -55,4 +55,13 @@ describe('filterLicitaciones', () => {
 
     assert.deepEqual(resultado, [])
   })
+
+  it('tolera una palabra clave ausente', () => {
+    const resultado = filterLicitaciones(licitaciones, {
+      region: '',
+      tipo: '',
+    })
+
+    assert.equal(resultado.length, 2)
+  })
 })
