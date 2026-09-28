@@ -50,7 +50,7 @@ Responsabilidades:
 - Cuidar el diseño responsive y la accesibilidad.
 - Implementar estados de carga, vacío y error cuando corresponda.
 
-### 4. Benjamin lazo (@lazo1838k) - Backend Developer / Integrations
+### 4. Benjamin Lazo (@lazo1838k) - Backend Developer / Integraciones
 
 **En palabras simples:** prepara la futura parte del sistema que guardará información y se comunicará con el frontend.
 
@@ -62,7 +62,7 @@ Responsabilidades:
 - Proponer parámetros compatibles con futuras APIs.
 - Documentar decisiones de integración.
 
-### 5. Mauricio Henriquez (@MauricioH) - QA Engineer / DevOps
+### 5. Mauricio Henriquez (@StelleC) - QA Engineer / DevOps
 
 **En palabras simples:** comprueba que el trabajo funcione y que el proyecto pueda ejecutarse correctamente.
 
@@ -137,7 +137,7 @@ Closes #[numero-del-issue]
 
 ### 7. Revisar y probar
 
-Una persona diferente del autor debe revisar el código. QA debe probar los criterios de aceptación y registrar cualquier problema.
+Una persona diferente del autor debe revisar el código. QA debe probar los criterios de aceptación y registrar cualquier problema. GitHub asigna automáticamente a los revisores según los archivos que cambia el PR, mediante `.github/CODEOWNERS`.
 
 ### 8. Validar y cerrar
 
@@ -147,6 +147,7 @@ El PM verifica que el resultado responda al objetivo del issue. Después de apro
 
 - La persona que desarrolla no debe ser la única que valida su trabajo.
 - Todo Pull Request debe tener al menos un revisor diferente del autor.
+- Los revisores se asignan automáticamente mediante `.github/CODEOWNERS` según los archivos modificados; el autor no necesita agregarlos a mano.
 - Las revisiones deben buscar errores, imports sin usar, cambios innecesarios y problemas de accesibilidad.
 - QA debe comprobar el flujo principal y los casos de error.
 - Deben ejecutarse `npm run lint` y `npm run build` antes de cerrar un issue.

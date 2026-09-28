@@ -46,10 +46,10 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 ### Criterios de aceptación
 
 - **CA1:** Desde cada tarjeta del listado y de favoritos se puede navegar a la ruta de detalle `/licitaciones/:id` (etiqueta `routing`).
-- **CA2:** El detalle muestra `title`, `institution`, `amount` formateado en CLP según `currency`, `closingDate` en formato local chileno, `type` (pública/privada) y `region`.
+- **CA2:** El detalle muestra `title`, `institution`, `amount` formateado en CLP según `currency`, `closingDate` en formato local chileno, `type` (valores `publica`/`privada`) y `region` (REF-12).
 - **CA3:** El detalle incluye un enlace a la fuente oficial de la licitación que se abre en una pestaña nueva con `rel="noreferrer"`.
 - **CA4:** Si el `:id` no existe en los datos mock, se muestra un estado "licitación no encontrada" con enlace de regreso al listado, sin pantalla en blanco (REF-05).
-- **CA5:** El botón atrás del navegador regresa al listado conservando los filtros previos (sincronizados en la URL).
+- **CA5:** El botón atrás del navegador regresa al listado conservando los filtros previos (sincronizados en la URL, REF-09).
 - **CA6:** La vista es responsive (escritorio y móvil) y navegable por teclado (REF-05, REF-13).
 
 ---
@@ -77,8 +77,8 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 ### Criterios de aceptación
 
 - **CA1:** Sin sesión iniciada, la página `/favoritos` invita a iniciar sesión y no muestra favoritos de ningún usuario (REF-02, ya implementado en `MisFavoritosPage`).
-- **CA2:** Con sesión iniciada, se listan únicamente los favoritos del usuario autenticado, leídos desde `localStorage` (clave `licitacionesuv-favoritos`).
-- **CA3:** Existe un selector de vista "Lista" / "Calendario"; alternar entre ambas no recarga la página ni pierde los datos.
+- **CA2:** Con sesión iniciada, se listan únicamente los favoritos del usuario autenticado, leídos desde `localStorage` (clave `licitacionesuv-favoritos`; REF-10).
+- **CA3:** Existe un selector de vista "Lista" / "Calendario", operable por teclado; alternar entre ambas no recarga la página ni pierde los datos (REF-13).
 - **CA4:** La vista Calendario ubica cada favorito en el día de su `closingDate`; si hay varias el mismo día, se agrupan y se indica su cantidad.
 - **CA5:** Al quitar un favorito desde cualquiera de las dos vistas, la licitación desaparece de ambas de forma inmediata.
 - **CA6:** Si el usuario no tiene favoritos, ambas vistas muestran un estado vacío con una invitación a guardar licitaciones (REF-05).
@@ -116,7 +116,7 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 - **CA3:** Una alerta se puede activar o desactivar sin eliminarla, y el cambio se refleja de inmediato en la lista.
 - **CA4:** Las alertas se persisten en `localStorage` asociadas al usuario y sobreviven a la recarga de la página (misma línea que favoritos; REF-10).
 - **CA5:** Una alerta se puede eliminar y desaparece de la lista sin recargar la página.
-- **CA6:** Si una alerta no tiene ningún criterio, se muestra un mensaje de validación y no se guarda.
+- **CA6:** Si una alerta no tiene ningún criterio, se muestra un mensaje de validación y no se guarda (REF-05).
 - **CA7:** Formulario y lista son operables por teclado y los mensajes de estado/error se anuncian a lectores de pantalla (REF-13).
 
 ---
@@ -132,7 +132,7 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 - **CA3:** El archivo se descarga con un nombre estable basado en el identificador, por ejemplo `licitacion-<id>.pdf`.
 - **CA4:** La generación corresponde a los datos de la licitación seleccionada y no mezcla información de otras.
 - **CA5:** Si la generación falla, se muestra un mensaje de error visible y la interfaz sigue siendo utilizable (REF-05).
-- **CA6:** La exportación no bloquea la interfaz; el usuario puede seguir navegando mientras se genera.
+- **CA6:** La exportación no bloquea la interfaz; el usuario puede seguir navegando mientras se genera (REF-01).
 - **CA7:** El contenido del PDF está íntegramente en español, con montos y fechas en formato local chileno (REF-12).
 - **CA8:** La exportación está disponible para cualquier usuario; no requiere sesión ni persiste datos personales (no aplica REF-02).
 
@@ -142,13 +142,13 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 | Issue | Etiquetas                                                                        | REF cubiertos                          |
 | ----- | -------------------------------------------------------------------------------- | -------------------------------------- |
-| #43   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance` | REF-01, REF-05, REF-09, REF-10, REF-13 |
-| #44   | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                       | REF-05, REF-10, REF-12, REF-13         |
-| #45   | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                  | REF-05, REF-06, REF-10, REF-13         |
+| #43   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance` | REF-01, REF-05, REF-09, REF-13         |
+| #44   | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                       | REF-05, REF-09, REF-12, REF-13         |
+| #45   | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                  | REF-06, REF-10, REF-13                 |
 | #46   | `enhancement`, `licitaciones`, `frontend`, `ui`, `favoritos`, `security`         | REF-02, REF-05, REF-10, REF-12, REF-13 |
-| #47   | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`       | REF-01, REF-05, REF-09, REF-12, REF-13 |
+| #47   | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`       | REF-01, REF-05, REF-09, REF-13         |
 | #48   | `enhancement`, `licitaciones`, `frontend`, `alertas`, `security`                 | REF-02, REF-05, REF-10, REF-13         |
-| #49   | `enhancement`, `licitaciones`, `frontend`, `export`                              | REF-01, REF-05, REF-10, REF-12         |
+| #49   | `enhancement`, `licitaciones`, `frontend`, `export`                              | REF-01, REF-05, REF-12                 |
 
 ## Revisión de correspondencia etiquetas ↔ REF
 
@@ -167,6 +167,8 @@ Las etiquetas del repositorio son **por área funcional**, no por requisito; por
 | REF-13 Accesibilidad               | `accessibility`                | Cubierto                                |
 
 **Brecha detectada:** REF-05 y REF-12 no tienen etiqueta propia. Se decidió **no crear etiquetas adicionales** para evitar proliferación y verificarlos mediante los CA de cada historia. Si el equipo prefiere poder filtrarlos, bastaría con crear `usabilidad` y `formato-es-cl`.
+
+**REF fuera del alcance de estas siete historias:** REF-04 (disponibilidad), REF-07 (`npm run verify`), REF-08 (portabilidad en navegadores) y REF-11 (flujo Git con revisor) son requisitos transversales del proyecto; se verifican a nivel de proceso y CI (DoD y protección de rama), no mediante los CA de una historia. REF-14, REF-15 y REF-16 pertenecen al flujo de aprobaciones (US-09 a US-11, CR-302) y por eso no se trazan aquí.
 
 ## Definition of Ready / Definition of Done
 

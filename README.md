@@ -174,13 +174,13 @@ La aplicación se construye como una **SPA en React** organizada bajo el enfoque
 
 ## 👥 Responsabilidades del Equipo
 
-| Integrante                      | Rol                                  | Ítems de la rúbrica a cargo                                                         |
-| ------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------- |
-| Wilson Jara (@Wilson-Jara)      | Project Manager / Analista funcional | 1.1 Historias de Usuario (Issues), README.md, coordinación y trazabilidad           |
-| Vicente Garcia (@Vixoooooo19)   | Tech Lead / Arquitecto de software   | 2.1 Diseño Arquitectónico (Arquitectura.md), 2.2 Diagrama de Arquitectura           |
-| Vicente Saa (@Reinald-Code)     | Frontend Developer / UI              | 2.3 Mockups (consistencia con HU)                                                   |
-| Benjamin Lazo (@lazo1838k)      | Backend Developer / Integraciones    | 2.4 Entidades del dominio, 1.2 Requisitos Extrafuncionales (ReqExtrafuncionales.md) |
-| Mauricio Henriquez (@MauricioH) | QA Engineer / DevOps                 | Revisión de coherencia entre artefactos (HU ↔ REF ↔ módulos ↔ mockups)              |
+| Integrante                    | Rol                                  | Ítems de la rúbrica a cargo                                                         |
+| ----------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------- |
+| Wilson Jara (@Wilson-Jara)    | Project Manager / Analista funcional | 1.1 Historias de Usuario (Issues), README.md, coordinación y trazabilidad           |
+| Vicente Garcia (@Vixoooooo19) | Tech Lead / Arquitecto de software   | 2.1 Diseño Arquitectónico (Arquitectura.md), 2.2 Diagrama de Arquitectura           |
+| Vicente Saa (@Reinald-Code)   | Frontend Developer / UI              | 2.3 Mockups (consistencia con HU)                                                   |
+| Benjamin Lazo (@lazo1838k)    | Backend Developer / Integraciones    | 2.4 Entidades del dominio, 1.2 Requisitos Extrafuncionales (ReqExtrafuncionales.md) |
+| Mauricio Henriquez (@StelleC) | QA Engineer / DevOps                 | Revisión de coherencia entre artefactos (HU ↔ REF ↔ módulos ↔ mockups)              |
 
 ---
 
@@ -383,6 +383,7 @@ El repositorio aplica controles automáticos para que ningún cambio llegue a la
 
 - **Integración continua (CI):** el workflow `.github/workflows/verify.yml` ejecuta `npm run verify` en cada Pull Request hacia `main` y `develop`. Si lint, formato, pruebas o build fallan, el PR queda bloqueado.
 - **Protección de ramas:** `main` y `develop` exigen al menos **1 aprobación de un revisor distinto del autor** y el estado de CI en verde antes del merge.
+- **Asignación de revisores (CODEOWNERS):** `.github/CODEOWNERS` solicita automáticamente la revisión de los responsables del área que toca cada PR (detalle en [Asignación del revisor](#asignación-del-revisor)).
 - **Plantilla de Pull Request:** `.github/pull_request_template.md` recuerda completar propósito, resumen, cómo se verificó y el issue que cierra.
 - **Plantillas de issues:** `.github/ISSUE_TEMPLATE/` incluye historia de usuario, tarea/chore y bug, con _Definition of Ready_ (DoR) y _Definition of Done_ (DoD).
 
@@ -393,9 +394,17 @@ El repositorio aplica controles automáticos para que ningún cambio llegue a la
 El revisor no se define como _assignee_ del issue (ese rol corresponde a quien implementa), sino que se registra en dos lugares:
 
 - **En el tablero (planificación):** el Project incluye un campo personalizado **"Revisor"** donde se indica qué integrante revisará la entrega.
-- **En el Pull Request (ejecución):** al abrir el PR se solicita la revisión en el panel **Reviewers**; ahí queda registrada la aprobación.
+- **En el Pull Request (ejecución):** al abrir el PR, GitHub **asigna automáticamente** los revisores según [`.github/CODEOWNERS`](.github/CODEOWNERS); si hace falta, también se puede solicitar a mano en el panel **Reviewers**.
 
 El revisor debe ser **distinto del autor**: GitHub no permite aprobar el PR propio y la protección de rama exige al menos 1 aprobación de un par.
+
+#### CODEOWNERS
+
+El archivo [`.github/CODEOWNERS`](.github/CODEOWNERS) mapea cada área del repositorio a sus responsables (ver [docs/roles-equipo.md](docs/roles-equipo.md)), de modo que GitHub propone al revisor adecuado según los archivos que toca cada PR, sin tener que agregarlos a mano.
+
+- **Alcance:** como los PR se abren hacia `develop`, el `CODEOWNERS` se aplica desde la **rama base** del PR; debe estar fusionado en `develop` para surtir efecto.
+- **Aplicación:** para _exigir_ la aprobación de un code owner (no solo sugerirla), hay que activar **Require review from Code Owners** en la protección de `main` y `develop`.
+- **Revisión cruzada:** cada área tiene al menos **dos responsables**, de modo que siempre exista un revisor distinto del autor.
 
 ### ¿Cuándo se fusiona `develop` hacia `main`?
 
