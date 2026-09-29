@@ -544,14 +544,6 @@ Es arquitectónicamente significativo porque cumple las **tres señales**:
 
 > **Alternativa evaluada:** la sustitución mock → scraper/API real (REF-10) también cumple las tres señales, pero se documenta como **restricción de evolución** (Decisión 2, Decisión 3) porque su gatillante es una restricción técnica, no un atributo de calidad.
 
-### Fase 3 · Puesta en común
-
-Guion de la presentación (2–3 min), con la respuesta de LicitacionesUV:
-
-1. **Proyecto — ¿de qué trata? (30 s).** Plataforma web que centraliza y filtra licitaciones de empresas privadas; en la Fase 1 es una SPA React + Vite que explora datos mock.
-2. **Los 3 atributos más críticos — ¿por qué? (45 s).** Rendimiento (REF-01: filtrado < 2 s), Seguridad (REF-02/03: sesión obligatoria y secretos fuera del repositorio) y Fiabilidad (REF-04: disponibilidad ≥ 99 %). Son las condiciones que rompen el producto si fallan.
-3. **Estilo y componentes — muestra del bosquejo (45 s).** Monolito modular en capas (Feature-Driven); bloques: App, Auth, Licitaciones, Favoritos, Aprobaciones, Shared, Configuración y Fuente de datos (Decisión 3).
-4. **El trade-off más difícil — ¿por qué lo aceptan? (30 s).** Se cede la escalabilidad independiente por módulo; se acepta porque hoy no hay carga real ni equipos separados (Decisión 2).
 
 ## Registro de Prompts e Iteraciones con IA
 
