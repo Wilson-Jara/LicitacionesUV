@@ -105,7 +105,7 @@ export function FilterSidebar() {
           <input
             type="text"
             id="keyword"
-            placeholder="Título, institución..."
+            placeholder="Buscar por título..."
             value={filters.keyword}
             onChange={handleKeywordChange}
           />
