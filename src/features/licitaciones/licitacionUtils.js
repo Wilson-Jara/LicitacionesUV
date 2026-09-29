@@ -33,7 +33,8 @@ export function formatLicitacionDate(closingDate) {
 }
 
 export function isLicitacionCerrada(closingDate, referenceDate = new Date()) {
-  if (typeof closingDate !== 'string' || Number.isNaN(referenceDate.getTime())) return false
+  if (typeof closingDate !== 'string') return false
+  if (Number.isNaN(referenceDate.getTime())) return false
 
   const today = [
     referenceDate.getFullYear(),

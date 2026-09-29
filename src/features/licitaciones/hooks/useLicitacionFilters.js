@@ -11,13 +11,13 @@ export function useLicitacionFilters() {
 
   const setFilter = (key, value) => {
     setSearchParams((prevParams) => {
-      const newParams = new URLSearchParams(prevParams)
-      if (value) {
-        newParams.set(key, value)
-      } else {
-        newParams.delete(key)
+      const nextParams = new URLSearchParams(prevParams)
+      if (!value) {
+        nextParams.delete(key)
+        return nextParams
       }
-      return newParams
+      nextParams.set(key, value)
+      return nextParams
     })
   }
 
