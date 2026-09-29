@@ -446,6 +446,113 @@ En parejas · 12 minutos. Propuesta de dos acciones para llevar a Aurora hacia e
 - **Sin compras ni personal nuevo:** Ambas acciones operan al 100% sobre la infraestructura existente de GitHub, plantillas Markdown y scripts del repositorio (`npm run verify`).
 - **Indicadores calculables:** Los indicadores se obtienen directamente de los registros nativos de GitHub (historial de Pull Requests e Issues).
 
+## Actividad · Taller de arquitectura: priorización ISO 25010
+
+Trabajo en clases sobre el proyecto del grupo. El taller tiene tres fases y culmina en un bosquejo arquitectónico defendible: **Fase 1** priorizar los atributos ISO 25010, **Fase 2** decidir el estilo arquitectónico, el _trade-off_ y los ASR, y **Fase 3** poner en común el bosquejo.
+
+### Fase 1 · Atributos (10 min)
+
+Del catálogo ISO 25010 se marcaron los atributos que aplican a LicitacionesUV y se les asignó prioridad. El equipo acordó que **solo tres atributos** serían de prioridad Alta, eligiendo las condiciones críticas del producto, que coinciden con los REF de mayor prioridad documentados en [`docs/ReqExtrafuncionales.md`](docs/ReqExtrafuncionales.md).
+
+| Atributo          | Pregunta guía para el sistema                         | Prioridad |
+| ----------------- | ----------------------------------------------------- | --------- |
+| Rendimiento       | ¿Cuántos usuarios simultáneos? ¿Hay tiempos críticos? | **Alta**  |
+| Seguridad         | ¿Hay datos sensibles? ¿Quién accede a qué?            | **Alta**  |
+| Fiabilidad        | ¿Puede caerse? ¿Por cuánto tiempo sin daño?           | **Alta**  |
+| Mantenibilidad    | ¿Con qué frecuencia cambiará? ¿Rotará el equipo?      | Media     |
+| Usabilidad        | ¿Qué tipo de usuario? ¿Necesita entrenamiento?        | Media     |
+| Interoperabilidad | ¿Debe integrarse con otros sistemas o APIs?           | Media     |
+
+#### Justificación de las prioridades
+
+- **Rendimiento (Alta) — REF-01.** El explorador es el flujo principal y debe filtrar en menos de 2 segundos. Hoy el conjunto de datos es mock, por lo que el número de usuarios simultáneos aún no es medible; el criterio crítico por ahora es el tiempo de respuesta.
+- **Seguridad (Alta) — REF-02 y REF-03.** Aunque el contenido de las licitaciones sea público, existen cuentas de usuario (login/registro), acciones privadas (guardar favoritos) y secretos de configuración; además el flujo de aprobaciones exige control de acceso por roles (REF-14 a REF-16).
+- **Fiabilidad (Alta) — REF-04.** El sistema debe estar disponible al menos el 99 % en horario laboral. En esta fase (SPA estática con mocks) se respalda con `npm run verify` y la estabilidad del build; la disponibilidad se vuelve plenamente medible en la Fase 2, con el scraper/API real.
+- **Mantenibilidad (Media) — REF-06.** La arquitectura Feature-Driven y la rotación del equipo importan, pero no son una condición que rompa el producto; se sostienen con ESLint, convenciones y bajo acoplamiento.
+- **Usabilidad (Media) — REF-05.** El usuario es público general y empresas, sin entrenamiento previo, por lo que la interfaz debe ser intuitiva, responsive y con estados de carga, vacío y error; es importante, pero no bloqueante como las condiciones críticas.
+- **Interoperabilidad (Media).** La integración con el scraper/API real es clave para la Fase 2 (REF-10), pero hoy no aplica porque los datos son mock; es una restricción técnica de evolución más que una condición crítica actual.
+
+> **Trade-off de priorización:** se evaluó dejar Interoperabilidad en Alta, pero con solo tres cupos se priorizaron las condiciones críticas del producto. Si la integración con fuentes externas pasa a ser bloqueante, se intercambiaría por Fiabilidad.
+
+### Fase 2 · Decisión arquitectónica
+
+#### Decisión 1 · Estilo principal
+
+**Estilo elegido: Monolito modular en capas (Feature-Driven).**
+
+De la tabla _Del atributo al estilo_, la fila que aplica es **Simplicidad y time-to-market → Monolito en capas**. Los estilos distribuidos se descartan porque sus atributos gatillantes no están en Alta y, además, degradan los tres atributos críticos del proyecto.
+
+| Estilo de la tabla    | Atributo que lo gatilla  | Se descarta porque…                                                                    |
+| --------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
+| Microservicios        | Escalabilidad por partes | Nuestro Alta no es escalabilidad; agrega red y despliegue.                             |
+| Event-Driven          | Desacoplamiento          | Nuestro Alta no es desacoplamiento; la trazabilidad de un flujo se vuelve más costosa. |
+| REST / Servicios      | Interoperabilidad        | Interoperabilidad quedó en Media; es complemento, no estilo global.                    |
+| Capas                 | Mantenibilidad           | Mantenibilidad quedó en Media; aporta, pero no es el driver.                           |
+| **Monolito en capas** | **Simplicidad / TTM**    | **Elegido:** no sacrifica Rendimiento, Seguridad ni Fiabilidad.                        |
+
+**Justificación atada a los atributos críticos (Alta):**
+
+- **Rendimiento (REF-01).** El filtrado ocurre en el cliente (<2 s); no hay saltos de red que agregar. Microservicios solo sumarían latencia.
+- **Seguridad (REF-02/03).** Un solo desplegable = una única superficie de autenticación/autorización; distribuir multiplica los canales internos que habría que proteger y auditar.
+- **Fiabilidad / Disponibilidad (REF-04).** Menos componentes = menos fallos parciales, timeouts y particiones de red; distribuir **reduce** la disponibilidad alcanzable.
+
+#### Decisión 2 · Trade-off
+
+De la última columna de la tabla _Del atributo al estilo_, lo que se cede al elegir **Monolito en capas** es **escalar las partes por separado** más adelante.
+
+| Se gana                                                   | Se cede                                                       |
+| --------------------------------------------------------- | ------------------------------------------------------------- |
+| Simplicidad y time-to-market.                             | Escalabilidad independiente por módulo.                       |
+| No sacrifica Rendimiento, Seguridad ni Fiabilidad (Alta). | Escalar una parte obliga a escalar todo el desplegable junto. |
+
+**Por qué se acepta:** hoy no hay carga real ni equipos separados que justifiquen escalar por partes. La **capa de datos aislada dentro del monolito** cubre la restricción de evolución (reemplazar mocks por scraper/API real sin rediseñar módulos, REF-10).
+
+#### Decisión 3 · Componentes
+
+Los grandes bloques del sistema, en orden, con la notación **componente · conector · interfaz**:
+
+1. **App** — composición. _Conector:_ navegación / montaje de rutas. _Interfaz:_ árbol de rutas y `AuthProvider`.
+2. **Auth** — sesión del usuario. _Conector:_ contexto React. _Interfaz:_ `useAuth` (sesión, login, logout, registro) y `AuthModal`.
+3. **Licitaciones** — explorar, listar y filtrar. _Conector:_ hook + props. _Interfaz:_ `useLicitacionFilters`, `LicitacionCard`/`LicitacionList`, `FilterSidebar` y contrato de licitación.
+4. **Favoritos** — guardar y revisar licitaciones. _Conector:_ hook + consulta de sesión. _Interfaz:_ `MisFavoritosPage`.
+5. **Aprobaciones** — nivel de aprobación y aprobador efectivo. _Conector:_ consulta de monto + sesión + config. _Interfaz:_ consulta "quién aprueba y en qué nivel" y registro de decisiones.
+6. **Shared** — UI transversal. _Conector:_ props. _Interfaz:_ `Navbar` y UI común sin lógica de dominio.
+7. **Configuración** — umbrales y subrogancias (datos). _Conector:_ lectura de datos. _Interfaz:_ umbrales por unidad y delegaciones.
+8. **Fuente de datos** — licitaciones. _Conector:_ contrato de datos estable. _Interfaz:_ `licitaciones.mock.json` (Fase 2: scraper/API con el mismo contrato).
+
+Conexiones principales (origen —conector→ destino):
+
+1. `App —rutas→ Licitaciones / Favoritos / Aprobaciones`.
+2. `Favoritos y Aprobaciones —consulta de sesión→ Auth`.
+3. `Aprobaciones —monto→ Licitaciones` y `Aprobaciones —umbrales/delegaciones→ Configuración`.
+4. `Licitaciones y Favoritos —contrato de datos→ Fuente de datos`.
+5. `Shared —estado de sesión→ Auth`.
+
+**Regla de acoplamiento:** los bloques se comunican solo por interfaces explícitas (hooks y props); ningún feature accede a los internos de otro.
+
+#### Decisión 4 · ASR
+
+**ASR (según la plantilla):** «El sistema debe **responder** _(atributo: Rendimiento)_ bajo **el catálogo completo de licitaciones** _(condición)_, medido por **el tiempo de respuesta del listado filtrado, ≤ 2 s** _(métrica)_.»
+
+Es arquitectónicamente significativo porque cumple las **tres señales**:
+
+1. **Afecta a varios módulos a la vez:** Licitaciones (filtros y lista) y la capa de datos (debe entregar el catálogo completo); Favoritos reutiliza el mismo listado.
+2. **Es caro de revertir si se decide tarde:** asumir filtrado en el cliente ata el stack (SPA) y el contrato de datos; pasar después a búsqueda en servidor exige backend, índices y rediseño.
+3. **Nace de un atributo de calidad, no de una función:** es **Rendimiento (REF-01)**, no "agregar un filtro".
+
+**Cómo obliga a estructurar:** filtrado en el cliente (`useLicitacionFilters`) sobre un catálogo cargado localmente, sin round-trips por cada interacción; refuerza la SPA estática y la **capa de datos aislada** con contrato estable (REF-10).
+
+> **Alternativa evaluada:** la sustitución mock → scraper/API real (REF-10) también cumple las tres señales, pero se documenta como **restricción de evolución** (Decisión 2, Decisión 3) porque su gatillante es una restricción técnica, no un atributo de calidad.
+
+### Fase 3 · Puesta en común
+
+Guion de la presentación (2–3 min), con la respuesta de LicitacionesUV:
+
+1. **Proyecto — ¿de qué trata? (30 s).** Plataforma web que centraliza y filtra licitaciones de empresas privadas; en la Fase 1 es una SPA React + Vite que explora datos mock.
+2. **Los 3 atributos más críticos — ¿por qué? (45 s).** Rendimiento (REF-01: filtrado < 2 s), Seguridad (REF-02/03: sesión obligatoria y secretos fuera del repositorio) y Fiabilidad (REF-04: disponibilidad ≥ 99 %). Son las condiciones que rompen el producto si fallan.
+3. **Estilo y componentes — muestra del bosquejo (45 s).** Monolito modular en capas (Feature-Driven); bloques: App, Auth, Licitaciones, Favoritos, Aprobaciones, Shared, Configuración y Fuente de datos (Decisión 3).
+4. **El trade-off más difícil — ¿por qué lo aceptan? (30 s).** Se cede la escalabilidad independiente por módulo; se acepta porque hoy no hay carga real ni equipos separados (Decisión 2).
+
 ## Registro de Prompts e Iteraciones con IA
 
 ## Prompr
