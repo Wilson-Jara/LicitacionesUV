@@ -17,7 +17,7 @@ Revisión realizada en septiembre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos y búsqueda pasando (16/16 tests).
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda y reglas de cierre pasando (19/19 tests).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
@@ -41,8 +41,13 @@ Revisión realizada en septiembre de 2026:
   - Header Hero institucional con sobretítulo dorado, estadísticas clave del portal y tipografía institucional.
   - Barra lateral de filtros (`FilterSidebar`) con la estética de Figma: sobretítulo dorado, buscador con limpieza rápida, búsqueda por título, selectores estilizados, botones _pills_ de tipo, chips interactivos de filtros activos con eliminación individual, aviso informativo institucional y estado sincronizado con URL.
   - Tarjetas de licitación (`LicitacionCard`) con iconos vectoriales, indicador de estado por puntos (verde para Pública, ámbar para Privada), etiqueta de región, botón de acción y botón Guardar/Quitar favorito.
+  - Enlace a la vista de detalle (`/licitaciones/:id`) desde el título y la acción de cada tarjeta.
   - Lista de licitaciones (`LicitacionList`) con estado vacío ilustrado y botón directo de restablecimiento de filtros.
   - Barra de resumen de resultados y alternancia de filtros para dispositivos móviles.
+- **Detalle de Licitación:**
+  - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
+  - Las licitaciones cerradas no pueden guardarse como favoritas; las que ya estaban guardadas aún pueden quitarse.
+  - El campo `sourceUrl` se mantiene en el contrato de datos mock.
 - **Favoritos:**
   - Botón "Guardar / Quitar" en `LicitacionCard`; sin sesión, al intentar guardar se abre el modal de autenticación (REF-02).
   - Persistencia local por usuario en `localStorage` (clave `licitacionesuv-favoritos`) con el par `idLicitacion` + `fechaGuardado`.
@@ -61,7 +66,7 @@ Revisión realizada en septiembre de 2026:
 1. `index.html` define el documento HTML, favicon y contenedor `#root`.
 2. `src/main.jsx` importa `index.css` y monta `<App />`.
 3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider` y `BrowserRouter`.
-4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/favoritos`, 404).
+4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, 404).
 5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
 6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
 
@@ -91,6 +96,8 @@ Revisión realizada en septiembre de 2026:
 | `src/shared/components/ThemeToggle.css`                        | Estilos del botón de tema.                                                          |
 | `src/shared/hooks/useTheme.js`                                 | Hook de consumo del contexto de tema.                                               |
 | `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                                    |
+| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`     | Vista de detalle, fuente oficial y estado de cierre de una licitación.              |
+| `src/features/licitaciones/licitacionUtils.js`                 | Formateo compartido y regla para determinar si una licitación está cerrada.         |
 | `src/features/licitaciones/licitacionFilters.js`               | Filtrado por título, región y tipo.                                                 |
 | `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                                          |
 | `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                                           |
@@ -100,6 +107,7 @@ Revisión realizada en septiembre de 2026:
 | `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                  |
 | `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                   |
 | `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                            |
+| `tests/licitacionUtils.test.js`                                | Pruebas de la regla de vigencia de las licitaciones.                                |
 | `docs/CriteriosAceptacion.md`                                  | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.     |
 | `tests/licitacionFilters.test.js`                              | Pruebas de búsqueda y combinación de filtros.                                       |
 | `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                 |
