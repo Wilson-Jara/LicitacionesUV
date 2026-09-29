@@ -32,15 +32,15 @@ Catálogo de requisitos no funcionales del sistema, clasificados según **ISO 25
 
 ### Prioridad Media — calidad de construcción
 
-| ID     | Tipo (ISO 25010)                     | Descripción                                                                                                                                                                                     |
-| ------ | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| REF-05 | Calidad de servicio (Usabilidad)     | Interfaz responsive utilizable en escritorio y móvil, con estados de carga, vacío y error visibles para el usuario                                                                              |
-| REF-06 | Calidad de servicio (Mantenibilidad) | El código se organiza por módulos de dominio (Feature-Driven) con responsabilidad única y bajo acoplamiento, verificado mediante análisis estático (ESLint)                                     |
-| REF-07 | Calidad de servicio (Fiabilidad)     | Cualquier integrante debe poder levantar y validar el proyecto con un único comando (`npm run verify`), usando dependencias fijadas con SemVer explícito y `package-lock.json`                  |
-| REF-08 | Calidad de servicio (Portabilidad)   | El sistema debe funcionar como SPA en navegadores modernos (Chrome, Firefox, Edge y Safari, últimas 2 versiones)                                                                                |
-| REF-09 | Restricción técnica                  | El frontend debe desarrollarse en React 19 + Vite 8 (JavaScript), con el estado de los filtros sincronizado con la URL mediante `useSearchParams`                                               |
-| REF-10 | Restricción técnica                  | Los datos se sirven inicialmente desde mocks (`licitaciones.mock.json`) con contratos de datos compatibles para ser reemplazados por el scraper/API real en la Fase 2 sin rediseñar los módulos |
-| REF-11 | Restricción de proyecto              | Equipo de 5 integrantes; flujo Git con ramas por issue y Pull Requests con al menos un revisor distinto del autor antes del merge; fechas de entrega del curso                                  |
+| ID     | Tipo (ISO 25010)                     | Descripción                                                                                                                                                                                                     |
+| ------ | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| REF-05 | Calidad de servicio (Usabilidad)     | Interfaz responsive utilizable en escritorio y móvil, con estados de carga, vacío y error visibles para el usuario                                                                                              |
+| REF-06 | Calidad de servicio (Mantenibilidad) | El código se organiza por módulos de dominio (Feature-Driven) con responsabilidad única y bajo acoplamiento, verificado mediante análisis estático (ESLint)                                                     |
+| REF-07 | Calidad de servicio (Fiabilidad)     | Cualquier integrante debe poder levantar y validar el proyecto con un único comando (`npm run verify`), usando dependencias fijadas con SemVer explícito y `package-lock.json`                                  |
+| REF-08 | Calidad de servicio (Portabilidad)   | El sistema debe funcionar como SPA en navegadores modernos (Chrome, Firefox, Edge y Safari, últimas 2 versiones)                                                                                                |
+| REF-09 | Restricción técnica                  | El frontend debe desarrollarse en React 19 + Vite 8 (JavaScript), con el estado de los filtros sincronizado con la URL mediante `useSearchParams`                                                               |
+| REF-10 | Restricción técnica                  | Los datos se sirven inicialmente desde mocks (`licitaciones.mock.json`) con contratos de datos compatibles para ser reemplazados por el scraper/API real en la Fase 2 sin rediseñar los módulos                 |
+| REF-11 | Restricción de proyecto              | Equipo de 5 integrantes; flujo Git con ramas por issue y Pull Requests con al menos un revisor distinto del autor antes del merge (asignación automática vía `.github/CODEOWNERS`); fechas de entrega del curso |
 
 ### Prioridad Baja — mejoras de experiencia
 
@@ -56,3 +56,5 @@ Catálogo de requisitos no funcionales del sistema, clasificados según **ISO 25
 Los REF de prioridad **Alta** quedan explícitamente abordados en las decisiones de diseño arquitectónico documentadas en [Arquitectura.md](Arquitectura.md) (secciones "Justificación basada en REF priorizados" y "Decisiones de Diseño").
 
 Los REF de prioridad **Media** son verificables con las herramientas del repositorio (ESLint, Prettier, `npm run verify`). Los de prioridad **Baja** mejoran la experiencia sin condicionar la línea base.
+
+En particular, el **REF-11** (restricción de proyecto) se operacionaliza con la protección de ramas, la plantilla de Pull Request y la asignación automática de revisores definida en [`.github/CODEOWNERS`](../.github/CODEOWNERS).

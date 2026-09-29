@@ -21,6 +21,7 @@ Revisión realizada en septiembre de 2026:
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
+- Asignación automática de revisores en Pull Requests mediante `.github/CODEOWNERS`, complementaria a la protección de ramas (al menos 1 aprobación de un par).
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Router con navegación interna (`react-router-dom` v7).
@@ -99,10 +100,12 @@ Revisión realizada en septiembre de 2026:
 | `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                  |
 | `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                   |
 | `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                            |
+| `docs/CriteriosAceptacion.md`                                  | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.     |
 | `tests/licitacionFilters.test.js`                              | Pruebas de búsqueda y combinación de filtros.                                       |
 | `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                 |
 | `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.      |
 | `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                            |
+| `.github/CODEOWNERS`                                           | Asigna automáticamente los revisores de cada PR según el área modificada.           |
 | `.github/ISSUE_TEMPLATE/`                                      | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                          |
 
 ## 6. Stack y dependencias
@@ -211,4 +214,5 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 ## 13. Documentación relacionada
 
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
+- `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
 - Este documento describe el estado técnico del repositorio; la guía de roles describe cómo se coordina el equipo. No deben confundirse responsabilidades de equipo con funcionalidades ya implementadas.

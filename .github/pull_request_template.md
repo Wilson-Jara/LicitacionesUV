@@ -17,7 +17,7 @@ Closes #
 ## Checklist
 
 - [ ] El PR apunta a `develop` (no a `main`)
-- [ ] Al menos un revisor distinto del autor
+- [ ] Al menos un revisor distinto del autor (CODEOWNERS los asigna automáticamente)
 - [ ] Sin credenciales, `.env`, `node_modules` ni artefactos generados
 - [ ] Documentación actualizada si corresponde
 
