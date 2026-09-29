@@ -107,11 +107,8 @@ Revisión realizada en septiembre de 2026:
 | `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                  |
 | `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                   |
 | `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                            |
-<<<<<<< HEAD
 | `tests/licitacionUtils.test.js`                                | Pruebas de la regla de vigencia de las licitaciones.                                |
-=======
 | `docs/CriteriosAceptacion.md`                                  | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.     |
->>>>>>> origin/develop
 | `tests/licitacionFilters.test.js`                              | Pruebas de búsqueda y combinación de filtros.                                       |
 | `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                 |
 | `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.      |
