@@ -1,0 +1,42 @@
+# CODEOWNERS — asignación automática de revisores
+#
+# GitHub solicita automáticamente la revisión de los responsables del área
+# modificada por cada Pull Request. El equipo y sus roles están en
+# docs/roles-equipo.md.
+#
+# Reglas de sintaxis:
+#   - El orden importa: gana el ÚLTIMO patrón que coincide con el archivo.
+#   - Se listan al menos DOS responsables por área para garantizar siempre
+#     un revisor distinto del autor.
+#   - @StelleC (QA) se incluye en TODAS las reglas para que sea solicitado
+#     automáticamente como revisor en cualquier Pull Request.
+#   - Para EXIGIR la aprobación de un code owner (no solo sugerirla), activar
+#     "Require review from Code Owners" en la protección de main y develop.
+
+# --- Valor por defecto (archivos no cubiertos por los patrones siguientes) ---
+*                                  @StelleC @Vixoooooo19
+
+# --- Aplicación (frontend) ---
+/src/                              @StelleC @Reinald-Code @Vixoooooo19
+/src/app/                          @StelleC @Vixoooooo19 @Reinald-Code
+/src/shared/                       @StelleC @Reinald-Code
+/src/features/licitaciones/        @StelleC @Reinald-Code @Vixoooooo19
+/src/features/favoritos/           @StelleC @Reinald-Code @lazo1838k
+/src/features/auth/                @StelleC @lazo1838k @Vixoooooo19
+
+# --- Datos y contratos (futura integración con API real) ---
+/src/features/licitaciones/data/   @StelleC @lazo1838k @Reinald-Code
+
+# --- QA y automatización ---
+/tests/                            @StelleC @Vixoooooo19
+/.github/                          @StelleC @Wilson-Jara
+
+# --- Documentación y gestión ---
+/docs/                             @Wilson-Jara @StelleC
+/README.md                         @Wilson-Jara @StelleC
+
+# --- Configuración del proyecto ---
+package.json                       @Vixoooooo19 @StelleC
+package-lock.json                  @Vixoooooo19 @StelleC
+vite.config.js                     @Vixoooooo19 @StelleC
+eslint.config.js                   @Vixoooooo19 @StelleC
