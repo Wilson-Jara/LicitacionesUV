@@ -544,7 +544,6 @@ Es arquitectónicamente significativo porque cumple las **tres señales**:
 
 > **Alternativa evaluada:** la sustitución mock → scraper/API real (REF-10) también cumple las tres señales, pero se documenta como **restricción de evolución** (Decisión 2, Decisión 3) porque su gatillante es una restricción técnica, no un atributo de calidad.
 
-
 ## Registro de Prompts e Iteraciones con IA
 
 ## Prompr
