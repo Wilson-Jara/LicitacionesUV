@@ -26,6 +26,7 @@ Revisión realizada en septiembre de 2026:
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Router con navegación interna (`react-router-dom` v7).
 - Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
+- Backend base en `backend/`: API REST con el módulo nativo `node:http` (sin dependencias), endpoints de salud y licitaciones con el mismo contrato del mock (REF-10), configuración por entorno y pruebas con `node --test` cubiertas por `npm run test` desde la raíz.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
@@ -60,6 +61,11 @@ Revisión realizada en septiembre de 2026:
   - Persistencia de la elección en `localStorage` (clave `licitacionesuv-theme`).
   - Botón de alternancia accesible (`ThemeToggle` con `aria-label` y `aria-pressed`) en la barra de navegación.
   - Los componentes usan variables semánticas (`--card-bg`, `--surface-soft`, `--border-strong`, etc.); los hex restantes pertenecen a paneles de marca navy que permanecen oscuros en ambos temas.
+- **Backend (base Fase 2):**
+  - Servidor HTTP con el módulo nativo `node:http` (sin dependencias): entrada `backend/src/server.js`, composición en `backend/src/app.js` (CORS, parseo JSON, enrutamiento y manejo de errores) y enrutador propio con parámetros de ruta en `backend/src/lib/router.js`.
+  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword`, `region`, `tipo`) y detalle `GET /api/licitaciones/:id`.
+  - Datos desde el seed `backend/src/data/licitaciones.seed.json`, con el mismo contrato que el mock del frontend (REF-10). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
+  - CORS habilitado para el dev server de Vite y configuración por entorno en `backend/.env.example` (`PORT`, `CORS_ORIGIN`, con `DATABASE_URL` y `JWT_SECRET` reservadas).
 
 ## 4. Arquitectura y flujo de entrada
 
@@ -69,6 +75,7 @@ Revisión realizada en septiembre de 2026:
 4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, 404).
 5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
 6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
+7. `backend/src/server.js` inicia el servidor HTTP de la API (por defecto en `http://localhost:3000`); el frontend todavía lee el mock local y la migración a la API corresponde a una entrega posterior.
 
 ## 5. Inventario de archivos relevantes
 
@@ -115,6 +122,16 @@ Revisión realizada en septiembre de 2026:
 | `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                            |
 | `.github/CODEOWNERS`                                           | Asigna automáticamente los revisores de cada PR según el área modificada.           |
 | `.github/ISSUE_TEMPLATE/`                                      | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                          |
+| `backend/package.json`                                         | Scripts del backend (`dev`, `start`, `test`).                                       |
+| `backend/src/server.js`                                        | Punto de entrada del servidor HTTP de la API.                                       |
+| `backend/src/app.js`                                           | Composición de la API: CORS, parseo JSON, enrutamiento y manejo de errores.         |
+| `backend/src/lib/router.js`                                    | Enrutador HTTP propio con parámetros de ruta (`:id`).                               |
+| `backend/src/lib/http.js`                                      | Helpers de respuesta JSON, lectura de cuerpo y errores HTTP.                        |
+| `backend/src/config/env.js`                                    | Configuración por entorno con carga de `backend/.env`.                              |
+| `backend/src/routes/health.routes.js`                          | Endpoint `GET /api/health`.                                                         |
+| `backend/src/routes/licitaciones.routes.js`                    | Endpoints de listado y detalle de licitaciones.                                     |
+| `backend/src/data/licitaciones.seed.json`                      | Seed con el contrato de datos del frontend.                                         |
+| `backend/tests/*.test.js`                                      | Pruebas de la API con `node --test`.                                                |
 
 ## 6. Stack y dependencias
 
@@ -127,6 +144,7 @@ Revisión realizada en septiembre de 2026:
 - ESLint `10.8.1`.
 - Prettier `3.9.6`.
 - Módulos ES habilitados mediante `"type": "module"`.
+- Backend: Node.js con el módulo nativo `node:http`, sin dependencias externas; la configuración ESLint declara `globals.node` para `backend/**`.
 
 ## 7. Comandos de desarrollo
 
@@ -140,6 +158,14 @@ npm run test
 npm run build
 npm run verify
 npm run preview
+```
+
+Backend (desde la carpeta `backend/`):
+
+```bash
+npm run dev   # servidor con recarga automática (node --watch)
+npm start     # servidor
+npm test      # pruebas de la API (también cubiertas por npm run verify desde la raíz)
 ```
 
 ## 8. Convenciones observadas
@@ -158,7 +184,7 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 ## 9. Variables de entorno y seguridad
 
 - `.env` y otros archivos de entorno están excluidos por `.gitignore`.
-- `.env.example` contiene actualmente solo `VITE_API_URL`, comentada.
+- `.env.example` (raíz) documenta `VITE_API_BASE_URL` y reserva `DATABASE_URL`; `backend/.env.example` documenta `PORT`, `CORS_ORIGIN` y reserva `DATABASE_URL` y `JWT_SECRET`.
 - Las variables con prefijo `VITE_` quedan expuestas al cliente al compilar; nunca colocar secretos allí.
 - Antes de integrar una API se debe definir el contrato, el manejo de errores, estados de carga y configuración por entorno.
 - No incluir credenciales, tokens, datos personales reales ni valores de `.env` en código, commits o documentación.

@@ -39,6 +39,12 @@ flowchart TB
     end
     Datos["Fuente de datos<br/>licitaciones.mock.json<br/>(Fase 2: scraper/API con mismo contrato)"]
 
+    subgraph Backend["Servidor (backend/, Fase 2)"]
+        API["API REST con http nativo<br/>GET /api/health, /api/licitaciones, /api/licitaciones/:id"]
+        Seed["Seed<br/>licitaciones.seed.json<br/>(mismo contrato que el mock)"]
+    end
+    API --> Seed
+
     Rutas --> L
     Rutas --> F
     Rutas --> AP
@@ -51,6 +57,7 @@ flowchart TB
     AP --> Conf
     AP -.consulta sesión.-> A
     F -.consulta sesión.-> A
+    L -.migración pendiente: consumirá /api/licitaciones.-> API
 ```
 
 ## 3. Descomposición Modular
@@ -92,6 +99,12 @@ flowchart TB
 - **Responsabilidad:** manejar el flujo de aprobación de licitaciones: según el monto y la unidad se determina el nivel que corresponde, se resuelve quién aprueba considerando las subrogancias vigentes y se guarda la decisión.
 - **Ofrece a otros módulos:** una consulta de quién aprueba una licitación y en qué nivel, y el registro de las decisiones tomadas.
 - **Depende de:** Licitaciones (el monto de la licitación), Autenticación (la identidad de quien aprueba) y los datos de configuración (umbrales y subrogancias). No tiene relación con Favoritos.
+
+### Módulo 7: Backend (`backend/`)
+
+- **Responsabilidad:** exponer la API REST de la Fase 2. En la base actual sirve el estado del servicio (`/api/health`) y el catálogo de licitaciones (`/api/licitaciones`, con filtros opcionales y detalle por `id`), leyendo el seed `licitaciones.seed.json` que replica el contrato del mock del frontend (REF-10).
+- **Ofrece a otros módulos:** endpoints HTTP bajo `/api/*` con JSON, CORS para el dev server de Vite y configuración por entorno (`backend/.env.example`).
+- **Depende de:** solo del runtime Node.js (módulo nativo `node:http`, sin dependencias externas). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
 
 ## 4. Decisiones de Diseño
 
@@ -144,14 +157,22 @@ flowchart TB
 - **Alternativas consideradas:** resolver el aprobador efectivo en cada vista (descartada: se repite la lógica y es difícil de mantener y auditar); guardar la delegación vigente en el cliente (descartada: riesgo de aprobar con un subrogante cuya delegación ya venció).
 - **Impacto:** módulo Aprobaciones (regla de consulta de aprobador), módulo de datos (entidades Delegacion y Aprobacion) y las vistas de bandeja de aprobaciones.
 
+### Decisión 8: Base del backend con `node:http` nativo y sin dependencias
+
+- **Decisión:** la base del backend (Fase 2) se implementa con el módulo nativo `node:http` de Node.js 20 (enrutador propio, JSON y CORS a mano), sin dependencias externas, en la carpeta `backend/` con entrada `src/server.js`.
+- **Motivación:** arranque inmediato sin `npm install` (REF-07), alineación con el minimalismo del repositorio y foco de esta entrega en fijar el contrato de la API (REF-10) antes que en un framework. Los endpoints actuales son de solo lectura, por lo que un framework HTTP aún no aporta valor.
+- **Alternativas consideradas:** Express y Fastify (pospuestos: se reevaluarán cuando lleguen autenticación, PostgreSQL y middlewares de sesión; migrar en esta etapa es de bajo costo porque la capa HTTP queda aislada en `src/app.js` y `src/lib/router.js`).
+- **Impacto:** carpeta `backend/` (servidor, rutas, seed y pruebas), configuración ESLint con `globals.node` para `backend/**`, cobertura de las pruebas de la API en el `npm run verify` de la raíz y documentación (`Arquitectura.md`, `AI_context.md`).
+
 ## 5. Trazabilidad REF ↔ Módulos ↔ HU
 
-| REF (Alta)                  | Módulo que lo aborda                                  | HU relacionadas     |
+| REF                         | Módulo que lo aborda                                  | HU relacionadas     |
 | --------------------------- | ----------------------------------------------------- | ------------------- |
 | REF-01 Rendimiento          | Licitaciones (filtrado en cliente)                    | US-03, US-04        |
 | REF-02 Seguridad (sesión)   | Autenticación + Favoritos                             | US-01, US-02, US-06 |
 | REF-03 Seguridad (secretos) | Línea base del repositorio (.env.example, .gitignore) | Transversal         |
 | REF-04 Disponibilidad       | Estilo SPA desplegable como estáticos                 | Transversal         |
+| REF-10 Restricción (mocks)  | Backend + Licitaciones (contrato estable, Decisión 8) | US-03, US-04, US-05 |
 | REF-14 Mantenibilidad       | Aprobaciones + Configuración (Decisión 6)             | US-10               |
 | REF-15 Confiabilidad        | Aprobaciones (registro de decisiones de aprobación)   | US-09, US-11        |
 | REF-16 Fiabilidad           | Aprobaciones (Decisión 7)                             | US-09, US-11        |
