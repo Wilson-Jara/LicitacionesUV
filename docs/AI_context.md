@@ -112,6 +112,8 @@ Revisión realizada en septiembre de 2026:
 | `tests/licitacionFilters.test.js`                              | Pruebas de búsqueda y combinación de filtros.                                       |
 | `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                 |
 | `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.      |
+| `.github/workflows/ai-review.yml`                              | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).            |
+| `.github/scripts/ai-review.mjs`                                | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.          |
 | `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                            |
 | `.github/CODEOWNERS`                                           | Asigna automáticamente los revisores de cada PR según el área modificada.           |
 | `.github/ISSUE_TEMPLATE/`                                      | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                          |

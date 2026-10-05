@@ -1,0 +1,42 @@
+name: ai-review
+
+on:
+  pull_request:
+    types: [opened, reopened, labeled]
+    branches: [main, develop]
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  deepseek-review:
+    runs-on: ubuntu-latest
+    # Se ejecuta al abrir/reabrir, o cuando se agrega la etiqueta ai-review.
+    # En PRs desde forks no hay secretos; se omiten para no fallar.
+    if: >-
+      (github.event_name == 'issues' ||
+      github.event.pull_request.head.repo.full_name == github.repository) &&
+      (github.event.action != 'labeled' || github.event.label.name == 'ai-review')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+      - name: Revisar con DeepSeek
+        run: node .github/scripts/ai-review.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          ITEM_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          REQUESTED: ${{ github.event.action == 'labeled' }}
+          REQUESTER: ${{ github.event.sender.login }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_MODEL: deepseek-flash
