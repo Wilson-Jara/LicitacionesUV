@@ -1,5 +1,7 @@
 # Diseño Arquitectónico — LicitacionesUV
 
+> **Estado de los módulos:** están implementados `App`, `Autenticación`, `Licitaciones`, `Favoritos`, `Shared` y la fuente de datos mock. El módulo **Aprobaciones** y el bloque **Configuración** (umbrales y subrogancias) pertenecen al change request **CR-302** y están **planificados: aún no existen en `src/features/`**. Se documentan aquí como diseño objetivo.
+
 ## 1. Estilo Arquitectónico
 
 **Estilo adoptado:** Aplicación monolítica de cliente (**SPA**) en React, con **descomposición modular Feature-Driven** (módulos por dominio de negocio en capas: `pages` → `components` → `hooks` → `data`).
@@ -32,10 +34,10 @@ flowchart TB
             L["Licitaciones<br/>explorador + filtros + tarjetas"]
             A["Auth<br/>AuthModal + useAuth"]
             F["Favoritos<br/>MisFavoritosPage"]
-            AP["Aprobaciones<br/>nivel según monto + aprobador efectivo"]
+            AP["Aprobaciones (CR-302, planificado)<br/>nivel según monto + aprobador efectivo"]
         end
         Shared["Shared (src/shared)<br/>Navbar y UI común"]
-        Conf["Configuración<br/>umbrales y subrogancias (datos)"]
+        Conf["Configuración (CR-302, planificado)<br/>umbrales y subrogancias (datos)"]
     end
     Datos["Fuente de datos<br/>licitaciones.mock.json<br/>(Fase 2: scraper/API con mismo contrato)"]
 
@@ -87,8 +89,9 @@ flowchart TB
 - **Ofrece a otros módulos:** componentes comunes sin lógica de dominio.
 - **Depende de:** Autenticación (para mostrar avatar/botón de login según sesión); ningún feature depende de él de forma cíclica.
 
-### Módulo 6: Aprobaciones (`features/aprobaciones`)
+### Módulo 6: Aprobaciones (`features/aprobaciones`) — CR-302, planificado
 
+- **Estado:** planificado (change request CR-302); aún no existe código en `src/features/aprobaciones`.
 - **Responsabilidad:** manejar el flujo de aprobación de licitaciones: según el monto y la unidad se determina el nivel que corresponde, se resuelve quién aprueba considerando las subrogancias vigentes y se guarda la decisión.
 - **Ofrece a otros módulos:** una consulta de quién aprueba una licitación y en qué nivel, y el registro de las decisiones tomadas.
 - **Depende de:** Licitaciones (el monto de la licitación), Autenticación (la identidad de quien aprueba) y los datos de configuración (umbrales y subrogancias). No tiene relación con Favoritos.
@@ -130,14 +133,14 @@ flowchart TB
 - **Alternativas consideradas:** Gradle wrapper (no aplica a JavaScript); scripts manuales sueltos (descartados: no reproducibles ni verificables en PR).
 - **Impacto:** tooling del repositorio completo y flujo de PR del equipo (REF-11).
 
-### Decisión 6: Umbrales de aprobación como configuración
+### Decisión 6: Umbrales de aprobación como configuración (CR-302, planificado)
 
 - **Decisión:** los rangos de monto que definen el nivel de aprobación (jefe de unidad, dirección económica, rectoría) se manejan como datos configurables por unidad (entidad UmbralAprobacion), no como constantes en el código.
 - **Motivación:** la regla R4 del CR-302: la normativa cambia y los umbrales se actualizan. Si son datos, se ajustan sin modificar ni volver a desplegar código.
 - **Alternativas consideradas:** dejar los umbrales fijos en el código (descartada: cada cambio de normativa exige un cambio de código y un nuevo despliegue); un solo umbral global (descartada: no cubre las variantes por facultad/unidad de la regla R2).
 - **Impacto:** módulo Aprobaciones (lee los umbrales), módulo Configuración (los entrega) y las futuras pantallas de administración de umbrales.
 
-### Decisión 7: Resolución del aprobador efectivo centralizada
+### Decisión 7: Resolución del aprobador efectivo centralizada (CR-302, planificado)
 
 - **Decisión:** decidir quién aprueba (titular o su subrogante, según la fecha de la solicitud y la entidad Delegacion) se implementa como una sola regla dentro del módulo Aprobaciones y se expone como consulta.
 - **Motivación:** la regla R3 del CR-302: las delegaciones tienen fecha de inicio y fin, y pueden cambiar. Al centralizar, todas las vistas usan el mismo criterio y no hay contradicciones sobre quién aprueba.
@@ -155,3 +158,5 @@ flowchart TB
 | REF-14 Mantenibilidad       | Aprobaciones + Configuración (Decisión 6)             | US-10               |
 | REF-15 Confiabilidad        | Aprobaciones (registro de decisiones de aprobación)   | US-09, US-11        |
 | REF-16 Fiabilidad           | Aprobaciones (Decisión 7)                             | US-09, US-11        |
+
+> Las filas REF-14, REF-15 y REF-16 corresponden al change request **CR-302**: el módulo Aprobaciones y el bloque Configuración están **planificados y aún no implementados** en el código. Las HU US-09 a US-11 y sus REF están fuera del alcance de la Fase 1 (ver `README.md`).

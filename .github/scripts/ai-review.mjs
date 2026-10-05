@@ -5,6 +5,11 @@
  * - Revisión bajo demanda cada vez que se agrega la etiqueta "ai-review":
  *   publica un comentario nuevo, así se puede pedir ayuda más de una vez.
  * - En PRs lee el cuerpo y el diff; en issues revisa la plantilla (DoR/DoD).
+ * - En PRs consulta además el estado de CI del commit (check-runs) y el
+ *   issue linkeado con "Closes #N", para no emitir juicios sin evidencia.
+ * - Seguridad: no se incluyen logs ni salidas de jobs, solo nombres de
+ *   checks y sus conclusiones; todo texto que entra al modelo o que se
+ *   publica pasa antes por la redacción de secretos.
  * - Seguridad: omite archivos sensibles y redacta secretos antes de enviar
  *   el contenido al modelo y antes de publicar la respuesta.
  * No requiere dependencias: usa fetch nativo de Node 20+.
@@ -123,6 +128,26 @@ function isSensitiveFile(filename) {
   return SENSITIVE_FILES.test(filename)
 }
 
+function extractLinkedIssueNumber(body) {
+  const match = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)/i.exec(
+    body ?? '',
+  )
+  return match ? Number(match[1]) : null
+}
+
+function formatChecks(checks) {
+  const runs = checks?.check_runs ?? []
+  if (runs.length === 0) return '(no se registraron ejecuciones de CI)'
+  return runs
+    .map(
+      (run) =>
+        `- ${run.name}: ${run.status}/${run.conclusion ?? 'sin conclusión'}${
+          run.html_url ? ` (${run.html_url})` : ''
+        }`,
+    )
+    .join('\n')
+}
+
 function buildDiff(files) {
   let total = 0
   const parts = []
@@ -144,7 +169,7 @@ function buildDiff(files) {
   return parts.join('\n\n')
 }
 
-function buildPrPrompt(pr, files) {
+function buildPrPrompt(pr, files, checksSummary, issueInfo) {
   return [
     'Eres un revisor de código experto en React, Vite, testing y buenas prácticas de Git.',
     'Revisas Pull Requests de un proyecto académico llamado LicitacionesUV.',
@@ -170,6 +195,9 @@ function buildPrPrompt(pr, files) {
     '- No inventes archivos ni cambios que no estén en el diff.',
     '- Si el diff está vacío o es solo de documentación, dilo explícitamente.',
     '- Nunca muestres secretos, tokens, credenciales ni variables de entorno; si los detectas, avisa sin reproducirlos.',
+    '- El estado real de CI está en la sección "ESTADO DE CI". Si el cuerpo del PR no muestra evidencia de verificación pero hay checks con conclusión "success" (por ejemplo el job `verify`), no digas que falta evidencia: indica que el CI está en verde y cita el nombre del check.',
+    '- No reproduzcas logs, salidas de jobs ni valores de configuración: solo nombres de checks y sus conclusiones.',
+    '- Si se incluye el issue linkeado, úsalo para validar trazabilidad; no reproduzcas datos sensibles de él.',
     '- Sé respetuoso; es un equipo de estudiantes.',
     '- No repitas el diff completo.',
     '',
@@ -184,6 +212,10 @@ function buildPrPrompt(pr, files) {
     '',
     '--- ARCHIVOS Y DIFF ---',
     buildDiff(files),
+    '',
+    '--- ESTADO DE CI ---',
+    checksSummary,
+    issueInfo,
     requestNote,
   ].join('\n')
 }
@@ -305,7 +337,27 @@ async function reviewPullRequest() {
     ghRequest(`/pulls/${ITEM_NUMBER}`),
     ghRequest(`/pulls/${ITEM_NUMBER}/files?per_page=100`),
   ])
-  const review = await callDeepSeek(SYSTEM_PR, buildPrPrompt(pr, files))
+
+  let checksSummary = '(no se pudo consultar el estado de CI)'
+  try {
+    const checks = await ghRequest(`/commits/${pr.head.sha}/check-runs?per_page=100`)
+    checksSummary = formatChecks(checks)
+  } catch {
+    // se conserva el mensaje por defecto
+  }
+
+  let issueInfo = ''
+  const linkedIssue = extractLinkedIssueNumber(pr.body)
+  if (linkedIssue) {
+    try {
+      const issue = await ghRequest(`/issues/${linkedIssue}`)
+      issueInfo = `\n\n--- ISSUE LINKADO (#${linkedIssue}) ---\nTítulo: ${issue.title}\n\n${truncate(redact(issue.body ?? ''), 8000)}\n`
+    } catch {
+      issueInfo = `\n\n--- ISSUE LINKADO (#${linkedIssue}) ---\nNo se pudo leer el issue; validar la trazabilidad manualmente.\n`
+    }
+  }
+
+  const review = await callDeepSeek(SYSTEM_PR, buildPrPrompt(pr, files, checksSummary, issueInfo))
   const title = requested ? 'Revisión solicitada' : 'Revisión automática'
   const body = `${MARKER}\n### 🤖 ${title} (DeepSeek)\n\n${review}\n\n---\n_Generado con \`${DEEPSEEK_MODEL}\`. Es una sugerencia automática: la revisión humana es obligatoria._`
   await publish(body)
