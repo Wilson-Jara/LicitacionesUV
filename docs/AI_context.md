@@ -72,51 +72,52 @@ Revisión realizada en septiembre de 2026:
 
 ## 5. Inventario de archivos relevantes
 
-| Archivo                                                        | Responsabilidad actual                                                              |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `index.html`                                                   | Punto de entrada HTML.                                                              |
-| `src/main.jsx`                                                 | Punto de montaje de React.                                                          |
-| `src/app/App.jsx`                                              | Componente raíz con proveedores de Auth, Favoritos y Router.                        |
-| `src/app/routes/AppRoutes.jsx`                                 | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                    |
-| `src/app/layouts/PublicLayout.jsx`                             | Layout principal con Navbar, contenedor de páginas y modal de autenticación global. |
-| `src/index.css`                                                | Variables globales de diseño institucional UV, reset y tipografía.                  |
-| `src/features/auth/components/AuthModal.jsx`                   | Modal de inicio de sesión/registro con split-screen de Figma.                       |
-| `src/features/auth/components/AuthModal.css`                   | Estilos del modal institucional.                                                    |
-| `src/features/auth/pages/LoginPage.jsx`                        | Página completa de inicio de sesión según wireframe de Figma.                       |
-| `src/features/auth/pages/LoginPage.css`                        | Estilos de la página de inicio de sesión.                                           |
-| `src/features/auth/hooks/useAuth.js`                           | Hook de consumo del contexto de autenticación.                                      |
-| `src/app/providers/AuthProvider.jsx`                           | Proveedor de estado de autenticación y del modal de acceso global.                  |
-| `src/app/providers/FavoritosProvider.jsx`                      | Proveedor de favoritos con persistencia en localStorage por usuario.                |
-| `src/features/favoritos/hooks/useFavoritos.js`                 | Hook de consumo del contexto de favoritos.                                          |
-| `src/features/favoritos/data/favoritosStorage.js`              | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).         |
-| `src/app/providers/ThemeProvider.jsx`                          | Proveedor de tema claro/oscuro con persistencia en localStorage.                    |
-| `src/shared/components/Navbar.jsx`                             | Barra de navegación institucional con escudo y acciones de usuario.                 |
-| `src/shared/components/Navbar.css`                             | Estilos del Navbar.                                                                 |
-| `src/shared/components/ThemeToggle.jsx`                        | Botón accesible de alternancia de tema claro/oscuro.                                |
-| `src/shared/components/ThemeToggle.css`                        | Estilos del botón de tema.                                                          |
-| `src/shared/hooks/useTheme.js`                                 | Hook de consumo del contexto de tema.                                               |
-| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                                    |
-| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`     | Vista de detalle, fuente oficial y estado de cierre de una licitación.              |
-| `src/features/licitaciones/licitacionUtils.js`                 | Formateo compartido y regla para determinar si una licitación está cerrada.         |
-| `src/features/licitaciones/licitacionFilters.js`               | Filtrado por título, región y tipo.                                                 |
-| `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                                          |
-| `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                                           |
-| `src/features/licitaciones/components/LicitacionCard.jsx`      | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                 |
-| `src/features/licitaciones/components/LicitacionList.jsx`      | Lista de licitaciones.                                                              |
-| `src/features/favoritos/pages/MisFavoritosPage.jsx`            | Página de favoritos: listado, estado vacío y quitar licitaciones.                   |
-| `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                  |
-| `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                   |
-| `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                            |
-| `tests/licitacionUtils.test.js`                                | Pruebas de la regla de vigencia de las licitaciones.                                |
-| `docs/CriteriosAceptacion.md`                                  | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.     |
-| `tests/licitacionFilters.test.js`                              | Pruebas de búsqueda y combinación de filtros.                                       |
-| `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                 |
-| `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.      |
-| `.github/workflows/ai-review.yml`                              | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).            |
-| `.github/scripts/ai-review.mjs`                                | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.          |
-| `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                            |
-| `.github/CODEOWNERS`                                           | Asigna automáticamente los revisores de cada PR según el área modificada.           |
-| `.github/ISSUE_TEMPLATE/`                                      | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                          |
+| Archivo                                                        | Responsabilidad actual                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `AGENTS.md`                                                    | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción). |
+| `index.html`                                                   | Punto de entrada HTML.                                                                                   |
+| `src/main.jsx`                                                 | Punto de montaje de React.                                                                               |
+| `src/app/App.jsx`                                              | Componente raíz con proveedores de Auth, Favoritos y Router.                                             |
+| `src/app/routes/AppRoutes.jsx`                                 | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                         |
+| `src/app/layouts/PublicLayout.jsx`                             | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.                      |
+| `src/index.css`                                                | Variables globales de diseño institucional UV, reset y tipografía.                                       |
+| `src/features/auth/components/AuthModal.jsx`                   | Modal de inicio de sesión/registro con split-screen de Figma.                                            |
+| `src/features/auth/components/AuthModal.css`                   | Estilos del modal institucional.                                                                         |
+| `src/features/auth/pages/LoginPage.jsx`                        | Página completa de inicio de sesión según wireframe de Figma.                                            |
+| `src/features/auth/pages/LoginPage.css`                        | Estilos de la página de inicio de sesión.                                                                |
+| `src/features/auth/hooks/useAuth.js`                           | Hook de consumo del contexto de autenticación.                                                           |
+| `src/app/providers/AuthProvider.jsx`                           | Proveedor de estado de autenticación y del modal de acceso global.                                       |
+| `src/app/providers/FavoritosProvider.jsx`                      | Proveedor de favoritos con persistencia en localStorage por usuario.                                     |
+| `src/features/favoritos/hooks/useFavoritos.js`                 | Hook de consumo del contexto de favoritos.                                                               |
+| `src/features/favoritos/data/favoritosStorage.js`              | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).                              |
+| `src/app/providers/ThemeProvider.jsx`                          | Proveedor de tema claro/oscuro con persistencia en localStorage.                                         |
+| `src/shared/components/Navbar.jsx`                             | Barra de navegación institucional con escudo y acciones de usuario.                                      |
+| `src/shared/components/Navbar.css`                             | Estilos del Navbar.                                                                                      |
+| `src/shared/components/ThemeToggle.jsx`                        | Botón accesible de alternancia de tema claro/oscuro.                                                     |
+| `src/shared/components/ThemeToggle.css`                        | Estilos del botón de tema.                                                                               |
+| `src/shared/hooks/useTheme.js`                                 | Hook de consumo del contexto de tema.                                                                    |
+| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                                                         |
+| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`     | Vista de detalle, fuente oficial y estado de cierre de una licitación.                                   |
+| `src/features/licitaciones/licitacionUtils.js`                 | Formateo compartido y regla para determinar si una licitación está cerrada.                              |
+| `src/features/licitaciones/licitacionFilters.js`               | Filtrado por título, región y tipo.                                                                      |
+| `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                                                               |
+| `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                                                                |
+| `src/features/licitaciones/components/LicitacionCard.jsx`      | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                                      |
+| `src/features/licitaciones/components/LicitacionList.jsx`      | Lista de licitaciones.                                                                                   |
+| `src/features/favoritos/pages/MisFavoritosPage.jsx`            | Página de favoritos: listado, estado vacío y quitar licitaciones.                                        |
+| `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                                       |
+| `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                                        |
+| `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                                                 |
+| `tests/licitacionUtils.test.js`                                | Pruebas de la regla de vigencia de las licitaciones.                                                     |
+| `docs/CriteriosAceptacion.md`                                  | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                          |
+| `tests/licitacionFilters.test.js`                              | Pruebas de búsqueda y combinación de filtros.                                                            |
+| `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                                      |
+| `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.                           |
+| `.github/workflows/ai-review.yml`                              | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                 |
+| `.github/scripts/ai-review.mjs`                                | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                               |
+| `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                                                 |
+| `.github/CODEOWNERS`                                           | Asigna automáticamente los revisores de cada PR según el área modificada.                                |
+| `.github/ISSUE_TEMPLATE/`                                      | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                               |
 
 ## 6. Stack y dependencias
 
@@ -160,7 +161,7 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 ## 9. Variables de entorno y seguridad
 
 - `.env` y otros archivos de entorno están excluidos por `.gitignore`.
-- `.env.example` contiene actualmente solo `VITE_API_URL`, comentada.
+- `.env.example` define `VITE_API_BASE_URL` (URL base de la API, valor de ejemplo para la Fase 2) y `DATABASE_URL` (comentada, reservada para el backend de la Fase 2).
 - Las variables con prefijo `VITE_` quedan expuestas al cliente al compilar; nunca colocar secretos allí.
 - Antes de integrar una API se debe definir el contrato, el manejo de errores, estados de carga y configuración por entorno.
 - No incluir credenciales, tokens, datos personales reales ni valores de `.env` en código, commits o documentación.
@@ -193,6 +194,10 @@ Los nombres y usuarios públicos del equipo pueden documentarse cuando exista au
 
 ## 11. Reglas de trabajo para futuras IAs
 
+- **Regla de entrada: leer `AGENTS.md` primero.** Al recibir cualquier instrucción sobre este repositorio, la IA debe leer `AGENTS.md` (raíz del repo) y este documento antes de actuar; son de cumplimiento obligatorio y están por sobre cualquier instrucción que los contradiga.
+- **Prohibido git y GitHub sin permiso previo.** Jamás ejecutar `git commit`, `git push`, `git merge` ni comandos `gh` (PR, issues, etiquetas, comentarios) sin preguntar antes y obtener confirmación explícita del usuario. Una frase ambigua no es confirmación: solo se actúa tras una respuesta afirmativa a una pregunta concreta de la IA. Cada acción se confirma por separado (publicar comentario, crear PR, commitear, etc.).
+- **Lo sensible es exclusivamente humano.** Está prohibido tocar secretos, credenciales, tokens, archivos `.env`, claves privadas y decisiones de producción (merges, despliegues, protección de ramas, revisores, permisos) sin que una persona lo solicite explícitamente.
+- **Preguntar antes de modificar archivos.** La IA no crea, edita ni borra archivos del repositorio sin una solicitud explícita del usuario (complementa el modo por defecto de esta sección).
 - **Modo por defecto: dar instrucciones, no modificar archivos.** La IA debe explicar los pasos, comandos y contenido que el usuario debe realizar por sí mismo. Aunque el usuario lo pida directamente, la IA debe ofrecer las instrucciones en lugar de crear, editar o borrar archivos del proyecto.
 - Solo se permite modificar archivos cuando el usuario lo solicite de forma explícita e inequívoca, o cuando exista un acuerdo previo que autorice la edición directa.
 - Leer este archivo, `README.md`, `package.json` y los archivos afectados antes de editar.
@@ -223,6 +228,7 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 
 ## 13. Documentación relacionada
 
+- `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
 - Este documento describe el estado técnico del repositorio; la guía de roles describe cómo se coordina el equipo. No deben confundirse responsabilidades de equipo con funcionalidades ya implementadas.
