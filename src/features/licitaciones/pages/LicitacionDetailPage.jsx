@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useAuth } from '../../auth/hooks/useAuth'
@@ -25,6 +26,8 @@ function LicitacionDetailPage() {
 function LicitacionDetail({ licitacion }) {
   const { user, openAuthModal } = useAuth()
   const { isFavorito, agregarFavorito, quitarFavorito } = useFavoritos()
+  const [exportando, setExportando] = useState(false)
+  const [exportError, setExportError] = useState(null)
   const guardado = isFavorito(licitacion.id)
   const cerrada = isLicitacionCerrada(licitacion.closingDate)
 
@@ -38,6 +41,21 @@ function LicitacionDetail({ licitacion }) {
       quitarFavorito(licitacion.id)
     } else {
       agregarFavorito(licitacion)
+    }
+  }
+
+  const handleExportarPdf = async () => {
+    setExportando(true)
+    setExportError(null)
+    try {
+      // Carga diferida (REF-01): el módulo y el worker solo se cargan al exportar.
+      // La generación corre en un Web Worker, por lo que la interfaz no se bloquea (CA6).
+      const { exportLicitacionPdf } = await import('../services/exportLicitacionPdf.js')
+      await exportLicitacionPdf(licitacion)
+    } catch (error) {
+      setExportError(error?.message || 'No se pudo generar el PDF. Inténtalo nuevamente.')
+    } finally {
+      setExportando(false)
     }
   }
 
@@ -87,6 +105,14 @@ function LicitacionDetail({ licitacion }) {
         <div className="licitacion-detail-actions">
           <button
             type="button"
+            className="licitacion-detail-export"
+            onClick={handleExportarPdf}
+            disabled={exportando}
+          >
+            {exportando ? 'Generando PDF…' : 'Exportar PDF'}
+          </button>
+          <button
+            type="button"
             className={`licitacion-detail-favorite ${guardado ? 'is-saved' : ''}`}
             onClick={handleToggleFavorito}
             disabled={cerrada && !guardado}
@@ -107,6 +133,12 @@ function LicitacionDetail({ licitacion }) {
             Ver fuente oficial ↗
           </a>
         </div>
+
+        {exportError && (
+          <p className="licitacion-detail-error" role="status">
+            {exportError}
+          </p>
+        )}
 
         {cerrada && (
           <p className="licitacion-detail-notice" role="status">
