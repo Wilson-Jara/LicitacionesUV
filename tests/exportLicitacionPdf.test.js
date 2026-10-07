@@ -4,7 +4,7 @@ import { Buffer } from 'node:buffer'
 import {
   buildLicitacionPdf,
   getLicitacionPdfFilename,
-} from '../src/features/licitaciones/services/exportLicitacionPdf.js'
+} from '../src/features/licitaciones/services/buildLicitacionPdf.js'
 
 const licitacionBase = {
   id: 'licitacion-001',
@@ -63,5 +63,29 @@ describe('exportLicitacionPdf', () => {
 
     assert.ok(text.includes('Adquisición de equipamiento tecnológico'))
     assert.ok(!text.includes('Servicio de mantenimiento de infraestructura'))
+  })
+
+  it('el worker genera el PDF fuera del hilo principal y lo entrega como ArrayBuffer', async () => {
+    const recibidos = []
+    globalThis.self = {
+      postMessage(message, transfer) {
+        recibidos.push({ message, transfer })
+      },
+    }
+
+    await import('../src/features/licitaciones/services/exportLicitacionPdf.worker.js')
+    globalThis.self.onmessage({ data: licitacionBase })
+
+    delete globalThis.self
+
+    assert.equal(recibidos.length, 1)
+    const { message, transfer } = recibidos[0]
+    assert.equal(message.fileName, 'licitacion-001.pdf')
+    assert.ok(message.buffer instanceof ArrayBuffer)
+    assert.ok(transfer.includes(message.buffer))
+
+    const text = Buffer.from(message.buffer).toString('latin1')
+    assert.ok(text.includes('Servicio de mantenimiento de infraestructura'))
+    assert.ok(text.includes('Universidad de Valparaíso'))
   })
 })

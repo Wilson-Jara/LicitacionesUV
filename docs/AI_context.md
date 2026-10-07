@@ -17,7 +17,7 @@ Revisión realizada en septiembre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre y exportación PDF pasando (23/23 tests).
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre y exportación PDF pasando (24/24 tests).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
@@ -47,7 +47,7 @@ Revisión realizada en septiembre de 2026:
 - **Detalle de Licitación:**
   - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
   - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos.
-  - La generación del PDF usa `jsPDF` y es no bloqueante; si falla, se muestra un mensaje de error visible y la interfaz sigue siendo utilizable. No requiere sesión.
+  - La generación del PDF ocurre en un **Web Worker** (fuera del hilo principal) con `jsPDF`; el hilo principal solo recibe el `ArrayBuffer` y dispara la descarga, por lo que la navegación no se bloquea (CA6). Si falla, se muestra un mensaje de error visible y la interfaz sigue siendo utilizable. No requiere sesión. La carga del módulo de exportación y del worker es diferida.
   - Las licitaciones cerradas no pueden guardarse como favoritas; las que ya estaban guardadas aún pueden quitarse.
   - El campo `sourceUrl` se mantiene en el contrato de datos mock.
 - **Favoritos:**
@@ -74,53 +74,56 @@ Revisión realizada en septiembre de 2026:
 
 ## 5. Inventario de archivos relevantes
 
-| Archivo                                                        | Responsabilidad actual                                                                    |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `index.html`                                                   | Punto de entrada HTML.                                                                    |
-| `src/main.jsx`                                                 | Punto de montaje de React.                                                                |
-| `src/app/App.jsx`                                              | Componente raíz con proveedores de Auth, Favoritos y Router.                              |
-| `src/app/routes/AppRoutes.jsx`                                 | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                          |
-| `src/app/layouts/PublicLayout.jsx`                             | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.       |
-| `src/index.css`                                                | Variables globales de diseño institucional UV, reset y tipografía.                        |
-| `src/features/auth/components/AuthModal.jsx`                   | Modal de inicio de sesión/registro con split-screen de Figma.                             |
-| `src/features/auth/components/AuthModal.css`                   | Estilos del modal institucional.                                                          |
-| `src/features/auth/pages/LoginPage.jsx`                        | Página completa de inicio de sesión según wireframe de Figma.                             |
-| `src/features/auth/pages/LoginPage.css`                        | Estilos de la página de inicio de sesión.                                                 |
-| `src/features/auth/hooks/useAuth.js`                           | Hook de consumo del contexto de autenticación.                                            |
-| `src/app/providers/AuthProvider.jsx`                           | Proveedor de estado de autenticación y del modal de acceso global.                        |
-| `src/app/providers/FavoritosProvider.jsx`                      | Proveedor de favoritos con persistencia en localStorage por usuario.                      |
-| `src/features/favoritos/hooks/useFavoritos.js`                 | Hook de consumo del contexto de favoritos.                                                |
-| `src/features/favoritos/data/favoritosStorage.js`              | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).               |
-| `src/app/providers/ThemeProvider.jsx`                          | Proveedor de tema claro/oscuro con persistencia en localStorage.                          |
-| `src/shared/components/Navbar.jsx`                             | Barra de navegación institucional con escudo y acciones de usuario.                       |
-| `src/shared/components/Navbar.css`                             | Estilos del Navbar.                                                                       |
-| `src/shared/components/ThemeToggle.jsx`                        | Botón accesible de alternancia de tema claro/oscuro.                                      |
-| `src/shared/components/ThemeToggle.css`                        | Estilos del botón de tema.                                                                |
-| `src/shared/hooks/useTheme.js`                                 | Hook de consumo del contexto de tema.                                                     |
-| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                                          |
-| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`     | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación. |
-| `src/features/licitaciones/services/exportLicitacionPdf.js`    | Generación y descarga del PDF de resumen con `jsPDF` (formato chileno y español).         |
-| `src/features/licitaciones/licitacionUtils.js`                 | Formateo compartido y regla para determinar si una licitación está cerrada.               |
-| `src/features/licitaciones/licitacionFilters.js`               | Filtrado por título, región y tipo.                                                       |
-| `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                                                |
-| `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                                                 |
-| `src/features/licitaciones/components/LicitacionCard.jsx`      | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                       |
-| `src/features/licitaciones/components/LicitacionList.jsx`      | Lista de licitaciones.                                                                    |
-| `src/features/favoritos/pages/MisFavoritosPage.jsx`            | Página de favoritos: listado, estado vacío y quitar licitaciones.                         |
-| `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                        |
-| `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                         |
-| `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                                  |
-| `tests/licitacionUtils.test.js`                                | Pruebas de la regla de vigencia de las licitaciones.                                      |
-| `tests/exportLicitacionPdf.test.js`                            | Pruebas de la generación y contenido del PDF de resumen de licitación.                    |
-| `docs/CriteriosAceptacion.md`                                  | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.           |
-| `tests/licitacionFilters.test.js`                              | Pruebas de búsqueda y combinación de filtros.                                             |
-| `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                       |
-| `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.            |
-| `.github/workflows/ai-review.yml`                              | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                  |
-| `.github/scripts/ai-review.mjs`                                | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                |
-| `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                                  |
-| `.github/CODEOWNERS`                                           | Asigna automáticamente los revisores de cada PR según el área modificada.                 |
-| `.github/ISSUE_TEMPLATE/`                                      | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                |
+| Archivo                                                            | Responsabilidad actual                                                                    |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `index.html`                                                       | Punto de entrada HTML.                                                                    |
+| `src/main.jsx`                                                     | Punto de montaje de React.                                                                |
+| `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos y Router.                              |
+| `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                          |
+| `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.       |
+| `src/index.css`                                                    | Variables globales de diseño institucional UV, reset y tipografía.                        |
+| `src/features/auth/components/AuthModal.jsx`                       | Modal de inicio de sesión/registro con split-screen de Figma.                             |
+| `src/features/auth/components/AuthModal.css`                       | Estilos del modal institucional.                                                          |
+| `src/features/auth/pages/LoginPage.jsx`                            | Página completa de inicio de sesión según wireframe de Figma.                             |
+| `src/features/auth/pages/LoginPage.css`                            | Estilos de la página de inicio de sesión.                                                 |
+| `src/features/auth/hooks/useAuth.js`                               | Hook de consumo del contexto de autenticación.                                            |
+| `src/app/providers/AuthProvider.jsx`                               | Proveedor de estado de autenticación y del modal de acceso global.                        |
+| `src/app/providers/FavoritosProvider.jsx`                          | Proveedor de favoritos con persistencia en localStorage por usuario.                      |
+| `src/features/favoritos/hooks/useFavoritos.js`                     | Hook de consumo del contexto de favoritos.                                                |
+| `src/features/favoritos/data/favoritosStorage.js`                  | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).               |
+| `src/app/providers/ThemeProvider.jsx`                              | Proveedor de tema claro/oscuro con persistencia en localStorage.                          |
+| `src/shared/components/Navbar.jsx`                                 | Barra de navegación institucional con escudo y acciones de usuario.                       |
+| `src/shared/components/Navbar.css`                                 | Estilos del Navbar.                                                                       |
+| `src/shared/components/ThemeToggle.jsx`                            | Botón accesible de alternancia de tema claro/oscuro.                                      |
+| `src/shared/components/ThemeToggle.css`                            | Estilos del botón de tema.                                                                |
+| `src/shared/hooks/useTheme.js`                                     | Hook de consumo del contexto de tema.                                                     |
+| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones.                                          |
+| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`         | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación. |
+| `src/features/licitaciones/services/exportLicitacionPdf.js`        | Orquestador de exportación: crea el Web Worker, recibe el PDF y dispara la descarga.      |
+| `src/features/licitaciones/services/exportLicitacionPdf.worker.js` | Web Worker que genera el PDF con `jsPDF` fuera del hilo principal.                        |
+| `src/features/licitaciones/services/buildLicitacionPdf.js`         | Lógica pura de generación del PDF de resumen (formato chileno y español).                 |
+| `src/features/licitaciones/services/licitacionPdfFilename.js`      | Nombre de archivo estable `licitacion-<id>.pdf` sin dependencias.                         |
+| `src/features/licitaciones/licitacionUtils.js`                     | Formateo compartido y regla para determinar si una licitación está cerrada.               |
+| `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo.                                                       |
+| `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros con URL.                                                |
+| `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                 |
+| `src/features/licitaciones/components/LicitacionCard.jsx`          | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                       |
+| `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                    |
+| `src/features/favoritos/pages/MisFavoritosPage.jsx`                | Página de favoritos: listado, estado vacío y quitar licitaciones.                         |
+| `src/features/favoritos/pages/MisFavoritosPage.css`                | Estilos de la página de favoritos.                                                        |
+| `tests/smoke.test.js`                                              | Pruebas automatizadas de línea base reproducible.                                         |
+| `tests/favoritosStorage.test.js`                                   | Pruebas de la persistencia de favoritos.                                                  |
+| `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                      |
+| `tests/exportLicitacionPdf.test.js`                                | Pruebas de la generación y contenido del PDF y del round-trip del Web Worker.             |
+| `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.           |
+| `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda y combinación de filtros.                                             |
+| `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                       |
+| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.            |
+| `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                  |
+| `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                |
+| `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                  |
+| `.github/CODEOWNERS`                                               | Asigna automáticamente los revisores de cada PR según el área modificada.                 |
+| `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                |
 
 ## 6. Stack y dependencias
 

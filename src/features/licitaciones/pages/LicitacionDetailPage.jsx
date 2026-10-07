@@ -48,11 +48,10 @@ function LicitacionDetail({ licitacion }) {
     setExportando(true)
     setExportError(null)
     try {
-      // Carga diferida: el módulo PDF solo se descarga al exportar (REF-01) y se
-      // cede el hilo para no bloquear la interfaz mientras se genera (CA6).
+      // Carga diferida (REF-01): el módulo y el worker solo se cargan al exportar.
+      // La generación corre en un Web Worker, por lo que la interfaz no se bloquea (CA6).
       const { exportLicitacionPdf } = await import('../services/exportLicitacionPdf.js')
-      await new Promise((resolve) => setTimeout(resolve, 0))
-      exportLicitacionPdf(licitacion)
+      await exportLicitacionPdf(licitacion)
     } catch {
       setExportError('No se pudo generar el PDF. Inténtalo nuevamente.')
     } finally {
