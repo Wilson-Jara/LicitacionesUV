@@ -386,8 +386,9 @@ El repositorio aplica controles automáticos para que ningún cambio llegue a la
 - **Asignación de revisores (CODEOWNERS):** `.github/CODEOWNERS` solicita automáticamente la revisión de los responsables del área que toca cada PR (detalle en [Asignación del revisor](#asignación-del-revisor)).
 - **Plantilla de Pull Request:** `.github/pull_request_template.md` recuerda completar propósito, resumen, cómo se verificó y el issue que cierra.
 - **Plantillas de issues:** `.github/ISSUE_TEMPLATE/` incluye historia de usuario, tarea/chore y bug, con _Definition of Ready_ (DoR) y _Definition of Done_ (DoD).
+- **Revisor automático (IA):** el workflow `.github/workflows/ai-review.yml` publica un comentario con la revisión de DeepSeek (`.github/scripts/ai-review.mjs`) al abrir o reabrir un PR/issue y, bajo demanda, al agregar la etiqueta `ai-review`. Redacta secretos antes de enviar el contenido al modelo y responde en español.
 
-> **Regla:** no se fusiona un PR sin revisión de un par y sin que `npm run verify` pase en CI.
+> **Regla:** no se fusiona un PR sin revisión de un par y sin que `npm run verify` pase en CI. La revisión automática de IA es una **sugerencia**: no reemplaza la revisión ni la aprobación humana.
 
 ### Asignación del revisor
 
