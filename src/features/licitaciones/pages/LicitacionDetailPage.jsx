@@ -52,8 +52,8 @@ function LicitacionDetail({ licitacion }) {
       // La generación corre en un Web Worker, por lo que la interfaz no se bloquea (CA6).
       const { exportLicitacionPdf } = await import('../services/exportLicitacionPdf.js')
       await exportLicitacionPdf(licitacion)
-    } catch {
-      setExportError('No se pudo generar el PDF. Inténtalo nuevamente.')
+    } catch (error) {
+      setExportError(error?.message || 'No se pudo generar el PDF. Inténtalo nuevamente.')
     } finally {
       setExportando(false)
     }

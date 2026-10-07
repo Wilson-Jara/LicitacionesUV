@@ -17,7 +17,7 @@ Revisión realizada en septiembre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre y exportación PDF pasando (24/24 tests).
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre y exportación PDF pasando (28/28 tests).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
@@ -47,7 +47,7 @@ Revisión realizada en septiembre de 2026:
 - **Detalle de Licitación:**
   - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
   - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos.
-  - La generación del PDF ocurre en un **Web Worker** (fuera del hilo principal) con `jsPDF`; el hilo principal solo recibe el `ArrayBuffer` y dispara la descarga, por lo que la navegación no se bloquea (CA6). Si falla, se muestra un mensaje de error visible y la interfaz sigue siendo utilizable. No requiere sesión. La carga del módulo de exportación y del worker es diferida.
+  - La generación del PDF ocurre en un **Web Worker** (fuera del hilo principal) con `jsPDF`; el hilo principal solo recibe el `ArrayBuffer` y dispara la descarga, por lo que la navegación no se bloquea (CA6). Si el navegador no soporta Web Workers, la exportación se rechaza y se muestra un mensaje de error visible (CA5), sin ejecutar generación síncrona en el hilo principal. La carga del módulo de exportación y del worker es diferida.
   - Las licitaciones cerradas no pueden guardarse como favoritas; las que ya estaban guardadas aún pueden quitarse.
   - El campo `sourceUrl` se mantiene en el contrato de datos mock.
 - **Favoritos:**
@@ -99,7 +99,8 @@ Revisión realizada en septiembre de 2026:
 | `src/shared/hooks/useTheme.js`                                     | Hook de consumo del contexto de tema.                                                     |
 | `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones.                                          |
 | `src/features/licitaciones/pages/LicitacionDetailPage.jsx`         | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación. |
-| `src/features/licitaciones/services/exportLicitacionPdf.js`        | Orquestador de exportación: crea el Web Worker, recibe el PDF y dispara la descarga.      |
+| `src/features/licitaciones/services/exportLicitacionPdf.js`        | Punto de entrada del navegador: crea el Web Worker y delega en la orquestación.           |
+| `src/features/licitaciones/services/exportLicitacionPdfCore.js`    | Orquestación pura: crea el worker, recibe el PDF y dispara la descarga (testeable).       |
 | `src/features/licitaciones/services/exportLicitacionPdf.worker.js` | Web Worker que genera el PDF con `jsPDF` fuera del hilo principal.                        |
 | `src/features/licitaciones/services/buildLicitacionPdf.js`         | Lógica pura de generación del PDF de resumen (formato chileno y español).                 |
 | `src/features/licitaciones/services/licitacionPdfFilename.js`      | Nombre de archivo estable `licitacion-<id>.pdf` sin dependencias.                         |
@@ -114,7 +115,7 @@ Revisión realizada en septiembre de 2026:
 | `tests/smoke.test.js`                                              | Pruebas automatizadas de línea base reproducible.                                         |
 | `tests/favoritosStorage.test.js`                                   | Pruebas de la persistencia de favoritos.                                                  |
 | `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                      |
-| `tests/exportLicitacionPdf.test.js`                                | Pruebas de la generación y contenido del PDF y del round-trip del Web Worker.             |
+| `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).  |
 | `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.           |
 | `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda y combinación de filtros.                                             |
 | `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                       |

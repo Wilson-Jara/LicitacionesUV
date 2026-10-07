@@ -5,6 +5,7 @@ import {
   buildLicitacionPdf,
   getLicitacionPdfFilename,
 } from '../src/features/licitaciones/services/buildLicitacionPdf.js'
+import { exportLicitacionPdfEnWorker } from '../src/features/licitaciones/services/exportLicitacionPdfCore.js'
 
 const licitacionBase = {
   id: 'licitacion-001',
@@ -87,5 +88,89 @@ describe('exportLicitacionPdf', () => {
     const text = Buffer.from(message.buffer).toString('latin1')
     assert.ok(text.includes('Servicio de mantenimiento de infraestructura'))
     assert.ok(text.includes('Universidad de Valparaíso'))
+  })
+})
+
+describe('exportLicitacionPdfEnWorker (orquestación)', () => {
+  it('rechaza sin bloquear si no hay Web Workers disponibles', async () => {
+    await assert.rejects(
+      exportLicitacionPdfEnWorker(licitacionBase, () => {
+        throw new Error('Worker no soportado')
+      }),
+      /Web Workers/,
+    )
+  })
+
+  it('muestra un error visible si el worker falla al generar', async () => {
+    const worker = { postMessage() {}, terminate() {}, onmessage: null, onerror: null }
+    const promise = exportLicitacionPdfEnWorker(licitacionBase, () => worker)
+
+    worker.onmessage({ data: { error: 'fallo interno de jsPDF' } })
+
+    await assert.rejects(promise, /Error al generar el PDF/)
+  })
+
+  it('rechaza si el worker no responde dentro del tiempo límite', async () => {
+    const worker = { postMessage() {}, terminate() {}, onmessage: null, onerror: null }
+    const promise = exportLicitacionPdfEnWorker(licitacionBase, () => worker, { timeoutMs: 20 })
+
+    await assert.rejects(promise, /Tiempo de espera agotado/)
+  })
+
+  it('descarga el PDF con nombre estable cuando el worker entrega el buffer', async () => {
+    const urlOriginal = globalThis.URL
+    const descargas = []
+    globalThis.document = {
+      createElement: () => {
+        const el = {
+          style: {},
+          click() {
+            el.clicked = true
+          },
+        }
+        Object.defineProperty(el, 'href', {
+          set: (value) => {
+            el.hrefValue = value
+          },
+        })
+        Object.defineProperty(el, 'download', {
+          set: (value) => {
+            el.downloadValue = value
+            descargas.push(el)
+          },
+        })
+        return el
+      },
+      body: { appendChild() {}, removeChild() {} },
+    }
+    globalThis.URL = class {
+      static createObjectURL() {
+        return 'blob:pdf'
+      }
+
+      static revokeObjectURL() {}
+    }
+
+    try {
+      const worker = { postMessage() {}, terminate() {}, onmessage: null, onerror: null }
+      const promise = exportLicitacionPdfEnWorker(licitacionBase, () => worker, { timeoutMs: 1000 })
+
+      worker.onmessage({
+        data: {
+          buffer: new Uint8Array([37, 80, 68, 70, 45]).buffer,
+          fileName: 'licitacion-001.pdf',
+        },
+      })
+
+      await promise
+
+      assert.equal(descargas.length, 1)
+      assert.equal(descargas[0].downloadValue, 'licitacion-001.pdf')
+      assert.equal(descargas[0].hrefValue, 'blob:pdf')
+      assert.equal(descargas[0].clicked, true)
+    } finally {
+      delete globalThis.document
+      globalThis.URL = urlOriginal
+    }
   })
 })
