@@ -5,7 +5,22 @@ import { HttpError, sendJson } from '../lib/http.js'
 
 const currentDir = dirname(fileURLToPath(import.meta.url))
 const seedPath = resolve(currentDir, '../data/licitaciones.seed.json')
-const licitaciones = JSON.parse(readFileSync(seedPath, 'utf8'))
+
+function loadSeed() {
+  try {
+    return JSON.parse(readFileSync(seedPath, 'utf8'))
+  } catch (error) {
+    throw new Error(`No se pudo cargar el seed de licitaciones (${seedPath}): ${error.message}`, {
+      cause: error,
+    })
+  }
+}
+
+const licitaciones = loadSeed()
+
+function equalsIgnoreCase(value, expected) {
+  return String(value).toLowerCase() === expected.toLowerCase()
+}
 
 function matchesKeyword(licitacion, keyword) {
   const termino = keyword.toLowerCase()
@@ -20,8 +35,8 @@ export function registerLicitacionesRoutes(router) {
     const { keyword, region, tipo } = req.query
     let resultado = licitaciones
     if (keyword) resultado = resultado.filter((l) => matchesKeyword(l, keyword))
-    if (region) resultado = resultado.filter((l) => l.region === region)
-    if (tipo) resultado = resultado.filter((l) => l.type === tipo)
+    if (region) resultado = resultado.filter((l) => equalsIgnoreCase(l.region, region))
+    if (tipo) resultado = resultado.filter((l) => equalsIgnoreCase(l.type, tipo))
     sendJson(res, 200, resultado)
   })
 

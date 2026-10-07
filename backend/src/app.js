@@ -34,7 +34,11 @@ export function createApp() {
       if (!handled) sendJson(res, 404, { error: 'Ruta no encontrada' })
     } catch (error) {
       const status = error instanceof HttpError ? error.status : 500
-      if (status >= 500) console.error(error)
+      if (status >= 500) {
+        console.error(error)
+        sendJson(res, status, { error: 'Error interno del servidor' })
+        return
+      }
       sendJson(res, status, { error: error.message })
     }
   }

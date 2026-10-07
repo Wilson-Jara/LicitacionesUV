@@ -13,11 +13,11 @@
 
 ## 2. Estado verificado
 
-Revisión realizada en septiembre de 2026:
+Revisión realizada en octubre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda y reglas de cierre pasando (19/19 tests).
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre y API del backend pasando (36/36 tests).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
@@ -63,7 +63,8 @@ Revisión realizada en septiembre de 2026:
   - Los componentes usan variables semánticas (`--card-bg`, `--surface-soft`, `--border-strong`, etc.); los hex restantes pertenecen a paneles de marca navy que permanecen oscuros en ambos temas.
 - **Backend (base Fase 2):**
   - Servidor HTTP con el módulo nativo `node:http` (sin dependencias): entrada `backend/src/server.js`, composición en `backend/src/app.js` (CORS, parseo JSON, enrutamiento y manejo de errores) y enrutador propio con parámetros de ruta en `backend/src/lib/router.js`.
-  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword`, `region`, `tipo`) y detalle `GET /api/licitaciones/:id`.
+  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword`, `region`, `tipo`, sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
+  - Manejo de errores: cuerpo JSON inválido o `:id` mal codificado responden 400, cuerpos de más de 1 MB responden 413 y los errores 5xx devuelven un mensaje genérico (el detalle solo se registra con `console.error`).
   - Datos desde el seed `backend/src/data/licitaciones.seed.json`, con el mismo contrato que el mock del frontend (REF-10). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
   - CORS habilitado para el dev server de Vite y configuración por entorno en `backend/.env.example` (`PORT`, `CORS_ORIGIN`, con `DATABASE_URL` y `JWT_SECRET` reservadas).
 
@@ -184,7 +185,7 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 ## 9. Variables de entorno y seguridad
 
 - `.env` y otros archivos de entorno están excluidos por `.gitignore`.
-- `.env.example` (raíz) documenta `VITE_API_BASE_URL` y reserva `DATABASE_URL`; `backend/.env.example` documenta `PORT`, `CORS_ORIGIN` y reserva `DATABASE_URL` y `JWT_SECRET`.
+- `.env.example` (raíz) define `VITE_API_BASE_URL` (el frontend aún no la consume) y deja `DATABASE_URL` comentada como reservada; `backend/.env.example` define `PORT` y `CORS_ORIGIN` y deja comentadas `DATABASE_URL` y `JWT_SECRET` como reservadas.
 - Las variables con prefijo `VITE_` quedan expuestas al cliente al compilar; nunca colocar secretos allí.
 - Antes de integrar una API se debe definir el contrato, el manejo de errores, estados de carga y configuración por entorno.
 - No incluir credenciales, tokens, datos personales reales ni valores de `.env` en código, commits o documentación.

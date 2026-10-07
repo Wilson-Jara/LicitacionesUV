@@ -12,6 +12,8 @@ function shutdown() {
   server.close(() => {
     process.exit(0)
   })
+  // Cierra también las conexiones keep-alive para que close() termine de inmediato.
+  server.closeAllConnections()
 }
 
 process.on('SIGINT', shutdown)
