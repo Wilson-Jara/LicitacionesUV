@@ -164,6 +164,46 @@ flowchart TB
 - **Alternativas consideradas:** Express y Fastify (pospuestos: se reevaluarán cuando lleguen autenticación, PostgreSQL y middlewares de sesión; migrar en esta etapa es de bajo costo porque la capa HTTP queda aislada en `src/app.js` y `src/lib/router.js`).
 - **Impacto:** carpeta `backend/` (servidor, rutas, seed y pruebas), configuración ESLint con `globals.node` para `backend/**`, cobertura de las pruebas de la API en el `npm run verify` de la raíz y documentación (`Arquitectura.md`, `AI_context.md`).
 
+### Decisión 9: Se mantiene `node:http` para la Fase 2 completa
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** el backend continúa sobre `node:http` con el enrutador propio de `src/lib/router.js` al incorporar autenticación, PostgreSQL y sesiones; las piezas nuevas (lectura de cookies, middleware de sesión) se implementan como funciones pequeñas en `src/lib/`.
+- **Motivación:** cierra la reevaluación pendiente de la Decisión 8. Las necesidades de la Fase 2 (cookies, un middleware de autenticación y validación de entrada) son acotadas y se cubren con poco código propio, manteniendo el número de dependencias al mínimo (REF-07).
+- **Alternativas consideradas:** Express (descartada por ahora: aporta middlewares listos, pero agrega dependencias y no resuelve un problema que hoy exista); Fastify (descartada por ahora: mismo motivo, con una curva de aprendizaje adicional para el equipo).
+- **Impacto:** `backend/src/lib/` (cookies y middleware de sesión) y `backend/src/app.js` (aplicación del middleware a rutas privadas). Si la cantidad de middlewares crece, se reevalúa en una decisión nueva.
+
+### Decisión 10: Autenticación con sesiones en servidor y cookie `HttpOnly`
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** al iniciar sesión, el servidor genera un identificador aleatorio con `node:crypto`, guarda su hash en la tabla `sesiones` (usuario, expiración) y lo entrega en una cookie `HttpOnly`, `SameSite=Lax` y `Secure` fuera de desarrollo. Las contraseñas se almacenan con `scrypt` de `node:crypto` y sal por usuario. En desarrollo, `vite.config.js` define un proxy de `/api` hacia el backend para que frontend y API compartan origen.
+- **Motivación:** cumple REF-02 (acciones privadas exigen sesión) y CA3 del #78 sin dependencias nuevas. El cierre de sesión es real (se elimina la fila) y la cookie `HttpOnly` no es accesible desde JavaScript, lo que reduce el impacto de un XSS. El proxy evita configurar CORS con credenciales entre orígenes distintos.
+- **Alternativas consideradas:** JWT en `localStorage` (descartada: expuesto a XSS y el logout no invalida el token antes de su expiración); JWT en cookie (descartada: requiere `jsonwebtoken` y una lista de revocación para tener logout real, lo que equivale a mantener sesiones); bcrypt (descartada: requiere dependencia nativa, y `scrypt` cumple el mismo propósito).
+- **Impacto:** tabla `sesiones`, endpoints de autenticación, middleware de sesión, `vite.config.js` (proxy), `backend/.env.example` (`JWT_SECRET` se reemplaza por `SESSION_SECRET` si se requiere firmar la cookie) y `AuthProvider` del frontend al migrar a la API.
+
+### Decisión 11: Acceso a PostgreSQL con `pg` y migraciones SQL versionadas
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** el backend se conecta a PostgreSQL con el driver `pg` y consultas SQL parametrizadas escritas a mano. El esquema se gestiona con archivos `.sql` numerados en `backend/migrations/` (`001_...sql`, `002_...sql`), aplicados en orden por un script propio que registra las migraciones ejecutadas en una tabla de control. Un script de seed carga las licitaciones desde el mock del frontend.
+- **Motivación:** `pg` es la única dependencia imprescindible para hablar con PostgreSQL (excepción justificada a la Decisión 8). Las consultas parametrizadas previenen inyección SQL, el SQL explícito facilita la revisión de pares y las migraciones numeradas hacen el esquema reproducible en cualquier máquina y en CI (REF-07).
+- **Alternativas consideradas:** ORM como Prisma o Sequelize (descartada: varias dependencias y herramienta propia que oculta el SQL); query builder como Knex (descartada: capa adicional que no aporta lo suficiente a este tamaño de proyecto); `node-pg-migrate` (descartada por ahora: el script propio cubre el caso con pocas líneas).
+- **Impacto:** `backend/package.json` (dependencia `pg`), `backend/migrations/`, scripts de migración y seed, `backend/src/` (capa de acceso a datos) y eliminación de `licitaciones.seed.json` cuando los endpoints lean desde la BD.
+
+### Decisión 12: PostgreSQL con Docker Compose en local y servicio en CI
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** el repositorio incluye un `docker-compose.yml` con `postgres:16` para desarrollo local, y `.github/workflows/verify.yml` declara un servicio `postgres:16` para las pruebas. Las pruebas usan una base separada (`DATABASE_URL_TEST`), distinta de la de desarrollo. Las credenciales del CI son de prueba y desechables; las locales viven solo en `.env`.
+- **Motivación:** todos los integrantes y el CI usan la misma versión y configuración, y `npm run verify` sigue funcionando con un único comando (REF-07). La base de pruebas separada permite que los tests creen y borren datos sin afectar el trabajo local. Los secretos reales no entran al repositorio (REF-03).
+- **Alternativas consideradas:** instalación directa de PostgreSQL en cada equipo (aceptada solo como respaldo para quien no pueda usar Docker, con la misma versión 16); base de datos en la nube compartida (descartada: requiere credenciales compartidas y las pruebas de un integrante afectan a los demás).
+- **Impacto:** `docker-compose.yml`, `.github/workflows/verify.yml`, `backend/.env.example` (`DATABASE_URL` y `DATABASE_URL_TEST` sin valores reales), README (instrucciones de arranque) y configuración de las pruebas del backend.
+
+### Decisión 13: CR-302 fuera del alcance del #78
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** el #78 crea las tablas de Aprobacion, Delegacion y UmbralAprobacion para completar el modelo de las 8 entidades, pero los endpoints y la lógica del flujo CR-302 se implementan en sus historias propias (US-09, US-10 y US-11).
+- **Motivación:** el #78 queda acotado a la infraestructura de la Fase 2 y puede cerrarse con evidencia verificable. CR-302 tiene reglas propias (Decisiones 6 y 7) que merecen criterios de aceptación y revisión independientes.
+- **Alternativas consideradas:** implementar CR-302 completo dentro del #78 (descartada: amplía un épico ya grande y retrasa su cierre); posponer también las tablas (descartada: el CA1 del #78 exige el modelo completo de entidades).
+- **Impacto:** migraciones (tablas de CR-302 sin endpoints), alcance y criterios del #78, y dependencias de los issues de US-09, US-10 y US-11.
+
 ## 5. Trazabilidad REF ↔ Módulos ↔ HU
 
 | REF                         | Módulo que lo aborda                                  | HU relacionadas     |
