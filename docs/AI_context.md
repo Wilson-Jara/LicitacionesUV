@@ -13,11 +13,11 @@
 
 ## 2. Estado verificado
 
-Revisión realizada en septiembre de 2026:
+Revisión realizada en octubre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda y reglas de cierre pasando (19/19 tests).
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF y API del backend pasando (45/45 tests).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
@@ -26,6 +26,7 @@ Revisión realizada en septiembre de 2026:
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Router con navegación interna (`react-router-dom` v7).
 - Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
+- Backend base en `backend/`: API REST con el módulo nativo `node:http` (sin dependencias), endpoints de salud y licitaciones con el mismo contrato del mock (REF-10), configuración por entorno y pruebas con `node --test` cubiertas por `npm run test` desde la raíz.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
@@ -46,6 +47,8 @@ Revisión realizada en septiembre de 2026:
   - Barra de resumen de resultados y alternancia de filtros para dispositivos móviles.
 - **Detalle de Licitación:**
   - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
+  - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos.
+  - La generación del PDF ocurre en un **Web Worker** (fuera del hilo principal) con `jsPDF`; el hilo principal solo recibe el `ArrayBuffer` y dispara la descarga, por lo que la navegación no se bloquea (CA6). Si el navegador no soporta Web Workers, la exportación se rechaza y se muestra un mensaje de error visible (CA5), sin ejecutar generación síncrona en el hilo principal. La carga del módulo de exportación y del worker es diferida.
   - Las licitaciones cerradas no pueden guardarse como favoritas; las que ya estaban guardadas aún pueden quitarse.
   - El campo `sourceUrl` se mantiene en el contrato de datos mock.
 - **Favoritos:**
@@ -60,6 +63,12 @@ Revisión realizada en septiembre de 2026:
   - Persistencia de la elección en `localStorage` (clave `licitacionesuv-theme`).
   - Botón de alternancia accesible (`ThemeToggle` con `aria-label` y `aria-pressed`) en la barra de navegación.
   - Los componentes usan variables semánticas (`--card-bg`, `--surface-soft`, `--border-strong`, etc.); los hex restantes pertenecen a paneles de marca navy que permanecen oscuros en ambos temas.
+- **Backend (base Fase 2):**
+  - Servidor HTTP con el módulo nativo `node:http` (sin dependencias): entrada `backend/src/server.js`, composición en `backend/src/app.js` (CORS, parseo JSON, enrutamiento y manejo de errores) y enrutador propio con parámetros de ruta en `backend/src/lib/router.js`.
+  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword`, `region`, `tipo`, sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
+  - Manejo de errores: cuerpo JSON inválido o `:id` mal codificado responden 400, cuerpos de más de 1 MB responden 413 y los errores 5xx devuelven un mensaje genérico (el detalle solo se registra con `console.error`).
+  - Datos desde el seed `backend/src/data/licitaciones.seed.json`, con el mismo contrato que el mock del frontend (REF-10). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
+  - CORS habilitado para el dev server de Vite y configuración por entorno en `backend/.env.example` (`PORT`, `CORS_ORIGIN`, con `DATABASE_URL` y `JWT_SECRET` reservadas).
 
 ## 4. Arquitectura y flujo de entrada
 
@@ -69,52 +78,71 @@ Revisión realizada en septiembre de 2026:
 4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, 404).
 5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
 6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
+7. `backend/src/server.js` inicia el servidor HTTP de la API (por defecto en `http://localhost:3000`); el frontend todavía lee el mock local y la migración a la API corresponde a una entrega posterior.
 
 ## 5. Inventario de archivos relevantes
 
-| Archivo                                                        | Responsabilidad actual                                                              |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `index.html`                                                   | Punto de entrada HTML.                                                              |
-| `src/main.jsx`                                                 | Punto de montaje de React.                                                          |
-| `src/app/App.jsx`                                              | Componente raíz con proveedores de Auth, Favoritos y Router.                        |
-| `src/app/routes/AppRoutes.jsx`                                 | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                    |
-| `src/app/layouts/PublicLayout.jsx`                             | Layout principal con Navbar, contenedor de páginas y modal de autenticación global. |
-| `src/index.css`                                                | Variables globales de diseño institucional UV, reset y tipografía.                  |
-| `src/features/auth/components/AuthModal.jsx`                   | Modal de inicio de sesión/registro con split-screen de Figma.                       |
-| `src/features/auth/components/AuthModal.css`                   | Estilos del modal institucional.                                                    |
-| `src/features/auth/pages/LoginPage.jsx`                        | Página completa de inicio de sesión según wireframe de Figma.                       |
-| `src/features/auth/pages/LoginPage.css`                        | Estilos de la página de inicio de sesión.                                           |
-| `src/features/auth/hooks/useAuth.js`                           | Hook de consumo del contexto de autenticación.                                      |
-| `src/app/providers/AuthProvider.jsx`                           | Proveedor de estado de autenticación y del modal de acceso global.                  |
-| `src/app/providers/FavoritosProvider.jsx`                      | Proveedor de favoritos con persistencia en localStorage por usuario.                |
-| `src/features/favoritos/hooks/useFavoritos.js`                 | Hook de consumo del contexto de favoritos.                                          |
-| `src/features/favoritos/data/favoritosStorage.js`              | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).         |
-| `src/app/providers/ThemeProvider.jsx`                          | Proveedor de tema claro/oscuro con persistencia en localStorage.                    |
-| `src/shared/components/Navbar.jsx`                             | Barra de navegación institucional con escudo y acciones de usuario.                 |
-| `src/shared/components/Navbar.css`                             | Estilos del Navbar.                                                                 |
-| `src/shared/components/ThemeToggle.jsx`                        | Botón accesible de alternancia de tema claro/oscuro.                                |
-| `src/shared/components/ThemeToggle.css`                        | Estilos del botón de tema.                                                          |
-| `src/shared/hooks/useTheme.js`                                 | Hook de consumo del contexto de tema.                                               |
-| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx` | Página principal de exploración de licitaciones.                                    |
-| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`     | Vista de detalle, fuente oficial y estado de cierre de una licitación.              |
-| `src/features/licitaciones/licitacionUtils.js`                 | Formateo compartido y regla para determinar si una licitación está cerrada.         |
-| `src/features/licitaciones/licitacionFilters.js`               | Filtrado por título, región y tipo.                                                 |
-| `src/features/licitaciones/hooks/useLicitacionFilters.js`      | Hook de sincronización de filtros con URL.                                          |
-| `src/features/licitaciones/components/FilterSidebar.jsx`       | Barra lateral de filtros.                                                           |
-| `src/features/licitaciones/components/LicitacionCard.jsx`      | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                 |
-| `src/features/licitaciones/components/LicitacionList.jsx`      | Lista de licitaciones.                                                              |
-| `src/features/favoritos/pages/MisFavoritosPage.jsx`            | Página de favoritos: listado, estado vacío y quitar licitaciones.                   |
-| `src/features/favoritos/pages/MisFavoritosPage.css`            | Estilos de la página de favoritos.                                                  |
-| `tests/smoke.test.js`                                          | Pruebas automatizadas de línea base reproducible.                                   |
-| `tests/favoritosStorage.test.js`                               | Pruebas de la persistencia de favoritos.                                            |
-| `tests/licitacionUtils.test.js`                                | Pruebas de la regla de vigencia de las licitaciones.                                |
-| `docs/CriteriosAceptacion.md`                                  | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.     |
-| `tests/licitacionFilters.test.js`                              | Pruebas de búsqueda y combinación de filtros.                                       |
-| `docs/AI_context.md`                                           | Contexto técnico actualizado para asistentes de IA.                                 |
-| `.github/workflows/verify.yml`                                 | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.      |
-| `.github/pull_request_template.md`                             | Plantilla de Pull Request con checklist de verificación.                            |
-| `.github/CODEOWNERS`                                           | Asigna automáticamente los revisores de cada PR según el área modificada.           |
-| `.github/ISSUE_TEMPLATE/`                                      | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                          |
+| Archivo                                                            | Responsabilidad actual                                                                    |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `index.html`                                                       | Punto de entrada HTML.                                                                    |
+| `src/main.jsx`                                                     | Punto de montaje de React.                                                                |
+| `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos y Router.                              |
+| `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                          |
+| `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.       |
+| `src/index.css`                                                    | Variables globales de diseño institucional UV, reset y tipografía.                        |
+| `src/features/auth/components/AuthModal.jsx`                       | Modal de inicio de sesión/registro con split-screen de Figma.                             |
+| `src/features/auth/components/AuthModal.css`                       | Estilos del modal institucional.                                                          |
+| `src/features/auth/pages/LoginPage.jsx`                            | Página completa de inicio de sesión según wireframe de Figma.                             |
+| `src/features/auth/pages/LoginPage.css`                            | Estilos de la página de inicio de sesión.                                                 |
+| `src/features/auth/hooks/useAuth.js`                               | Hook de consumo del contexto de autenticación.                                            |
+| `src/app/providers/AuthProvider.jsx`                               | Proveedor de estado de autenticación y del modal de acceso global.                        |
+| `src/app/providers/FavoritosProvider.jsx`                          | Proveedor de favoritos con persistencia en localStorage por usuario.                      |
+| `src/features/favoritos/hooks/useFavoritos.js`                     | Hook de consumo del contexto de favoritos.                                                |
+| `src/features/favoritos/data/favoritosStorage.js`                  | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).               |
+| `src/app/providers/ThemeProvider.jsx`                              | Proveedor de tema claro/oscuro con persistencia en localStorage.                          |
+| `src/shared/components/Navbar.jsx`                                 | Barra de navegación institucional con escudo y acciones de usuario.                       |
+| `src/shared/components/Navbar.css`                                 | Estilos del Navbar.                                                                       |
+| `src/shared/components/ThemeToggle.jsx`                            | Botón accesible de alternancia de tema claro/oscuro.                                      |
+| `src/shared/components/ThemeToggle.css`                            | Estilos del botón de tema.                                                                |
+| `src/shared/hooks/useTheme.js`                                     | Hook de consumo del contexto de tema.                                                     |
+| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones.                                          |
+| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`         | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación. |
+| `src/features/licitaciones/services/exportLicitacionPdf.js`        | Punto de entrada del navegador: crea el Web Worker y delega en la orquestación.           |
+| `src/features/licitaciones/services/exportLicitacionPdfCore.js`    | Orquestación pura: crea el worker, recibe el PDF y dispara la descarga (testeable).       |
+| `src/features/licitaciones/services/exportLicitacionPdf.worker.js` | Web Worker que genera el PDF con `jsPDF` fuera del hilo principal.                        |
+| `src/features/licitaciones/services/buildLicitacionPdf.js`         | Lógica pura de generación del PDF de resumen (formato chileno y español).                 |
+| `src/features/licitaciones/services/licitacionPdfFilename.js`      | Nombre de archivo estable `licitacion-<id>.pdf` sin dependencias.                         |
+| `src/features/licitaciones/licitacionUtils.js`                     | Formateo compartido y regla para determinar si una licitación está cerrada.               |
+| `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo.                                                       |
+| `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros con URL.                                                |
+| `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                 |
+| `src/features/licitaciones/components/LicitacionCard.jsx`          | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                       |
+| `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                    |
+| `src/features/favoritos/pages/MisFavoritosPage.jsx`                | Página de favoritos: listado, estado vacío y quitar licitaciones.                         |
+| `src/features/favoritos/pages/MisFavoritosPage.css`                | Estilos de la página de favoritos.                                                        |
+| `tests/smoke.test.js`                                              | Pruebas automatizadas de línea base reproducible.                                         |
+| `tests/favoritosStorage.test.js`                                   | Pruebas de la persistencia de favoritos.                                                  |
+| `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                      |
+| `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).  |
+| `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.           |
+| `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda y combinación de filtros.                                             |
+| `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                       |
+| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.            |
+| `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                  |
+| `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                |
+| `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                  |
+| `.github/CODEOWNERS`                                               | Asigna automáticamente los revisores de cada PR según el área modificada.                 |
+| `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                |
+| `backend/package.json`                                             | Scripts del backend (`dev`, `start`, `test`).                                             |
+| `backend/src/server.js`                                            | Punto de entrada del servidor HTTP de la API.                                             |
+| `backend/src/app.js`                                               | Composición de la API: CORS, parseo JSON, enrutamiento y manejo de errores.               |
+| `backend/src/lib/router.js`                                        | Enrutador HTTP propio con parámetros de ruta (`:id`).                                     |
+| `backend/src/lib/http.js`                                          | Helpers de respuesta JSON, lectura de cuerpo y errores HTTP.                              |
+| `backend/src/config/env.js`                                        | Configuración por entorno con carga de `backend/.env`.                                    |
+| `backend/src/routes/health.routes.js`                              | Endpoint `GET /api/health`.                                                               |
+| `backend/src/routes/licitaciones.routes.js`                        | Endpoints de listado y detalle de licitaciones.                                           |
+| `backend/src/data/licitaciones.seed.json`                          | Seed con el contrato de datos del frontend.                                               |
+| `backend/tests/*.test.js`                                          | Pruebas de la API con `node --test`.                                                      |
 
 ## 6. Stack y dependencias
 
@@ -123,10 +151,12 @@ Revisión realizada en septiembre de 2026:
 - React DOM `19.2.8`.
 - React Router DOM `7.18.2`.
 - PropTypes `15.8.1`.
+- jsPDF `4.2.1` (generación de PDF en cliente).
 - Vite `8.2.1`.
 - ESLint `10.8.1`.
 - Prettier `3.9.6`.
 - Módulos ES habilitados mediante `"type": "module"`.
+- Backend: Node.js con el módulo nativo `node:http`, sin dependencias externas; la configuración ESLint declara `globals.node` para `backend/**`.
 
 ## 7. Comandos de desarrollo
 
@@ -140,6 +170,14 @@ npm run test
 npm run build
 npm run verify
 npm run preview
+```
+
+Backend (desde la carpeta `backend/`):
+
+```bash
+npm run dev   # servidor con recarga automática (node --watch)
+npm start     # servidor
+npm test      # pruebas de la API (también cubiertas por npm run verify desde la raíz)
 ```
 
 ## 8. Convenciones observadas
@@ -158,7 +196,7 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 ## 9. Variables de entorno y seguridad
 
 - `.env` y otros archivos de entorno están excluidos por `.gitignore`.
-- `.env.example` contiene actualmente solo `VITE_API_URL`, comentada.
+- `.env.example` (raíz) define `VITE_API_BASE_URL` (el frontend aún no la consume) y deja `DATABASE_URL` comentada como reservada; `backend/.env.example` define `PORT` y `CORS_ORIGIN` y deja comentadas `DATABASE_URL` y `JWT_SECRET` como reservadas.
 - Las variables con prefijo `VITE_` quedan expuestas al cliente al compilar; nunca colocar secretos allí.
 - Antes de integrar una API se debe definir el contrato, el manejo de errores, estados de carga y configuración por entorno.
 - No incluir credenciales, tokens, datos personales reales ni valores de `.env` en código, commits o documentación.
