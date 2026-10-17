@@ -30,7 +30,7 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ### Criterios de aceptación
 
-- **CA1:** Existe un campo de búsqueda en el explorador de licitaciones; al ingresar un término y confirmar, el listado muestra solo las licitaciones cuyo `title` o `institution` contienen el texto (comparación sin distinguir mayúsculas/minúsculas).
+- **CA1:** Existe un campo de búsqueda en el explorador de licitaciones; al ingresar un término, el listado muestra solo las licitaciones cuyo `title` contiene el texto (comparación sin distinguir mayúsculas/minúsculas y quitando espacios externos con `trim`).
 - **CA2:** El término buscado se refleja en la URL como `?keyword=...`; al recargar o compartir el enlace, el filtro se conserva (REF-09).
 - **CA3:** El listado filtrado se actualiza en menos de 2 segundos para el conjunto de datos mock (REF-01).
 - **CA4:** Si no hay coincidencias, se muestra el estado vacío con un botón que limpia el filtro de búsqueda (REF-05).
@@ -93,13 +93,13 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ### Criterios de aceptación
 
-- **CA1:** El listado muestra todos los resultados que cumplen la combinación de filtros activos (`keyword`, `region`, `tipo`) sin truncar ni paginar de forma implícita.
-- **CA2:** Se muestra un contador con la cantidad de resultados y un resumen de los filtros activos, cada uno con acción de eliminación individual.
-- **CA3:** El resumen de resultados y filtros activos se anuncia a lectores de pantalla (`aria-live`) y cada chip de filtro es operable y removible con teclado (REF-13).
-- **CA4:** Cuando no hay resultados, se muestra el estado vacío con un botón "Limpiar filtros" que restablece la URL (REF-09).
-- **CA5:** El listado es responsive (escritorio y móvil) y muestra un estado de carga mientras aplica el filtrado (REF-05).
+- **CA1:** El listado muestra la totalidad de procesos que cumplen la combinación de filtros activos (`keyword`, `region`, `tipo`) sin truncar ni paginar de forma implícita. Para la palabra clave (`keyword`), la coincidencia se realiza únicamente sobre el título (`title`), sin distinguir mayúsculas de minúsculas y quitando espacios en blanco externos (`trim`), alineado con la regla acordada en #43.
+- **CA2:** Se muestra un contador con la cantidad de resultados respecto al total y un panel resumen de los filtros activos mediante chips, cada uno con acción de eliminación individual operable por teclado.
+- **CA3:** El contador de resultados se anuncia a lectores de pantalla mediante `aria-live="polite"` (`role="status"`). Cada chip de filtro es operable y removible mediante teclado (`Enter` o `Espacio`), con foco visible y compatibilidad verificada tanto en escritorio como en dispositivos móviles (REF-13).
+- **CA4:** Cuando no hay resultados, se muestra un estado vacío claro con un botón "Restablecer todos los filtros" que limpia la URL (REF-09). Si la URL contiene parámetros de filtro desconocidos o con valores inválidos, la aplicación los maneja de manera defensiva (ignorándolos o saneándolos de forma segura) sin interrumpir la ejecución ni generar estados inconsistentes.
+- **CA5:** El listado y sus controles son totalmente responsive (escritorio y móvil). Dado que el filtrado sobre datos en memoria se ejecuta de manera síncrona e instantánea en el cliente, no se muestra un spinner de carga artificial innecesario que degrade la experiencia de uso (REF-01, REF-05).
 - **CA6:** El filtrado completo responde en menos de 2 segundos desde la interacción del usuario (REF-01).
-- **CA7:** Los componentes usan HTML semántico (`section`, `ul`/`li`, encabezados jerárquicos) y contraste de color suficiente (REF-13).
+- **CA7:** Los componentes utilizan HTML semántico (`section`, `aside`, `header`, `ul`/`li`, encabezados jerárquicos) y contraste de color suficiente (REF-13).
 
 ---
 
