@@ -1,35 +1,91 @@
 export const VALID_REGIONES = ['valparaiso', 'metropolitana', 'biobio', 'antofagasta']
 export const VALID_TIPOS = ['publica', 'privada']
 
+function getAllParams(rawParams, key) {
+  if (!rawParams) return []
+  if (typeof rawParams.getAll === 'function') {
+    return rawParams.getAll(key)
+  }
+  const value = rawParams[key]
+  if (Array.isArray(value)) {
+    return value
+  }
+  if (value !== undefined && value !== null) {
+    return [value]
+  }
+  return []
+}
+
+/**
+ * Resuelve el valor de un filtro a partir de una lista de valores (parámetros repetidos en URL).
+ * Aplica la regla acordada: recorre del más reciente al más antiguo y devuelve el último
+ * valor válido. Si el último es inválido pero hay uno anterior válido, conserva el anterior.
+ * Si todos son inválidos, devuelve cadena vacía (elimina el filtro).
+ *
+ * @param {Array<unknown>} values - Lista de valores recibidos.
+ * @param {Array<string>} allowedValues - Valores permitidos en minúsculas.
+ * @returns {string} Valor saneado o cadena vacía.
+ */
+function resolveLastValidParam(values, allowedValues) {
+  for (let i = values.length - 1; i >= 0; i--) {
+    const val = values[i]
+    if (typeof val === 'string') {
+      const normalized = val.trim().toLowerCase()
+      if (allowedValues.includes(normalized)) {
+        return normalized
+      }
+    }
+  }
+  return ''
+}
+
+function resolveKeywordParam(values) {
+  for (let i = values.length - 1; i >= 0; i--) {
+    const val = values[i]
+    if (typeof val === 'string') {
+      return val
+    }
+  }
+  return ''
+}
+
 /**
  * Sanea y normaliza los parámetros de filtro de forma defensiva, ya sea que provengan
  * de un objeto plano o de una instancia de `URLSearchParams`. Descarta parámetros
- * desconocidos y normaliza a cadena vacía cualquier valor no válido para región o tipo.
+ * desconocidos y resuelve parámetros repetidos según la regla: evalúa del más reciente
+ * al más antiguo conservando el último valor válido.
+ *
+ * Nota sobre `keyword`: se conserva como cadena sin trim destructivo para no entorpecer
+ * la escritura en campos controlados de texto; la normalización con trim se aplica al
+ * evaluar la coincidencia (`filterLicitaciones`) y al contar activos (`countActiveFilters`).
  *
  * @param {URLSearchParams|Record<string, unknown>} [rawParams={}] - Parámetros en bruto.
  * @returns {{keyword: string, region: string, tipo: string}} Filtros saneados.
  */
 export function sanitizeFilterParams(rawParams = {}) {
-  const getParam = (key) => {
-    if (!rawParams) return ''
-    if (typeof rawParams.get === 'function') {
-      return rawParams.get(key) || ''
-    }
-    return rawParams[key] || ''
-  }
+  const keywordValues = getAllParams(rawParams, 'keyword')
+  const regionValues = getAllParams(rawParams, 'region')
+  const tipoValues = getAllParams(rawParams, 'tipo')
 
-  const rawKeyword = getParam('keyword')
-  const keyword = typeof rawKeyword === 'string' ? rawKeyword : ''
-
-  const rawRegion = getParam('region')
-  const normalizedRegion = typeof rawRegion === 'string' ? rawRegion.trim().toLowerCase() : ''
-  const region = VALID_REGIONES.includes(normalizedRegion) ? normalizedRegion : ''
-
-  const rawTipo = getParam('tipo')
-  const normalizedTipo = typeof rawTipo === 'string' ? rawTipo.trim().toLowerCase() : ''
-  const tipo = VALID_TIPOS.includes(normalizedTipo) ? normalizedTipo : ''
+  const keyword = resolveKeywordParam(keywordValues)
+  const region = resolveLastValidParam(regionValues, VALID_REGIONES)
+  const tipo = resolveLastValidParam(tipoValues, VALID_TIPOS)
 
   return { keyword, region, tipo }
+}
+
+/**
+ * Cuenta la cantidad de filtros activos. Para `keyword` se considera activa solo si
+ * contiene texto después de aplicar trim.
+ *
+ * @param {{keyword?: string, region?: string, tipo?: string}} [filters={}] - Objeto de filtros.
+ * @returns {number} Cantidad de filtros efectivamente activos (0 a 3).
+ */
+export function countActiveFilters(filters = {}) {
+  const keyword = typeof filters?.keyword === 'string' ? filters.keyword.trim() : ''
+  const region = typeof filters?.region === 'string' ? filters.region.trim() : ''
+  const tipo = typeof filters?.tipo === 'string' ? filters.tipo.trim() : ''
+  return [keyword, region, tipo].filter(Boolean).length
 }
 
 function normalizeKeyword(keyword) {

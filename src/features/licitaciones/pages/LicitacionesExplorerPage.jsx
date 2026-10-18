@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
-import { filterLicitaciones } from '../licitacionFilters.js'
+import { filterLicitaciones, countActiveFilters } from '../licitacionFilters.js'
 import mockData from '../data/licitaciones.mock.json'
 import './LicitacionesExplorerPage.css'
 
@@ -14,9 +14,7 @@ function LicitacionesExplorerPage() {
     return filterLicitaciones(mockData, filters)
   }, [filters])
 
-  const activeFiltersCount = [filters.keyword.trim(), filters.region, filters.tipo].filter(
-    Boolean,
-  ).length
+  const activeFiltersCount = countActiveFilters(filters)
 
   return (
     <section className="licitaciones-explorer">

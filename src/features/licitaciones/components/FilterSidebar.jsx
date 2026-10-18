@@ -1,4 +1,5 @@
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
+import { countActiveFilters } from '../licitacionFilters.js'
 import './FilterSidebar.css'
 
 const REGIONES = [
@@ -23,7 +24,7 @@ export function FilterSidebar() {
   const handleTipoChange = (value) => setFilter('tipo', value)
 
   const trimmedKeyword = filters.keyword.trim()
-  const activeCount = [trimmedKeyword, filters.region, filters.tipo].filter(Boolean).length
+  const activeCount = countActiveFilters(filters)
   const hasActiveFilters = activeCount > 0
 
   const activeRegionLabel = REGIONES.find((r) => r.value === filters.region)?.label
@@ -142,8 +143,14 @@ export function FilterSidebar() {
       </div>
 
       <div className="filter-group">
-        <span className="filter-group-label">MODALIDAD DE LICITACIÓN</span>
-        <div className="filter-type-pills" role="group" aria-label="Modalidad de licitación">
+        <span id="modalidad-licitacion-label" className="filter-group-label">
+          MODALIDAD DE LICITACIÓN
+        </span>
+        <div
+          className="filter-type-pills"
+          role="group"
+          aria-labelledby="modalidad-licitacion-label"
+        >
           {TIPOS.map((t) => {
             const isSelected = filters.tipo === t.value
             return (
