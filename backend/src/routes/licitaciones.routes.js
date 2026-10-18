@@ -32,7 +32,9 @@ function matchesKeyword(licitacion, keyword) {
 
 export function registerLicitacionesRoutes(router) {
   router.get('/api/licitaciones', (req, res) => {
-    const { keyword, region, tipo } = req.query
+    const { region, tipo } = req.query
+    // Igual que el buscador del frontend: se ignoran los espacios al inicio y al final
+    const keyword = (req.query.keyword || '').trim()
     let resultado = licitaciones
     if (keyword) resultado = resultado.filter((l) => matchesKeyword(l, keyword))
     if (region) resultado = resultado.filter((l) => equalsIgnoreCase(l.region, region))
