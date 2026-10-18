@@ -351,7 +351,7 @@ async function reviewPullRequest() {
   if (linkedIssue) {
     try {
       const issue = await ghRequest(`/issues/${linkedIssue}`)
-      issueInfo = `\n\n--- ISSUE LINKADO (#${linkedIssue}) ---\nTítulo: ${issue.title}\n\n${truncate(redact(issue.body ?? ''), 8000)}\n`
+      issueInfo = `\n\n--- ISSUE LINKADO (#${linkedIssue}) ---\nTítulo: ${redact(issue.title)}\n\n${truncate(redact(issue.body ?? ''), 8000)}\n`
     } catch {
       issueInfo = `\n\n--- ISSUE LINKADO (#${linkedIssue}) ---\nNo se pudo leer el issue; validar la trazabilidad manualmente.\n`
     }
