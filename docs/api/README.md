@@ -7,7 +7,7 @@ API REST del backend (`backend/`), implementada con el módulo nativo `node:http
 | API | Método y ruta               | Historia de usuario                       | Documentación                                      | Colección de Thunder Client                                                                              |
 | --- | --------------------------- | ----------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | 1   | `GET /api/licitaciones`     | #43 Buscar licitaciones por palabra clave | [listado-licitaciones.md](listado-licitaciones.md) | [API1-buscar-licitaciones-HU43](../thunder-client/thunder-collection_API1-buscar-licitaciones-HU43.json) |
-| 2   | `GET /api/licitaciones/:id` | #44 Ver el detalle de una licitación      | [detalle-licitacion.md](detalle-licitacion.md)     | [API2-detalle-licitacion-HU44](../thunder-client/thunder-collection_API2-detalle-licitacion-HU44.json)   |
+| 2   | `GET /api/licitaciones/:id` | #44 Ver el detalle de una licitación      | `detalle-licitacion.md` (llega con el PR #90)      | `thunder-collection_API2-detalle-licitacion-HU44.json` (llega con el PR #90)                             |
 
 ## Cómo levantar la API
 

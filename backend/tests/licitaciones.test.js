@@ -51,6 +51,12 @@ describe('GET /api/licitaciones', () => {
     assert.equal(body[0].id, 'licitacion-005')
   })
 
+  it('busca la palabra clave solo en el título, no en la institución', async () => {
+    const response = await fetch(`${baseUrl}/api/licitaciones?keyword=Banco`)
+    assert.equal(response.status, 200)
+    assert.deepEqual(await response.json(), [])
+  })
+
   it('ignora los espacios alrededor de la palabra clave', async () => {
     const response = await fetch(`${baseUrl}/api/licitaciones?keyword=%20%20software%20`)
     const body = await response.json()

@@ -22,12 +22,9 @@ function equalsIgnoreCase(value, expected) {
   return String(value).toLowerCase() === expected.toLowerCase()
 }
 
+// CA1 de #43: la palabra clave se busca solo en el título, igual que el frontend
 function matchesKeyword(licitacion, keyword) {
-  const termino = keyword.toLowerCase()
-  return (
-    licitacion.title.toLowerCase().includes(termino) ||
-    licitacion.institution.toLowerCase().includes(termino)
-  )
+  return licitacion.title.toLowerCase().includes(keyword.toLowerCase())
 }
 
 export function registerLicitacionesRoutes(router) {

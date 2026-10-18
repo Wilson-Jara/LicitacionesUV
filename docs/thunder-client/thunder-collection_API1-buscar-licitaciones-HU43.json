@@ -88,7 +88,7 @@
       "_id": "2ea3383c-e2e6-4ee4-b20f-e7445fc5c94a",
       "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
       "containerId": "",
-      "name": "TC-L03 Equivalencia: palabra clave presente solo en la institucion",
+      "name": "TC-L03 Equivalencia: termino presente solo en la institucion no coincide",
       "url": "http://localhost:3000/api/licitaciones?keyword=Banco",
       "method": "GET",
       "sortNum": 30000,
@@ -113,13 +113,7 @@
           "type": "json-query",
           "custom": "json",
           "action": "count",
-          "value": "1"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].id",
-          "action": "equal",
-          "value": "licitacion-004"
+          "value": "0"
         }
       ]
     },
@@ -233,7 +227,7 @@
       "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
       "containerId": "",
       "name": "TC-L07 Limite: palabra clave de un solo caracter",
-      "url": "http://localhost:3000/api/licitaciones?keyword=%C3%B1",
+      "url": "http://localhost:3000/api/licitaciones?keyword=w",
       "method": "GET",
       "sortNum": 70000,
       "created": "2026-10-18T12:00:00.000Z",
@@ -242,7 +236,7 @@
       "params": [
         {
           "name": "keyword",
-          "value": "ñ",
+          "value": "w",
           "isPath": false
         }
       ],
