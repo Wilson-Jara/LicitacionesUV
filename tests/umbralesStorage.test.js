@@ -44,9 +44,21 @@ describe('umbralesStorage · lectura', () => {
       getUmbralesIniciales(),
     )
     assert.deepEqual(
-      readUmbralesStore(createMemoryStorage({ [UMBRALES_STORAGE_KEY]: '{"unidades":[]}' })),
+      readUmbralesStore(createMemoryStorage({ [UMBRALES_STORAGE_KEY]: '{"unidades":[null]}' })),
       getUmbralesIniciales(),
     )
+    assert.deepEqual(
+      readUmbralesStore(createMemoryStorage({ [UMBRALES_STORAGE_KEY]: '{"actualizadoEn":null}' })),
+      getUmbralesIniciales(),
+    )
+  })
+
+  it('distingue entre no haber configuración guardada y una configuración vacía', () => {
+    const vacia = createMemoryStorage({
+      [UMBRALES_STORAGE_KEY]: JSON.stringify({ actualizadoEn: null, unidades: [] }),
+    })
+
+    assert.deepEqual(readUmbralesStore(vacia), { actualizadoEn: null, unidades: [] })
   })
 
   it('normaliza la configuración y descarta unidades y umbrales inválidos', () => {
@@ -218,5 +230,21 @@ describe('umbralesStorage · operaciones sobre unidades', () => {
   it('ignora la eliminación cuando la unidad no existe', () => {
     const store = getUmbralesIniciales()
     assert.equal(eliminarUnidad(store, 'unidad-inexistente', 'x'), store)
+  })
+
+  it('conserva la eliminación de todas las unidades tras recargar', () => {
+    const storage = createMemoryStorage()
+    let store = getUmbralesIniciales()
+    for (const unidad of store.unidades) {
+      store = eliminarUnidad(store, unidad.id, '2026-10-18T15:00:00.000Z')
+    }
+
+    assert.equal(store.unidades.length, 0)
+
+    writeUmbralesStore(storage, store)
+
+    const releido = readUmbralesStore(storage)
+    assert.deepEqual(releido, store)
+    assert.equal(releido.unidades.length, 0)
   })
 })

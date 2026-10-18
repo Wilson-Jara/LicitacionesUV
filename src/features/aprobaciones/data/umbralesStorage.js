@@ -63,9 +63,10 @@ export function getUmbralesIniciales() {
 /**
  * Lee la configuración de umbrales desde `localStorage`.
  *
- * CA2 (REF-14): los umbrales son datos configurables. Si no hay configuración
- * guardada, corrupta o vacía, se devuelve la configuración inicial en lugar de
- * fallar, de modo que el panel siempre tenga datos editables.
+ * CA2 (REF-14): los umbrales son datos configurables. Solo se recurre a la
+ * configuración inicial cuando no hay nada guardado o los datos son ilegibles;
+ * una configuración guardada vacía («sin unidades») se respeta tal cual, para
+ * que la eliminación de todas las unidades sobreviva a una recarga.
  *
  * @param {Storage|null} storage - Almacenamiento a leer (puede ser `null`).
  * @returns {{ actualizadoEn: string|null, unidades: Array<object> }} Configuración vigente.
@@ -79,8 +80,11 @@ export function readUmbralesStore(storage) {
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
       return getUmbralesIniciales()
     }
+    if (!Array.isArray(parsed.unidades)) return getUmbralesIniciales()
     const unidades = normalizeUnidades(parsed.unidades)
-    if (unidades.length === 0) return getUmbralesIniciales()
+    // Una lista vacía guardada es una configuración válida («sin unidades»):
+    // solo se vuelve a la semilla si había datos pero ninguno era utilizable.
+    if (unidades.length === 0 && parsed.unidades.length > 0) return getUmbralesIniciales()
     const actualizadoEn = typeof parsed.actualizadoEn === 'string' ? parsed.actualizadoEn : null
     return { actualizadoEn, unidades }
   } catch {
