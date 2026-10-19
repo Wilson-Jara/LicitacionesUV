@@ -110,12 +110,12 @@ Se asignan tareas de producto, arquitectura, código, integración, documentaci�
 
 ### 4. Crear una rama
 
-No se debe trabajar directamente sobre `main`.
+No se debe trabajar directamente sobre `main` ni sobre `develop`. Toda tarea se desarrolla en su propia rama, creada **siempre desde `develop`**:
 
 ```bash
-git switch main
-git pull origin main
-git switch -c feat/[numero]-[descripcion]
+git switch develop
+git pull origin develop
+git switch -c feat/[numero-issue]-[descripcion-corta]
 ```
 
 ### 5. Implementar y hacer commits
