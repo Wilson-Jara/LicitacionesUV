@@ -3,6 +3,8 @@ import { HttpError, readJsonBody, sendJson } from './lib/http.js'
 import { createRouter } from './lib/router.js'
 import { registerHealthRoutes } from './routes/health.routes.js'
 import { registerLicitacionesRoutes } from './routes/licitaciones.routes.js'
+import { createMemoryLicitacionesRepository } from './data/licitaciones.repository.js'
+import { loadMockLicitaciones } from './data/mockLicitaciones.js'
 
 function applyCors(req, res) {
   res.setHeader('Access-Control-Allow-Origin', config.corsOrigin)
@@ -16,10 +18,13 @@ function applyCors(req, res) {
   return false
 }
 
-export function createApp() {
+// Sin repositorio explícito se usan los datos mock en memoria (pruebas y desarrollo sin BD)
+export function createApp({
+  licitacionesRepository = createMemoryLicitacionesRepository(loadMockLicitaciones()),
+} = {}) {
   const router = createRouter()
   registerHealthRoutes(router)
-  registerLicitacionesRoutes(router)
+  registerLicitacionesRoutes(router, licitacionesRepository)
 
   return async (req, res) => {
     try {
