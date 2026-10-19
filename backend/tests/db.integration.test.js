@@ -83,6 +83,8 @@ describe('PostgreSQL (integración)', { skip }, () => {
     assert.equal(combinadas.length, 2)
     assert.ok(combinadas.every((l) => l.region === 'valparaiso' && l.type === 'publica'))
     assert.deepEqual(await repo.list({ keyword: '%' }), [])
+    // CA1 de #43: un término presente solo en la institución no coincide
+    assert.deepEqual(await repo.list({ keyword: 'Banco' }), [])
   })
 
   it('responde la API HTTP leyendo desde la base', async () => {

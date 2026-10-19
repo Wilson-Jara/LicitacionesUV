@@ -57,7 +57,8 @@ describe('buildListQuery', () => {
       region: 'VALPARAISO',
       tipo: 'Publica',
     })
-    assert.match(text, /\(titulo ILIKE \$1 OR institucion ILIKE \$1\)/)
+    assert.match(text, /titulo ILIKE \$1/)
+    assert.doesNotMatch(text, /institucion ILIKE/)
     assert.match(text, /lower\(region_id\) = lower\(\$2\)/)
     assert.match(text, /lower\(tipo\) = lower\(\$3\)/)
     assert.doesNotMatch(text, /DROP TABLE/)

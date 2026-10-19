@@ -2,7 +2,9 @@ import { HttpError, sendJson } from '../lib/http.js'
 
 export function registerLicitacionesRoutes(router, repository) {
   router.get('/api/licitaciones', async (req, res) => {
-    const { keyword, region, tipo } = req.query
+    const { region, tipo } = req.query
+    // Igual que el buscador del frontend: se ignoran los espacios al inicio y al final
+    const keyword = (req.query.keyword || '').trim()
     sendJson(res, 200, await repository.list({ keyword, region, tipo }))
   })
 

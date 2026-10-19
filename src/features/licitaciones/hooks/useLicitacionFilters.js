@@ -1,13 +1,15 @@
 import { useSearchParams } from 'react-router-dom'
+import { sanitizeFilterParams } from '../licitacionFilters.js'
 
 /**
  * Hook que centraliza el estado de los filtros del explorador de licitaciones y
- * lo sincroniza con la URL mediante `useSearchParams`. Los valores vacíos se
- * eliminan del query string para mantener URLs limpias.
+ * lo sincroniza con la URL mediante `useSearchParams`. Sanea defensivamente parámetros
+ * inválidos o desconocidos provenientes de la URL y elimina los valores vacíos del
+ * query string para mantener URLs limpias.
  *
  * @returns {{filters: {keyword: string, region: string, tipo: string},
  *   setFilter: Function, clearFilters: Function}} Estado de filtros y sus
- *   operaciones: `filters` traduce el query string a valores (`''` si ausente),
+ *   operaciones: `filters` traduce y sanea el query string (`''` si ausente o inválido),
  *   `setFilter(key, value)` actualiza un filtro individual (eliminándolo de la
  *   URL cuando `value` es vacío) y `clearFilters()` restablece todos los filtros.
  * @throws {Error} Si se usa fuera de un contexto de router con search params
@@ -16,11 +18,7 @@ import { useSearchParams } from 'react-router-dom'
 export function useLicitacionFilters() {
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const filters = {
-    keyword: searchParams.get('keyword') || '',
-    region: searchParams.get('region') || '',
-    tipo: searchParams.get('tipo') || '',
-  }
+  const filters = sanitizeFilterParams(searchParams)
 
   const setFilter = (key, value) => {
     setSearchParams((prevParams) => {

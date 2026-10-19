@@ -2,6 +2,8 @@
 
 Plataforma web desarrollada en **React + Vite** diseñada para centralizar, filtrar y optimizar la búsqueda de oportunidades comerciales y licitaciones publicadas por empresas privadas, recopiladas de forma automatizada mediante técnicas de web scraping.
 
+> 🤖 **Para asistentes de IA:** reglas obligatorias de trabajo en [`AGENTS.md`](AGENTS.md) y contexto técnico en [`docs/AI_context.md`](docs/AI_context.md).
+
 ---
 
 ## 📌 Descripción del sistema
@@ -39,10 +41,16 @@ Todas las historias están registradas como GitHub Issues.
 | US-05 | Acceder a la fuente oficial de una licitación         | #17                 |
 | US-06 | Guardar licitaciones en favoritos                     | #42                 |
 | US-07 | Gestionar perfil de usuario                           | — (issue por crear) |
-| US-08 | Recibir alertas de convocatorias de interés           | #48                 |
+| US-08 | Configurar alertas de nuevas licitaciones             | #48                 |
 | US-09 | Aprobar o rechazar una licitación según el monto      | #55 (CR-302)        |
 | US-10 | Configurar umbrales de aprobación por unidad          | #56 (CR-302)        |
 | US-11 | Gestionar subrogancias con vigencia                   | #57 (CR-302)        |
+| US-12 | Buscar licitaciones por palabra clave                 | #43                 |
+| US-13 | Ver el detalle de una licitación                      | #44                 |
+| US-14 | Asistente guiado de requerimientos de la licitación   | #45                 |
+| US-15 | Visualizar favoritas en vistas de calendario y lista  | #46                 |
+| US-16 | Mostrar todos los resultados de búsqueda y filtros    | #47                 |
+| US-17 | Exportar resumen y bases de licitación en PDF         | #49                 |
 
 > Cada issue mantiene el formato: `US-XX: [nombre]` + enunciado _Como [actor], quiero [acción], para [beneficio]_ + criterios de aceptación (CA1, CA2, ...).
 
@@ -386,7 +394,7 @@ El repositorio aplica controles automáticos para que ningún cambio llegue a la
 - **Asignación de revisores (CODEOWNERS):** `.github/CODEOWNERS` solicita automáticamente la revisión de los responsables del área que toca cada PR (detalle en [Asignación del revisor](#asignación-del-revisor)).
 - **Plantilla de Pull Request:** `.github/pull_request_template.md` recuerda completar propósito, resumen, cómo se verificó y el issue que cierra.
 - **Plantillas de issues:** `.github/ISSUE_TEMPLATE/` incluye historia de usuario, tarea/chore y bug, con _Definition of Ready_ (DoR) y _Definition of Done_ (DoD).
-- **Revisor automático (IA):** el workflow `.github/workflows/ai-review.yml` publica un comentario con la revisión de DeepSeek (`.github/scripts/ai-review.mjs`) al abrir o reabrir un PR/issue y, bajo demanda, al agregar la etiqueta `ai-review`. Redacta secretos antes de enviar el contenido al modelo y responde en español.
+- **Revisor automático (IA):** el workflow `.github/workflows/ai-review.yml` publica un comentario con la revisión de DeepSeek (`.github/scripts/ai-review.mjs`) al abrir o reabrir un PR/issue y, bajo demanda, al agregar la etiqueta `ai-review`. Redacta secretos antes de enviar el contenido al modelo y responde en español. Requiere el secret `DEEPSEEK_API_KEY`; si no está configurado, la revisión se omite sin bloquear el CI.
 
 > **Regla:** no se fusiona un PR sin revisión de un par y sin que `npm run verify` pase en CI. La revisión automática de IA es una **sugerencia**: no reemplaza la revisión ni la aprobación humana.
 
@@ -423,7 +431,7 @@ Para correcciones urgentes detectadas en producción se crea una rama `hotfix/[d
 
 ## Fundamentos de Ingeniería de Software
 
-## Actividad · Diagnóstico de madurez, caso equipo Aurora
+### Actividad · Diagnóstico de madurez, caso equipo Aurora
 
 En parejas · 10 minutos. Calificar las áreas de proceso con la escala N · P · L · F (ISO/IEC 33000) citando evidencia del caso, y luego ubicar el nivel de madurez del equipo. La regla de la actividad: se califica lo que **está registrado**, no lo que el equipo probablemente hace.
 
@@ -447,7 +455,7 @@ Prueban manualmente antes de cada demo, pero no hay ni un caso de prueba escrito
 
 Lo ubicamos en **nivel 1 (Inicial)**. Entregaron las 4 iteraciones pero a pura pasada, y de hecho las últimas 2 demos se atrasaron y el equipo lo echa a los "cambios de último minuto", o sea responden con sobreesfuerzo y no con proceso. Tienen cosas del nivel 2 empezadas (tablero, sprints, Git, actas), pero ninguna terminada, falta el registro y la trazabilidad. Lo que más les falta para subir a nivel 2: criterios de aceptación en todos los requisitos, registrar los cambios, identificar la versión que entregan y dejar constancia de las pruebas.
 
-## Actividad · Parte 2: Propuesta de mejora para nivel 2
+### Actividad · Parte 2: Propuesta de mejora para nivel 2
 
 En parejas · 12 minutos. Propuesta de dos acciones para llevar a Aurora hacia el Nivel 2 de madurez (Gestionado), atacando brechas distintas, sin comprar software ni sumar personas, y con indicadores calculables con los registros existentes del equipo.
 
@@ -467,7 +475,7 @@ En parejas · 12 minutos. Propuesta de dos acciones para llevar a Aurora hacia e
 - **Sin compras ni personal nuevo:** Ambas acciones operan al 100% sobre la infraestructura existente de GitHub, plantillas Markdown y scripts del repositorio (`npm run verify`).
 - **Indicadores calculables:** Los indicadores se obtienen directamente de los registros nativos de GitHub (historial de Pull Requests e Issues).
 
-## Actividad · Taller de arquitectura: priorización ISO 25010
+### Actividad · Taller de arquitectura: priorización ISO 25010
 
 Trabajo en clases sobre el proyecto del grupo. El taller tiene tres fases y culmina en un bosquejo arquitectónico defendible: **Fase 1** priorizar los atributos ISO 25010, **Fase 2** decidir el estilo arquitectónico, el _trade-off_ y los ASR, y **Fase 3** poner en común el bosquejo.
 
@@ -567,7 +575,7 @@ Es arquitectónicamente significativo porque cumple las **tres señales**:
 
 ## Registro de Prompts e Iteraciones con IA
 
-## Prompr
+## Prompt:
 
 > Ayúdame a escribir la descripción de mi proyecto de software. Se llama filtrado de licitaciones de empresas privadas y lo que hace es con un scraper recolecta los datos de las páginas donde se suben estas licitaciones, hace un filtrado de estas mismas y las publica en una web. ¿Puedes hacer una primera versión?
 
