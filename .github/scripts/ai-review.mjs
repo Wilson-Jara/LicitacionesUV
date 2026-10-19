@@ -161,9 +161,7 @@ function buildRepoContext() {
       // archivo ilegible o con permiso denegado: se omite sin romper la revisión
     }
   }
-  return sections.length > 0
-    ? `--- CONTEXTO DEL REPOSITORIO ---\n${sections.join('\n\n')}`
-    : ''
+  return sections.length > 0 ? `--- CONTEXTO DEL REPOSITORIO ---\n${sections.join('\n\n')}` : ''
 }
 
 function extractLinkedIssueNumber(body) {
@@ -402,7 +400,10 @@ async function reviewPullRequest() {
   }
 
   const repoContext = buildRepoContext()
-  const review = await callDeepSeek(SYSTEM_PR, buildPrPrompt(pr, files, checksSummary, issueInfo, repoContext))
+  const review = await callDeepSeek(
+    SYSTEM_PR,
+    buildPrPrompt(pr, files, checksSummary, issueInfo, repoContext),
+  )
   const title = requested ? 'Revisión solicitada' : 'Revisión automática'
   const body = `${MARKER}\n### 🤖 ${title} (DeepSeek)\n\n${review}\n\n---\n_Generado con \`${DEEPSEEK_MODEL}\`. Es una sugerencia automática: la revisión humana es obligatoria._`
   await publish(body)
