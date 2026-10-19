@@ -74,26 +74,27 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 **Como** usuario autenticado, **quiero** ver las licitaciones que guardé en favoritos en una vista de calendario y alternarla con una vista de lista, **para** llevar un orden de cuándo las guardé y elegir cómo consultarlas.
 
-> Alcance: #46 consume la persistencia de favoritos de #42 (`licitacionesuv-favoritos`, con `idLicitacion` y `fechaGuardado` por usuario) y no la reimplementa. Las alertas de #48 usan su propia clave y formato.
+> Alcance: #46 consume la persistencia de favoritos de #42 (`licitacionesuv-favoritos`, con `idLicitacion` y `fechaGuardado` por usuario) y **extiende su manejo de errores de lectura** (CA9), sin cambiar la clave ni el formato. Eso implica ajustar `favoritosStorage.js` (la lectura informa el error en vez de devolver `{}`) y `FavoritosProvider.jsx` (no escribe el store mientras exista un error de lectura). Las alertas de #48 tienen su propia clave y formato; solo comparten el mecanismo de lectura defensiva.
 
 ### Criterios de aceptación
 
-- **CA1 · Sin sesión:** `/favoritos` invita a iniciar sesión con un botón que abre el modal de acceso y no muestra favoritos de ningún usuario (REF-02).
-- **CA2 · Fuente de datos:** con sesión iniciada se muestran solo los favoritos del usuario autenticado, leídos de la persistencia de #42 (REF-10).
-- **CA3 · Selector de vista:** control "Lista" / "Calendario" con roles ARIA y estado seleccionado (`role="tablist"`, `role="tab"`, `aria-selected`), operable con teclado (Tab, flechas, Enter, Espacio). Cambiar de vista no recarga la página ni pierde datos (REF-13).
-- **CA4 · Preferencia de vista:** se conserva al volver a `/favoritos` y tras recargar o cerrar el navegador, por usuario y en el mismo navegador, en la clave `licitacionesuv-favoritos-vista` (`{ "<idUsuario>": "lista" | "calendario" }`). Predeterminada "Lista", también si el valor es inválido o `localStorage` no está disponible. Se aplica en el primer render, sin mostrar antes la otra vista.
-- **CA5 · Calendario:** cada favorito se ubica en el día local (zona horaria del navegador) de su `fechaGuardado`; varios el mismo día se agrupan con su cantidad. Abre en el mes actual y permite ir al mes anterior y al siguiente.
-- **CA6 · Fecha inválida:** un favorito con `fechaGuardado` ausente o no interpretable no se ubica en el calendario ni recibe una fecha inventada; sigue en la vista Lista. Si hay al menos uno, el calendario muestra "N favorito(s) sin fecha de guardado válida no aparece(n) en el calendario." (singular o plural) con el botón "Ver en Lista", que cambia de vista y guarda la preferencia (`role="status"`).
-- **CA7 · Quitar favorito:** al quitarlo desde cualquier vista, desaparece de ambas de inmediato.
-- **CA8 · Estado vacío:** sin favoritos, ambas vistas muestran "Aún no tienes favoritos" y el enlace "Explorar licitaciones" a `/licitaciones`. Si los guardados ya no están en el catálogo, "Licitaciones no disponibles" con el mismo enlace (REF-05).
-- **CA9 · Error de lectura:** si falla la lectura (`localStorage` bloqueado o JSON corrupto), no se muestra el estado vacío sino "No pudimos leer tus favoritos guardados en este navegador. Tus favoritos no se modificaron." (`role="alert"`) con el botón "Reintentar", que vuelve a leer. Mientras haya error no se escribe sobre los datos guardados.
-- **CA10 · Transición:** fundido de opacidad de 150 ms (máximo 200 ms), sin flash de contenido incorrecto; instantáneo con `prefers-reduced-motion: reduce`.
-- **CA11 · Formato local:** montos y fechas en formato chileno (CLP e `Intl`, REF-12).
+- **CA1:** Sin sesión iniciada, `/favoritos` invita a iniciar sesión con un botón que abre el modal de acceso y no muestra favoritos de ningún usuario (REF-02).
+- **CA2:** Con sesión iniciada, se muestran solo los favoritos del usuario autenticado, leídos de la persistencia de #42 (REF-10).
+- **CA3:** El selector de vista sigue el patrón de pestañas ARIA: un contenedor `role="tablist"` con `aria-label="Vista de favoritos"`; dos pestañas "Lista" y "Calendario" con `role="tab"`, `aria-selected` y `aria-controls` hacia su panel; cada panel con `role="tabpanel"` y `aria-labelledby` hacia su pestaña. Foco itinerante: solo la pestaña activa tiene `tabindex="0"` (la otra `tabindex="-1"`); las flechas izquierda y derecha mueven el foco y activan la pestaña, e Inicio y Fin van a la primera y la última. Cambiar de vista no recarga la página ni pierde datos (REF-13).
+- **CA4:** La vista elegida se conserva al volver a `/favoritos` y tras recargar o cerrar el navegador, por usuario y en el mismo navegador, en la clave `licitacionesuv-favoritos-vista` con formato `{ "<idUsuario>": "lista" | "calendario" }`, donde `<idUsuario>` es el mismo identificador que usan los favoritos (`getUserId`: el correo del usuario o, si no existe, su nombre). La vista predeterminada es "Lista", también si el valor guardado es inválido o `localStorage` no está disponible. Se aplica en el primer render, sin mostrar antes la otra vista.
+- **CA5:** El calendario ubica cada favorito en el día local (zona horaria del navegador) de su `fechaGuardado`; varios el mismo día se agrupan con su cantidad. Abre en el mes actual y permite ir al mes anterior y al siguiente.
+- **CA6:** Un favorito con `fechaGuardado` ausente o no interpretable como fecha no se ubica en el calendario ni recibe una fecha inventada; sigue visible en la vista Lista. Si hay al menos uno, al inicio del panel del calendario se muestra como texto informativo (sin región _live_) exactamente "1 favorito sin fecha de guardado válida no aparece en el calendario." o, con N ≥ 2, "N favoritos sin fecha de guardado válida no aparecen en el calendario.", junto a un botón "Ver en Lista" que cambia a la vista Lista y guarda esa preferencia.
+- **CA7:** Al quitar un favorito desde cualquiera de las dos vistas, desaparece de ambas de inmediato.
+- **CA8:** Sin favoritos, ambas vistas muestran "Aún no tienes favoritos" y el enlace "Explorar licitaciones" a `/licitaciones`. Si los favoritos guardados ya no están en el catálogo, se muestra "Licitaciones no disponibles" con el mismo enlace (REF-05).
+- **CA9:** Si falla la lectura de los favoritos (`localStorage` bloqueado o JSON corrupto), no se muestra el estado vacío sino "No pudimos leer tus favoritos guardados en este navegador. Tus favoritos no se modificaron." con `role="alert"` y un botón "Reintentar" que vuelve a leer `localStorage`. Mientras exista el error no se escribe sobre los datos guardados (REF-05).
+- **CA10:** El cambio de vista usa un fundido de opacidad de 150 ms (máximo 200 ms) y no muestra contenido de la vista anterior al terminar; con `prefers-reduced-motion: reduce` el cambio es instantáneo. La ausencia de parpadeo se verifica manualmente con DevTools (REF-13).
+- **CA11:** Montos y fechas se muestran con formato local chileno (CLP e `Intl`, REF-12).
 
 ### Definition of Done específico (además del común)
 
-- Pruebas automatizadas de: agrupación por día local (incluido un favorito guardado cerca de la medianoche UTC), fechas inválidas, preferencia de vista (por usuario, predeterminada e inválida) y error de lectura sin sobrescribir los datos.
-- Verificación manual del selector con teclado y lector de pantalla, y de la transición con y sin `prefers-reduced-motion` (duración revisada en DevTools).
+- Pruebas automatizadas de: agrupación por día local (incluido un favorito guardado cerca de la medianoche UTC), fechas inválidas y sus dos textos exactos, preferencia de vista (por usuario, predeterminada e inválida) y error de lectura sin sobrescribir los datos.
+- Verificación manual del selector con teclado y lector de pantalla (patrón de pestañas del CA3), y de la transición con y sin `prefers-reduced-motion` revisada en DevTools (CA10).
+- `docs/AI_context.md` documenta la clave `licitacionesuv-favoritos-vista` al implementarse.
 - Notas del issue actualizadas: `MisFavoritosPage` ya lista los favoritos y la dependencia de #42 está cumplida.
 
 ---
@@ -125,7 +126,7 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 - **CA1:** Solo un usuario con sesión iniciada puede crear o editar alertas; sin sesión, la acción abre el modal de autenticación (REF-02).
 - **CA2:** El formulario permite definir un nombre de alerta y sus criterios (palabra clave, región y tipo), reutilizando los mismos campos del explorador.
 - **CA3:** Una alerta se puede activar o desactivar sin eliminarla, y el cambio se refleja de inmediato en la lista.
-- **CA4:** Las alertas se persisten en `localStorage` asociadas al usuario y sobreviven a la recarga de la página (misma línea que favoritos; REF-10).
+- **CA4:** Las alertas se persisten en `localStorage` asociadas al usuario, en su propia clave (`licitacionesuv-alertas`) y con el mismo mecanismo de lectura defensiva que los favoritos, y sobreviven a la recarga de la página (REF-10).
 - **CA5:** Una alerta se puede eliminar y desaparece de la lista sin recargar la página.
 - **CA6:** Si una alerta no tiene ningún criterio, se muestra un mensaje de validación y no se guarda (REF-05).
 - **CA7:** Formulario y lista son operables por teclado y los mensajes de estado/error se anuncian a lectores de pantalla (REF-13).
