@@ -22,17 +22,16 @@ function equalsIgnoreCase(value, expected) {
   return String(value).toLowerCase() === expected.toLowerCase()
 }
 
+// CA1 de #43: la palabra clave se busca solo en el título, igual que el frontend
 function matchesKeyword(licitacion, keyword) {
-  const termino = keyword.toLowerCase()
-  return (
-    licitacion.title.toLowerCase().includes(termino) ||
-    licitacion.institution.toLowerCase().includes(termino)
-  )
+  return licitacion.title.toLowerCase().includes(keyword.toLowerCase())
 }
 
 export function registerLicitacionesRoutes(router) {
   router.get('/api/licitaciones', (req, res) => {
-    const { keyword, region, tipo } = req.query
+    const { region, tipo } = req.query
+    // Igual que el buscador del frontend: se ignoran los espacios al inicio y al final
+    const keyword = (req.query.keyword || '').trim()
     let resultado = licitaciones
     if (keyword) resultado = resultado.filter((l) => matchesKeyword(l, keyword))
     if (region) resultado = resultado.filter((l) => equalsIgnoreCase(l.region, region))

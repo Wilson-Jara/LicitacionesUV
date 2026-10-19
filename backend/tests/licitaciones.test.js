@@ -51,6 +51,26 @@ describe('GET /api/licitaciones', () => {
     assert.equal(body[0].id, 'licitacion-005')
   })
 
+  it('busca la palabra clave solo en el título, no en la institución', async () => {
+    const response = await fetch(`${baseUrl}/api/licitaciones?keyword=Banco`)
+    assert.equal(response.status, 200)
+    assert.deepEqual(await response.json(), [])
+  })
+
+  it('ignora los espacios alrededor de la palabra clave', async () => {
+    const response = await fetch(`${baseUrl}/api/licitaciones?keyword=%20%20software%20`)
+    const body = await response.json()
+    assert.deepEqual(
+      body.map((l) => l.id),
+      ['licitacion-005'],
+    )
+  })
+
+  it('trata una palabra clave con solo espacios como búsqueda vacía', async () => {
+    const response = await fetch(`${baseUrl}/api/licitaciones?keyword=%20%20%20`)
+    assert.equal((await response.json()).length, 6)
+  })
+
   it('combina filtros de región y tipo', async () => {
     const response = await fetch(`${baseUrl}/api/licitaciones?region=valparaiso&tipo=publica`)
     assert.equal(response.status, 200)

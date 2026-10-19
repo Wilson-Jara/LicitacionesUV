@@ -30,7 +30,7 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ### Criterios de aceptación
 
-- **CA1:** Existe un campo de búsqueda en el explorador de licitaciones; al ingresar un término, el listado muestra solo las licitaciones cuyo `title` contiene el texto (comparación sin distinguir mayúsculas/minúsculas y quitando espacios externos con `trim`).
+- **CA1:** Existe un campo de búsqueda en el explorador de licitaciones; al ingresar un término, el listado muestra solo las licitaciones cuyo `title` contiene el texto (comparación sin distinguir mayúsculas/minúsculas y quitando espacios externos con `trim`; la institución no se considera).
 - **CA2:** El término buscado se refleja en la URL como `?keyword=...`; al recargar o compartir el enlace, el filtro se conserva (REF-09).
 - **CA3:** El listado filtrado se actualiza en menos de 2 segundos para el conjunto de datos mock (REF-01).
 - **CA4:** Si no hay coincidencias, se muestra el estado vacío con un botón que limpia el filtro de búsqueda (REF-05).
