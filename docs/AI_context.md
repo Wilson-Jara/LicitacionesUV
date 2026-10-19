@@ -17,7 +17,7 @@ Revisión realizada en octubre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF y API del backend pasando (45/45 tests).
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros accesibles y API del backend pasando (68/68 tests).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
@@ -65,7 +65,7 @@ Revisión realizada en octubre de 2026:
   - Los componentes usan variables semánticas (`--card-bg`, `--surface-soft`, `--border-strong`, etc.); los hex restantes pertenecen a paneles de marca navy que permanecen oscuros en ambos temas.
 - **Backend (base Fase 2):**
   - Servidor HTTP con el módulo nativo `node:http` (sin dependencias): entrada `backend/src/server.js`, composición en `backend/src/app.js` (CORS, parseo JSON, enrutamiento y manejo de errores) y enrutador propio con parámetros de ruta en `backend/src/lib/router.js`.
-  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword`, `region`, `tipo`, sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
+  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword` solo sobre el título y sin espacios externos, `region` y `tipo`; todos sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
   - Manejo de errores: cuerpo JSON inválido o `:id` mal codificado responden 400, cuerpos de más de 1 MB responden 413 y los errores 5xx devuelven un mensaje genérico (el detalle solo se registra con `console.error`).
   - Datos desde el seed `backend/src/data/licitaciones.seed.json`, con el mismo contrato que el mock del frontend (REF-10). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
   - CORS habilitado para el dev server de Vite y configuración por entorno en `backend/.env.example` (`PORT`, `CORS_ORIGIN`, con `DATABASE_URL` y `JWT_SECRET` reservadas).
@@ -144,6 +144,8 @@ Revisión realizada en octubre de 2026:
 | `backend/src/routes/licitaciones.routes.js`                        | Endpoints de listado y detalle de licitaciones.                                                          |
 | `backend/src/data/licitaciones.seed.json`                          | Seed con el contrato de datos del frontend.                                                              |
 | `backend/tests/*.test.js`                                          | Pruebas de la API con `node --test`.                                                                     |
+| `docs/api/*.md`                                                    | Documentación de las APIs del Entregable 2 (#43 y #44) y su trazabilidad con los CA.                     |
+| `docs/thunder-client/*.json`                                       | Colecciones exportadas de Thunder Client con los casos de prueba de cada API.                            |
 
 ## 6. Stack y dependencias
 
