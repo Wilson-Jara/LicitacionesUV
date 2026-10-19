@@ -7,7 +7,7 @@ API REST del backend (`backend/`), implementada con el módulo nativo `node:http
 | API | Método y ruta               | Historia de usuario                       | Documentación                                      | Colección de Thunder Client                                                                              |
 | --- | --------------------------- | ----------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | 1   | `GET /api/licitaciones`     | #43 Buscar licitaciones por palabra clave | [listado-licitaciones.md](listado-licitaciones.md) | [API1-buscar-licitaciones-HU43](../thunder-client/thunder-collection_API1-buscar-licitaciones-HU43.json) |
-| 2   | `GET /api/licitaciones/:id` | #44 Ver el detalle de una licitación      | `detalle-licitacion.md` (llega con el PR #90)      | `thunder-collection_API2-detalle-licitacion-HU44.json` (llega con el PR #90)                             |
+| 2   | `GET /api/licitaciones/:id` | #44 Ver el detalle de una licitación      | [detalle-licitacion.md](detalle-licitacion.md)     | [API2-detalle-licitacion-HU44](../thunder-client/thunder-collection_API2-detalle-licitacion-HU44.json)   |
 
 ## Cómo levantar la API
 
@@ -20,9 +20,13 @@ La API queda en `http://localhost:3000`. No necesita base de datos: sin `DATABAS
 
 ## Cómo ejecutar las pruebas con Thunder Client
 
+Las colecciones de `docs/thunder-client/` son exportaciones hechas desde Thunder Client (10 casos por API) y se versionan sin modificar.
+
 1. Instala la extensión **Thunder Client** en VS Code.
 2. En Thunder Client, abre **Collections → menú ☰ → Import** y selecciona el archivo `.json` de `docs/thunder-client/`.
-3. Con la API levantada, abre el menú de la colección y elige **Run All**. Cada caso indica en su nombre la técnica que cubre: éxito, clase de equivalencia, valor límite, regla de negocio o error.
+3. Con la API levantada, abre el menú de la colección y elige **Run All**, o ejecuta cada caso con **Send** y revisa la pestaña **Results**. Cada caso indica en su nombre la técnica que cubre: éxito, clase de equivalencia, valor límite, regla de negocio o error.
+
+> El plan gratuito de Thunder Client limita la cantidad de colecciones (3) y de importaciones. Si la importación no está disponible, los casos están descritos uno a uno en la documentación de cada API para crearlos a mano.
 
 ## Formato común
 
