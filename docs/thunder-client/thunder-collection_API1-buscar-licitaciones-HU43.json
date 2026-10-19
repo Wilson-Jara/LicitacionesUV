@@ -1,687 +1,356 @@
 {
-  "clientName": "Thunder Client",
-  "collectionName": "API 1 - Buscar y filtrar licitaciones (HU #43)",
-  "collectionId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-  "dateExported": "2026-10-18T12:00:00.000Z",
-  "version": "1.2",
-  "folders": [],
-  "requests": [
-    {
-      "_id": "dc8c5c65-7bf6-4869-b5bd-f59ce92f65c8",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L01 Exito: sin filtros devuelve el catalogo completo",
-      "url": "http://localhost:3000/api/licitaciones",
-      "method": "GET",
-      "sortNum": 10000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [],
-      "tests": [
+    "clientName": "Thunder Client",
+    "collectionName": "API 1 - Buscar y filtrar licitaciones (HU #43)",
+    "collectionId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+    "dateExported": "2026-10-19T03:58:05.962Z",
+    "version": "1.4",
+    "folders": [],
+    "requests": [
         {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
+            "_id": "4634c786-022b-454b-943f-09db274a960e",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L01 Exito: sin filtros devuelve el catalogo completo",
+            "url": "http://localhost:3000/api/licitaciones",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2026-10-19T03:10:25.608Z",
+            "modified": "2026-10-19T03:10:25.608Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "6"
+                }
+            ]
         },
         {
-          "type": "Content-Type",
-          "custom": "",
-          "action": "contains",
-          "value": "application/json"
+            "_id": "3d71b080-4ed9-4422-a154-4499db2c27ac",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L02 Equivalencia: palabra clave presente en el titulo",
+            "url": "http://localhost:3000/api/licitaciones?keyword=software",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2026-10-19T03:17:19.182Z",
+            "modified": "2026-10-19T03:17:19.182Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "keyword",
+                    "value": "software",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "1"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json[0].id",
+                    "action": "equal",
+                    "value": "licitacion-005"
+                }
+            ]
         },
         {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "6"
+            "_id": "87b5fb7c-2679-42e7-b3fb-19ea42174fb4",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L03 Equivalencia: termino presente solo en la institucion no coincide",
+            "url": "http://localhost:3000/api/licitaciones?keyword=Banco",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2026-10-19T03:20:04.651Z",
+            "modified": "2026-10-19T03:20:04.651Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "keyword",
+                    "value": "Banco",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "0"
+                }
+            ]
         },
         {
-          "type": "res-time",
-          "custom": "",
-          "action": "<",
-          "value": "2000"
-        }
-      ]
-    },
-    {
-      "_id": "e62fd4ba-ebf5-493d-ac63-2867fa9cfe76",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L02 Equivalencia: palabra clave presente en el titulo",
-      "url": "http://localhost:3000/api/licitaciones?keyword=software",
-      "method": "GET",
-      "sortNum": 20000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "software",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
+            "_id": "2d2e8e5d-4d53-4d58-a76c-c84b99f90931",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L04 Negocio: la busqueda no distingue mayusculas",
+            "url": "http://localhost:3000/api/licitaciones?keyword=SOFTWARE",
+            "method": "GET",
+            "sortNum": 50000,
+            "created": "2026-10-19T03:21:40.977Z",
+            "modified": "2026-10-19T03:21:40.990Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "keyword",
+                    "value": "SOFTWARE",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "1"
+                }
+            ]
         },
         {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "1"
+            "_id": "fc069dfc-5530-4992-8b22-bd054f34c9b9",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L05 Equivalencia: palabra clave sin coincidencias devuelve lista vacia",
+            "url": "http://localhost:3000/api/licitaciones?keyword=zzz",
+            "method": "GET",
+            "sortNum": 60000,
+            "created": "2026-10-19T03:22:46.568Z",
+            "modified": "2026-10-19T03:22:46.569Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "keyword",
+                    "value": "zzz",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "0"
+                }
+            ]
         },
         {
-          "type": "json-query",
-          "custom": "json[0].id",
-          "action": "equal",
-          "value": "licitacion-005"
-        }
-      ]
-    },
-    {
-      "_id": "2ea3383c-e2e6-4ee4-b20f-e7445fc5c94a",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L03 Equivalencia: termino presente solo en la institucion no coincide",
-      "url": "http://localhost:3000/api/licitaciones?keyword=Banco",
-      "method": "GET",
-      "sortNum": 30000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "Banco",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
+            "_id": "066d6af3-f63a-4f99-bca3-276dc4f9a8ce",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L06 Limite: palabra clave vacia se ignora",
+            "url": "http://localhost:3000/api/licitaciones?keyword=",
+            "method": "GET",
+            "sortNum": 70000,
+            "created": "2026-10-19T03:24:46.892Z",
+            "modified": "2026-10-19T03:24:46.906Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "keyword",
+                    "value": "",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "6"
+                }
+            ]
         },
         {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "0"
-        }
-      ]
-    },
-    {
-      "_id": "e0b755b5-f9aa-41a4-967f-0188b7f7c07f",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L04 Negocio: la busqueda no distingue mayusculas",
-      "url": "http://localhost:3000/api/licitaciones?keyword=SOFTWARE",
-      "method": "GET",
-      "sortNum": 40000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "SOFTWARE",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
+            "_id": "8ebfe73f-4fe6-446b-81c2-73f64fe532a7",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L07 Limite: palabra clave de un solo caracter",
+            "url": "http://localhost:3000/api/licitaciones?keyword=w",
+            "method": "GET",
+            "sortNum": 80000,
+            "created": "2026-10-19T03:26:12.778Z",
+            "modified": "2026-10-19T03:26:12.778Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "keyword",
+                    "value": "w",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "1"
+                }
+            ]
         },
         {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "1"
+            "_id": "c520a305-0b70-4c53-bc8d-492b2e8813e0",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L08 Limite: palabra clave con solo espacios equivale a vacia",
+            "url": "http://localhost:3000/api/licitaciones?keyword=%20%20%20",
+            "method": "GET",
+            "sortNum": 90000,
+            "created": "2026-10-19T03:27:24.461Z",
+            "modified": "2026-10-19T03:27:24.461Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "keyword",
+                    "value": "%20%20%20",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "6"
+                }
+            ]
         },
         {
-          "type": "json-query",
-          "custom": "json[0].id",
-          "action": "equal",
-          "value": "licitacion-005"
-        }
-      ]
-    },
-    {
-      "_id": "a50560e5-dcf2-437a-89c2-15b26d4debfa",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L05 Equivalencia: palabra clave sin coincidencias devuelve lista vacia",
-      "url": "http://localhost:3000/api/licitaciones?keyword=zzz-sin-coincidencias",
-      "method": "GET",
-      "sortNum": 50000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "zzz-sin-coincidencias",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
+            "_id": "0ea33ee8-9ed2-42bc-820c-70191531747c",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L09 Equivalencia: region inexistente devuelve lista vacia",
+            "url": "http://localhost:3000/api/licitaciones?region=atacama",
+            "method": "GET",
+            "sortNum": 100000,
+            "created": "2026-10-19T03:29:24.016Z",
+            "modified": "2026-10-19T03:29:24.016Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "region",
+                    "value": "atacama",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "0"
+                }
+            ]
         },
         {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "0"
+            "_id": "6100b4e7-fe2d-42ff-aede-7a766a843742",
+            "colId": "f34ac6f6-b32d-4203-8c3c-4b767ba16b49",
+            "containerId": "",
+            "name": "TC-L10 Negocio: palabra clave, region y tipo se combinan con AND",
+            "url": "http://localhost:3000/api/licitaciones?keyword=de&region=metropolitana&tipo=publica",
+            "method": "GET",
+            "sortNum": 110000,
+            "created": "2026-10-19T03:33:02.511Z",
+            "modified": "2026-10-19T03:33:02.511Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "keyword",
+                    "value": "de",
+                    "isPath": false
+                },
+                {
+                    "name": "region",
+                    "value": "metropolitana",
+                    "isPath": false
+                },
+                {
+                    "name": "tipo",
+                    "value": "publica",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json",
+                    "action": "count",
+                    "value": "1"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json[0].id",
+                    "action": "equal",
+                    "value": "licitacion-003"
+                }
+            ]
         }
-      ]
-    },
-    {
-      "_id": "9f53bea0-77d3-4ea7-8539-4ef740d8b5b2",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L06 Limite: palabra clave vacia se ignora",
-      "url": "http://localhost:3000/api/licitaciones?keyword=",
-      "method": "GET",
-      "sortNum": 60000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "6"
-        }
-      ]
-    },
-    {
-      "_id": "7a561a22-8e95-4bc4-9369-26e85ee3cd48",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L07 Limite: palabra clave de un solo caracter",
-      "url": "http://localhost:3000/api/licitaciones?keyword=w",
-      "method": "GET",
-      "sortNum": 70000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "w",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "1"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].id",
-          "action": "equal",
-          "value": "licitacion-005"
-        }
-      ]
-    },
-    {
-      "_id": "c0aecde6-6fb0-44ff-be3f-64a2644aba4f",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L08 Limite: palabra clave con solo espacios equivale a vacia",
-      "url": "http://localhost:3000/api/licitaciones?keyword=+++",
-      "method": "GET",
-      "sortNum": 80000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "   ",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "6"
-        }
-      ]
-    },
-    {
-      "_id": "979ee9b2-4a51-46b9-8d84-cfbf047268d1",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L09 Negocio: se ignoran los espacios alrededor del termino",
-      "url": "http://localhost:3000/api/licitaciones?keyword=++software++",
-      "method": "GET",
-      "sortNum": 90000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "  software  ",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "1"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].id",
-          "action": "equal",
-          "value": "licitacion-005"
-        }
-      ]
-    },
-    {
-      "_id": "2256306b-9d34-48be-9ba1-4dd096c83396",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L10 Negocio: el caracter % se busca literal, no como comodin",
-      "url": "http://localhost:3000/api/licitaciones?keyword=%25",
-      "method": "GET",
-      "sortNum": 100000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "%",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "0"
-        }
-      ]
-    },
-    {
-      "_id": "aebe471a-3dea-452e-844c-ba6028a073eb",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L11 Equivalencia: region valida",
-      "url": "http://localhost:3000/api/licitaciones?region=valparaiso",
-      "method": "GET",
-      "sortNum": 110000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "region",
-          "value": "valparaiso",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "2"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].region",
-          "action": "equal",
-          "value": "valparaiso"
-        }
-      ]
-    },
-    {
-      "_id": "299488ec-4782-4076-bb38-1dd961afdf2b",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L12 Negocio: region no distingue mayusculas",
-      "url": "http://localhost:3000/api/licitaciones?region=VALPARAISO",
-      "method": "GET",
-      "sortNum": 120000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "region",
-          "value": "VALPARAISO",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "2"
-        }
-      ]
-    },
-    {
-      "_id": "95ccd158-1008-4bfd-8644-b7f0c13a14f5",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L13 Equivalencia: region inexistente devuelve lista vacia",
-      "url": "http://localhost:3000/api/licitaciones?region=atacama",
-      "method": "GET",
-      "sortNum": 130000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "region",
-          "value": "atacama",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "0"
-        }
-      ]
-    },
-    {
-      "_id": "e992b42d-68db-4040-86f0-94053a649ddd",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L14 Equivalencia: tipo privada",
-      "url": "http://localhost:3000/api/licitaciones?tipo=privada",
-      "method": "GET",
-      "sortNum": 140000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "tipo",
-          "value": "privada",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "3"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].type",
-          "action": "equal",
-          "value": "privada"
-        }
-      ]
-    },
-    {
-      "_id": "97df88e6-467a-41fb-b57d-dd3af4b65d26",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L15 Equivalencia: tipo fuera del dominio (publica/privada)",
-      "url": "http://localhost:3000/api/licitaciones?tipo=mixta",
-      "method": "GET",
-      "sortNum": 150000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "tipo",
-          "value": "mixta",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "0"
-        }
-      ]
-    },
-    {
-      "_id": "86da63d0-58e4-4e11-ab7d-fbf293c721c5",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L16 Negocio: palabra clave, region y tipo se combinan con AND",
-      "url": "http://localhost:3000/api/licitaciones?keyword=de&region=metropolitana&tipo=publica",
-      "method": "GET",
-      "sortNum": 160000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "de",
-          "isPath": false
-        },
-        {
-          "name": "region",
-          "value": "metropolitana",
-          "isPath": false
-        },
-        {
-          "name": "tipo",
-          "value": "publica",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "1"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].id",
-          "action": "equal",
-          "value": "licitacion-003"
-        }
-      ]
-    },
-    {
-      "_id": "5b67f757-7998-4ba9-aab7-15c08091a613",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L17 Negocio: parametro desconocido se ignora",
-      "url": "http://localhost:3000/api/licitaciones?orden=asc",
-      "method": "GET",
-      "sortNum": 170000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "orden",
-          "value": "asc",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json",
-          "action": "count",
-          "value": "6"
-        }
-      ]
-    },
-    {
-      "_id": "c9b053a2-b609-4616-8577-0f301f9a8263",
-      "colId": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6",
-      "containerId": "",
-      "name": "TC-L18 Contrato: cada licitacion expone los campos del mock (REF-10)",
-      "url": "http://localhost:3000/api/licitaciones?keyword=software",
-      "method": "GET",
-      "sortNum": 180000,
-      "created": "2026-10-18T12:00:00.000Z",
-      "modified": "2026-10-18T12:00:00.000Z",
-      "headers": [],
-      "params": [
-        {
-          "name": "keyword",
-          "value": "software",
-          "isPath": false
-        }
-      ],
-      "tests": [
-        {
-          "type": "res-code",
-          "custom": "",
-          "action": "equal",
-          "value": "200"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].title",
-          "action": "istype",
-          "value": "string"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].amount",
-          "action": "istype",
-          "value": "number"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].currency",
-          "action": "equal",
-          "value": "CLP"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].closingDate",
-          "action": "equal",
-          "value": "2026-09-15"
-        },
-        {
-          "type": "json-query",
-          "custom": "json[0].sourceUrl",
-          "action": "contains",
-          "value": "https://"
-        }
-      ]
-    }
-  ],
-  "ref": "128de2dd-cb51-4b5d-87b8-36949f6f6bc6"
+    ],
+    "ref": "aR6-gNz0-PHN_NUvbFY-9JfMCaM6sUQjNHxndH0NTbV1RAR-Unx9mXBDLksLc9fEVXHIi3SNtQo1ZfzozjWrtg"
 }
