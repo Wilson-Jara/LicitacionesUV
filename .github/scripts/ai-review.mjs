@@ -7,6 +7,10 @@
  * - En PRs lee el cuerpo y el diff; en issues revisa la plantilla (DoR/DoD).
  * - En PRs consulta además el estado de CI del commit (check-runs) y el
  *   issue linkeado con "Closes #N", para no emitir juicios sin evidencia.
+ * - Inyecta contexto del repositorio (README, docs/AI_context.md,
+ *   docs/Arquitectura.md, docs/ReqExtrafuncionales.md, package.json) para
+ *   que la revisión conozca el proyecto completo (trazabilidad, REFs,
+ *   módulos) y no asuma cosas.
  * - Seguridad: no se incluyen logs ni salidas de jobs, solo nombres de
  *   checks y sus conclusiones; todo texto que entra al modelo o que se
  *   publica pasa antes por la redacción de secretos.
@@ -15,7 +19,7 @@
  * No requiere dependencias: usa fetch nativo de Node 20+.
  *
  * Usa siempre el modelo DeepSeek-V4.1-Flash (deepseek-flash) en modo
- * thinking con effort "high".
+ * thinking con effort "low" para mantener el costo por revisión acotado.
  *
  * Variables de entorno requeridas:
  *   GITHUB_TOKEN        Token de Actions con permisos de escritura.
@@ -31,8 +35,22 @@
  *   DEEPSEEK_BASE_URL   Por defecto "https://api.deepseek.com".
  */
 
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 const MARKER = '<!-- deepseek-ai-review -->'
 const MAX_PATCH_CHARS = 40000
+// Contexto del repositorio inyectado al prompt para que la revisión conozca
+// el proyecto completo (trazabilidad, REFs, módulos) y no asuma cosas.
+const REPO_CONTEXT_FILES = [
+  'README.md',
+  'docs/AI_context.md',
+  'docs/Arquitectura.md',
+  'docs/ReqExtrafuncionales.md',
+  'package.json',
+]
+const MAX_CONTEXT_CHARS = 25000
 // Archivos cuyo contenido nunca se envía al modelo.
 const SENSITIVE_FILES =
   /(^|\/)(\.env(\..*)?|\.npmrc|\.netrc|id_rsa[\w.-]*|id_ed25519[\w.-]*|secrets?[\w.-]*|.*\.(pem|key|p12|pfx|jks|keystore))$/i
@@ -128,6 +146,24 @@ function isSensitiveFile(filename) {
   return SENSITIVE_FILES.test(filename)
 }
 
+function buildRepoContext() {
+  const scriptDir = dirname(fileURLToPath(import.meta.url))
+  const rootDir = resolve(scriptDir, '..', '..')
+  const sections = []
+  for (const relPath of REPO_CONTEXT_FILES) {
+    const fullPath = resolve(rootDir, relPath)
+    if (!existsSync(fullPath)) continue
+    try {
+      const raw = readFileSync(fullPath, 'utf8')
+      const content = truncate(redact(raw), MAX_CONTEXT_CHARS)
+      sections.push(`### ${relPath}\n\`\`\`\n${content}\n\`\`\``)
+    } catch {
+      // archivo ilegible o con permiso denegado: se omite sin romper la revisión
+    }
+  }
+  return sections.length > 0 ? `--- CONTEXTO DEL REPOSITORIO ---\n${sections.join('\n\n')}` : ''
+}
+
 function extractLinkedIssueNumber(body) {
   const match = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)/i.exec(
     body ?? '',
@@ -169,7 +205,7 @@ function buildDiff(files) {
   return parts.join('\n\n')
 }
 
-function buildPrPrompt(pr, files, checksSummary, issueInfo) {
+function buildPrPrompt(pr, files, checksSummary, issueInfo, repoContext) {
   return [
     'Eres un revisor de código experto en React, Vite, testing y buenas prácticas de Git.',
     'Revisas Pull Requests de un proyecto académico llamado LicitacionesUV.',
@@ -200,7 +236,10 @@ function buildPrPrompt(pr, files, checksSummary, issueInfo) {
     '- Si se incluye el issue linkeado, úsalo para validar trazabilidad; no reproduzcas datos sensibles de él.',
     '- Sé respetuoso; es un equipo de estudiantes.',
     '- No repitas el diff completo.',
+    '- Usa la sección "CONTEXTO DEL REPOSITORIO" para validar trazabilidad (REF, módulos, historias, fases) en lugar de asumirla.',
+    '- No afirmes la existencia de archivos, REFs, historias ni fases que no estén en el CONTEXTO DEL REPOSITORIO ni en el diff.',
     '',
+    repoContext,
     '--- DATOS DEL PR ---',
     `Título: ${redact(pr.title)}`,
     `Autor: ${pr.user.login}`,
@@ -220,7 +259,7 @@ function buildPrPrompt(pr, files, checksSummary, issueInfo) {
   ].join('\n')
 }
 
-function buildIssuePrompt(issue) {
+function buildIssuePrompt(issue, repoContext) {
   const labels = issue.labels.map((l) => l.name).join(', ') || '(sin etiquetas)'
   return [
     'Eres un analista funcional revisando un issue (tarea, chore o historia de usuario)',
@@ -247,7 +286,9 @@ function buildIssuePrompt(issue) {
     '- Sé respetuoso; es un equipo de estudiantes.',
     '- Nunca muestres secretos, tokens, credenciales ni variables de entorno; si los detectas, avisa sin reproducirlos.',
     '- No inventes contexto que no esté en el issue.',
+    '- Usa la sección "CONTEXTO DEL REPOSITORIO" para validar trazabilidad (REF, módulos, historias, fases) en lugar de asumirla.',
     '',
+    repoContext,
     '--- DATOS DEL ISSUE ---',
     `Título: ${redact(issue.title)}`,
     `Autor: ${issue.user.login}`,
@@ -274,7 +315,7 @@ async function callDeepSeek(systemPrompt, prompt) {
         { role: 'user', content: prompt },
       ],
       thinking: { type: 'enabled' },
-      reasoning_effort: 'high',
+      reasoning_effort: 'low',
       stream: false,
     }),
   })
@@ -326,7 +367,8 @@ async function publish(body) {
 
 async function reviewIssue() {
   const issue = await ghRequest(`/issues/${ITEM_NUMBER}`)
-  const review = await callDeepSeek(SYSTEM_ISSUE, buildIssuePrompt(issue))
+  const repoContext = buildRepoContext()
+  const review = await callDeepSeek(SYSTEM_ISSUE, buildIssuePrompt(issue, repoContext))
   const title = requested ? 'Revisión solicitada' : 'Revisión automática'
   const body = `${MARKER}\n### 🤖 ${title} de la tarea (DeepSeek)\n\n${review}\n\n---\n_Generado con \`${DEEPSEEK_MODEL}\`. La decisión final es humana._`
   await publish(body)
@@ -357,7 +399,11 @@ async function reviewPullRequest() {
     }
   }
 
-  const review = await callDeepSeek(SYSTEM_PR, buildPrPrompt(pr, files, checksSummary, issueInfo))
+  const repoContext = buildRepoContext()
+  const review = await callDeepSeek(
+    SYSTEM_PR,
+    buildPrPrompt(pr, files, checksSummary, issueInfo, repoContext),
+  )
   const title = requested ? 'Revisión solicitada' : 'Revisión automática'
   const body = `${MARKER}\n### 🤖 ${title} (DeepSeek)\n\n${review}\n\n---\n_Generado con \`${DEEPSEEK_MODEL}\`. Es una sugerencia automática: la revisión humana es obligatoria._`
   await publish(body)
