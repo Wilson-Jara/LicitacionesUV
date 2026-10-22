@@ -2,16 +2,24 @@ import { useState, useMemo } from 'react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
-import { filterLicitaciones, countActiveFilters } from '../licitacionFilters.js'
+import { filterLicitaciones, countActiveFilters, sortLicitaciones } from '../licitacionFilters.js'
 import mockData from '../data/licitaciones.mock.json'
 import './LicitacionesExplorerPage.css'
 
+const SORT_OPTIONS = [
+  { value: '', label: 'Orden por defecto' },
+  { value: 'fecha-asc', label: 'Fecha de cierre: más próxima' },
+  { value: 'fecha-desc', label: 'Fecha de cierre: más lejana' },
+  { value: 'monto-asc', label: 'Monto: menor a mayor' },
+  { value: 'monto-desc', label: 'Monto: mayor a menor' },
+]
+
 function LicitacionesExplorerPage() {
-  const { filters, clearFilters } = useLicitacionFilters()
+  const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   const filteredData = useMemo(() => {
-    return filterLicitaciones(mockData, filters)
+    return sortLicitaciones(filterLicitaciones(mockData, filters), filters.sort)
   }, [filters])
 
   const activeFiltersCount = countActiveFilters(filters)
@@ -53,21 +61,41 @@ function LicitacionesExplorerPage() {
           licitaciones disponibles
         </div>
 
-        <button
-          type="button"
-          className={`mobile-filter-toggle ${showMobileFilters ? 'active' : ''}`}
-          onClick={() => setShowMobileFilters(!showMobileFilters)}
-          aria-expanded={showMobileFilters}
-          aria-controls="filter-sidebar-wrapper"
-        >
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-            <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-          </svg>
-          <span>{showMobileFilters ? 'Ocultar filtros' : 'Mostrar filtros'}</span>
-          {activeFiltersCount > 0 && (
-            <span className="mobile-filter-badge">{activeFiltersCount}</span>
-          )}
-        </button>
+        <div className="results-actions">
+          <div className="sort-control">
+            <label className="sort-label" htmlFor="licitaciones-sort">
+              Ordenar por
+            </label>
+            <select
+              id="licitaciones-sort"
+              className="sort-select"
+              value={filters.sort}
+              onChange={(e) => setFilter('sort', e.target.value)}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            className={`mobile-filter-toggle ${showMobileFilters ? 'active' : ''}`}
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            aria-expanded={showMobileFilters}
+            aria-controls="filter-sidebar-wrapper"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+            </svg>
+            <span>{showMobileFilters ? 'Ocultar filtros' : 'Mostrar filtros'}</span>
+            {activeFiltersCount > 0 && (
+              <span className="mobile-filter-badge">{activeFiltersCount}</span>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="licitaciones-layout">
