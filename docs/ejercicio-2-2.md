@@ -15,7 +15,7 @@
 
 ### Nota de alineación con los criterios del proyecto
 
-La implementación actual busca la palabra clave en `title`, pero la historia #43 de `docs/CriteriosAceptacion.md` pide buscar en `title` o `institution`. Antes de cerrar el contrato, el equipo debe acordar el alcance y hacer coincidir la ficha, el código y las pruebas con esa decisión.
+El equipo acordó el alcance para la búsqueda por palabra clave alineado entre las historias #43 y #47: la coincidencia se realiza exclusivamente sobre `title`, de forma insensible a mayúsculas/minúsculas y quitando espacios en blanco externos (`trim`). Ficha, código, pruebas y criterios de aceptación reflejan esta decisión.
 
 ### Archivos de apoyo
 

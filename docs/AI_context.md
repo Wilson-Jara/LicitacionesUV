@@ -17,17 +17,17 @@ Revisión realizada en octubre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite con smoke tests, persistencia de favoritos, búsqueda y filtros, reglas de cierre, exportación PDF, umbrales de aprobación y API del backend.
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros accesibles, umbrales de aprobación y API del backend pasando (111/111 tests; las pruebas de integración con PostgreSQL se omiten sin `DATABASE_URL_TEST` y corren en CI).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
-- Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`.
+- Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`, con un servicio `postgres:16` para las pruebas de integración del backend.
 - Asignación automática de revisores en Pull Requests mediante `.github/CODEOWNERS`, complementaria a la protección de ramas (al menos 1 aprobación de un par).
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Configuración de umbrales de aprobación por unidad con `UmbralesProvider` y hook `useUmbrales`, persistida en `localStorage` como datos editables (REF-14).
 - Router con navegación interna (`react-router-dom` v7).
 - Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
-- Backend base en `backend/`: API REST con el módulo nativo `node:http` (sin dependencias), endpoints de salud y licitaciones con el mismo contrato del mock (REF-10), configuración por entorno y pruebas con `node --test` cubiertas por `npm run test` desde la raíz.
+- Backend base en `backend/`: API REST con el módulo nativo `node:http` y PostgreSQL mediante `pg`, endpoints de salud y licitaciones con el mismo contrato del mock (REF-10), configuración por entorno y pruebas con `node --test` cubiertas por `npm run test` desde la raíz.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
@@ -71,10 +71,12 @@ Revisión realizada en octubre de 2026:
   - Un simulador consulta el nivel aprobador que corresponde a un monto con la configuración vigente y se recalcula de inmediato al editar, sin recargar la página ni volver a desplegar (CA3).
 - **Backend (base Fase 2):**
   - Servidor HTTP con el módulo nativo `node:http` (sin dependencias): entrada `backend/src/server.js`, composición en `backend/src/app.js` (CORS, parseo JSON, enrutamiento y manejo de errores) y enrutador propio con parámetros de ruta en `backend/src/lib/router.js`.
-  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword`, `region`, `tipo`, sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
+  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword` solo sobre el título y sin espacios externos, `region` y `tipo`; todos sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
   - Manejo de errores: cuerpo JSON inválido o `:id` mal codificado responden 400, cuerpos de más de 1 MB responden 413 y los errores 5xx devuelven un mensaje genérico (el detalle solo se registra con `console.error`).
-  - Datos desde el seed `backend/src/data/licitaciones.seed.json`, con el mismo contrato que el mock del frontend (REF-10). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
-  - CORS habilitado para el dev server de Vite y configuración por entorno en `backend/.env.example` (`PORT`, `CORS_ORIGIN`, con `DATABASE_URL` y `JWT_SECRET` reservadas).
+  - Datos de licitaciones mediante un repositorio (`backend/src/data/licitaciones.repository.js`): PostgreSQL cuando existe `DATABASE_URL` y, si no, el mock del frontend en memoria, con el mismo contrato y los mismos filtros en ambos casos (REF-10). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
+  - Esquema PostgreSQL con migraciones SQL numeradas en `backend/migrations/` (las 8 entidades del dominio y el catálogo de regiones), aplicadas con `npm run db:migrate` y registradas en `schema_migrations`; `npm run db:seed` carga las licitaciones desde el mock. Las tablas de CR-302 existen sin endpoints.
+  - PostgreSQL 16 local con `docker-compose.yml` (raíz), que también crea la base de pruebas `licitaciones_test`.
+  - CORS habilitado para el dev server de Vite y configuración por entorno en `backend/.env.example` (`PORT`, `CORS_ORIGIN`, `DATABASE_URL`, `DATABASE_URL_TEST` y `JWT_SECRET` reservada).
 
 ## 4. Arquitectura y flujo de entrada
 
@@ -88,79 +90,88 @@ Revisión realizada en octubre de 2026:
 
 ## 5. Inventario de archivos relevantes
 
-| Archivo                                                            | Responsabilidad actual                                                                    |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `index.html`                                                       | Punto de entrada HTML.                                                                    |
-| `src/main.jsx`                                                     | Punto de montaje de React.                                                                |
-| `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales y Router.                    |
-| `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                          |
-| `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.       |
-| `src/index.css`                                                    | Variables globales de diseño institucional UV, reset y tipografía.                        |
-| `src/features/auth/components/AuthModal.jsx`                       | Modal de inicio de sesión/registro con split-screen de Figma.                             |
-| `src/features/auth/components/AuthModal.css`                       | Estilos del modal institucional.                                                          |
-| `src/features/auth/pages/LoginPage.jsx`                            | Página completa de inicio de sesión según wireframe de Figma.                             |
-| `src/features/auth/pages/LoginPage.css`                            | Estilos de la página de inicio de sesión.                                                 |
-| `src/features/auth/hooks/useAuth.js`                               | Hook de consumo del contexto de autenticación.                                            |
-| `src/app/providers/AuthProvider.jsx`                               | Proveedor de estado de autenticación y del modal de acceso global.                        |
-| `src/app/providers/FavoritosProvider.jsx`                          | Proveedor de favoritos con persistencia en localStorage por usuario.                      |
-| `src/features/favoritos/hooks/useFavoritos.js`                     | Hook de consumo del contexto de favoritos.                                                |
-| `src/features/favoritos/data/favoritosStorage.js`                  | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).               |
-| `src/app/providers/ThemeProvider.jsx`                              | Proveedor de tema claro/oscuro con persistencia en localStorage.                          |
-| `src/shared/components/Navbar.jsx`                                 | Barra de navegación institucional con escudo y acciones de usuario.                       |
-| `src/shared/components/Navbar.css`                                 | Estilos del Navbar.                                                                       |
-| `src/shared/components/ThemeToggle.jsx`                            | Botón accesible de alternancia de tema claro/oscuro.                                      |
-| `src/shared/components/ThemeToggle.css`                            | Estilos del botón de tema.                                                                |
-| `src/shared/hooks/useTheme.js`                                     | Hook de consumo del contexto de tema.                                                     |
-| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones.                                          |
-| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`         | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación. |
-| `src/features/licitaciones/services/exportLicitacionPdf.js`        | Punto de entrada del navegador: crea el Web Worker y delega en la orquestación.           |
-| `src/features/licitaciones/services/exportLicitacionPdfCore.js`    | Orquestación pura: crea el worker, recibe el PDF y dispara la descarga (testeable).       |
-| `src/features/licitaciones/services/exportLicitacionPdf.worker.js` | Web Worker que genera el PDF con `jsPDF` fuera del hilo principal.                        |
-| `src/features/licitaciones/services/buildLicitacionPdf.js`         | Lógica pura de generación del PDF de resumen (formato chileno y español).                 |
-| `src/features/licitaciones/services/licitacionPdfFilename.js`      | Nombre de archivo estable `licitacion-<id>.pdf` sin dependencias.                         |
-| `src/features/licitaciones/licitacionUtils.js`                     | Formateo compartido y regla para determinar si una licitación está cerrada.               |
-| `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo.                                                       |
-| `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros con URL.                                                |
-| `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                 |
-| `src/features/licitaciones/components/LicitacionCard.jsx`          | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                       |
-| `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                    |
-| `src/features/favoritos/pages/MisFavoritosPage.jsx`                | Página de favoritos: listado, estado vacío y quitar licitaciones.                         |
-| `src/features/favoritos/pages/MisFavoritosPage.css`                | Estilos de la página de favoritos.                                                        |
-| `src/app/providers/UmbralesProvider.jsx`                           | Proveedor de umbrales de aprobación con persistencia en localStorage.                     |
-| `src/features/aprobaciones/hooks/useUmbrales.js`                   | Hook de consumo del contexto de umbrales.                                                 |
-| `src/features/aprobaciones/data/umbralesIniciales.js`              | Datos iniciales editables de umbrales por unidad (semilla de configuración).              |
-| `src/features/aprobaciones/data/umbralesStorage.js`                | Persistencia y normalización de umbrales en localStorage con CRUD por unidad.             |
-| `src/features/aprobaciones/umbralesUtils.js`                       | Lógica pura de etiquetas, validación, formato y resolución de umbrales.                   |
-| `src/features/aprobaciones/components/UmbralForm.jsx`              | Formulario para crear o editar un umbral con validación de rango y nivel.                 |
-| `src/features/aprobaciones/components/UnidadForm.jsx`              | Formulario para agregar una unidad con umbrales propios.                                  |
-| `src/features/aprobaciones/components/UmbralesTable.jsx`           | Listado editable de umbrales por unidad con acciones de editar y eliminar.                |
-| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.jsx`    | Panel de configuración de umbrales con simulador de resolución inmediata.                 |
-| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.css`    | Estilos del panel de configuración de umbrales.                                           |
-| `tests/smoke.test.js`                                              | Pruebas automatizadas de línea base reproducible.                                         |
-| `tests/favoritosStorage.test.js`                                   | Pruebas de la persistencia de favoritos.                                                  |
-| `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                      |
-| `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).  |
-| `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.           |
-| `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda y combinación de filtros.                                             |
-| `tests/umbralesUtils.test.js`                                      | Pruebas de la lógica pura de umbrales (etiquetas, validación y resolución).               |
-| `tests/umbralesStorage.test.js`                                    | Pruebas de la persistencia y las operaciones CRUD de umbrales.                            |
-| `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                       |
-| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.            |
-| `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                  |
-| `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                |
-| `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                  |
-| `.github/CODEOWNERS`                                               | Asigna automáticamente los revisores de cada PR según el área modificada.                 |
-| `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                |
-| `backend/package.json`                                             | Scripts del backend (`dev`, `start`, `test`).                                             |
-| `backend/src/server.js`                                            | Punto de entrada del servidor HTTP de la API.                                             |
-| `backend/src/app.js`                                               | Composición de la API: CORS, parseo JSON, enrutamiento y manejo de errores.               |
-| `backend/src/lib/router.js`                                        | Enrutador HTTP propio con parámetros de ruta (`:id`).                                     |
-| `backend/src/lib/http.js`                                          | Helpers de respuesta JSON, lectura de cuerpo y errores HTTP.                              |
-| `backend/src/config/env.js`                                        | Configuración por entorno con carga de `backend/.env`.                                    |
-| `backend/src/routes/health.routes.js`                              | Endpoint `GET /api/health`.                                                               |
-| `backend/src/routes/licitaciones.routes.js`                        | Endpoints de listado y detalle de licitaciones.                                           |
-| `backend/src/data/licitaciones.seed.json`                          | Seed con el contrato de datos del frontend.                                               |
-| `backend/tests/*.test.js`                                          | Pruebas de la API con `node --test`.                                                      |
+| Archivo                                                            | Responsabilidad actual                                                                                   |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción). |
+| `index.html`                                                       | Punto de entrada HTML.                                                                                   |
+| `src/main.jsx`                                                     | Punto de montaje de React.                                                                               |
+| `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales y Router.                                   |
+| `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                         |
+| `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.                      |
+| `src/index.css`                                                    | Variables globales de diseño institucional UV, reset y tipografía.                                       |
+| `src/features/auth/components/AuthModal.jsx`                       | Modal de inicio de sesión/registro con split-screen de Figma.                                            |
+| `src/features/auth/components/AuthModal.css`                       | Estilos del modal institucional.                                                                         |
+| `src/features/auth/pages/LoginPage.jsx`                            | Página completa de inicio de sesión según wireframe de Figma.                                            |
+| `src/features/auth/pages/LoginPage.css`                            | Estilos de la página de inicio de sesión.                                                                |
+| `src/features/auth/hooks/useAuth.js`                               | Hook de consumo del contexto de autenticación.                                                           |
+| `src/app/providers/AuthProvider.jsx`                               | Proveedor de estado de autenticación y del modal de acceso global.                                       |
+| `src/app/providers/FavoritosProvider.jsx`                          | Proveedor de favoritos con persistencia en localStorage por usuario.                                     |
+| `src/features/favoritos/hooks/useFavoritos.js`                     | Hook de consumo del contexto de favoritos.                                                               |
+| `src/features/favoritos/data/favoritosStorage.js`                  | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).                              |
+| `src/app/providers/ThemeProvider.jsx`                              | Proveedor de tema claro/oscuro con persistencia en localStorage.                                         |
+| `src/shared/components/Navbar.jsx`                                 | Barra de navegación institucional con escudo y acciones de usuario.                                      |
+| `src/shared/components/Navbar.css`                                 | Estilos del Navbar.                                                                                      |
+| `src/shared/components/ThemeToggle.jsx`                            | Botón accesible de alternancia de tema claro/oscuro.                                                     |
+| `src/shared/components/ThemeToggle.css`                            | Estilos del botón de tema.                                                                               |
+| `src/shared/hooks/useTheme.js`                                     | Hook de consumo del contexto de tema.                                                                    |
+| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones.                                                         |
+| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`         | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación.                |
+| `src/features/licitaciones/services/exportLicitacionPdf.js`        | Punto de entrada del navegador: crea el Web Worker y delega en la orquestación.                          |
+| `src/features/licitaciones/services/exportLicitacionPdfCore.js`    | Orquestación pura: crea el worker, recibe el PDF y dispara la descarga (testeable).                      |
+| `src/features/licitaciones/services/exportLicitacionPdf.worker.js` | Web Worker que genera el PDF con `jsPDF` fuera del hilo principal.                                       |
+| `src/features/licitaciones/services/buildLicitacionPdf.js`         | Lógica pura de generación del PDF de resumen (formato chileno y español).                                |
+| `src/features/licitaciones/services/licitacionPdfFilename.js`      | Nombre de archivo estable `licitacion-<id>.pdf` sin dependencias.                                        |
+| `src/features/licitaciones/licitacionUtils.js`                     | Formateo compartido y regla para determinar si una licitación está cerrada.                              |
+| `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo.                                                                      |
+| `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros con URL.                                                               |
+| `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                                |
+| `src/features/licitaciones/components/LicitacionCard.jsx`          | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                                      |
+| `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                                   |
+| `src/features/favoritos/pages/MisFavoritosPage.jsx`                | Página de favoritos: listado, estado vacío y quitar licitaciones.                                        |
+| `src/features/favoritos/pages/MisFavoritosPage.css`                | Estilos de la página de favoritos.                                                                       |
+| `src/app/providers/UmbralesProvider.jsx`                           | Proveedor de umbrales de aprobación con persistencia en localStorage.                                    |
+| `src/features/aprobaciones/hooks/useUmbrales.js`                   | Hook de consumo del contexto de umbrales.                                                                |
+| `src/features/aprobaciones/data/umbralesIniciales.js`              | Datos iniciales editables de umbrales por unidad (semilla de configuración).                             |
+| `src/features/aprobaciones/data/umbralesStorage.js`                | Persistencia y normalización de umbrales en localStorage con CRUD por unidad.                            |
+| `src/features/aprobaciones/umbralesUtils.js`                       | Lógica pura de etiquetas, validación, formato y resolución de umbrales.                                  |
+| `src/features/aprobaciones/components/UmbralForm.jsx`              | Formulario para crear o editar un umbral con validación de rango y nivel.                                |
+| `src/features/aprobaciones/components/UnidadForm.jsx`              | Formulario para agregar una unidad con umbrales propios.                                                 |
+| `src/features/aprobaciones/components/UmbralesTable.jsx`           | Listado editable de umbrales por unidad con acciones de editar y eliminar.                               |
+| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.jsx`    | Panel de configuración de umbrales con simulador de resolución inmediata.                                |
+| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.css`    | Estilos del panel de configuración de umbrales.                                                          |
+| `tests/smoke.test.js`                                              | Pruebas automatizadas de línea base reproducible.                                                        |
+| `tests/favoritosStorage.test.js`                                   | Pruebas de la persistencia de favoritos.                                                                 |
+| `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                                     |
+| `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).                 |
+| `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                          |
+| `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda y combinación de filtros.                                                            |
+| `tests/umbralesUtils.test.js`                                      | Pruebas de la lógica pura de umbrales (etiquetas, validación y resolución).                              |
+| `tests/umbralesStorage.test.js`                                    | Pruebas de la persistencia y las operaciones CRUD de umbrales.                                           |
+| `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                                      |
+| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.                           |
+| `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                 |
+| `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                               |
+| `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                                 |
+| `.github/CODEOWNERS`                                               | Asigna automáticamente los revisores de cada PR según el área modificada.                                |
+| `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                               |
+| `backend/package.json`                                             | Dependencia `pg` y scripts del backend (`dev`, `start`, `test`, `db:migrate`, `db:seed`).                |
+| `backend/src/server.js`                                            | Punto de entrada del servidor HTTP de la API.                                                            |
+| `backend/src/app.js`                                               | Composición de la API: CORS, parseo JSON, enrutamiento y manejo de errores.                              |
+| `backend/src/lib/router.js`                                        | Enrutador HTTP propio con parámetros de ruta (`:id`).                                                    |
+| `backend/src/lib/http.js`                                          | Helpers de respuesta JSON, lectura de cuerpo y errores HTTP.                                             |
+| `backend/src/config/env.js`                                        | Configuración por entorno con carga de `backend/.env`.                                                   |
+| `backend/src/routes/health.routes.js`                              | Endpoint `GET /api/health`.                                                                              |
+| `backend/src/routes/licitaciones.routes.js`                        | Endpoints de listado y detalle de licitaciones.                                                          |
+| `backend/src/data/licitaciones.repository.js`                      | Repositorios de licitaciones (memoria y PostgreSQL) con el contrato del mock.                            |
+| `backend/src/data/mockLicitaciones.js`                             | Carga del mock del frontend como datos de ejemplo del backend.                                           |
+| `backend/src/db/`                                                  | Conexión (`pool.js`), migraciones (`migrator.js`) y carga del seed (`seed.js`).                          |
+| `backend/migrations/*.sql`                                         | Migraciones SQL numeradas del esquema PostgreSQL.                                                        |
+| `backend/scripts/`                                                 | Scripts `db:migrate` y `db:seed`.                                                                        |
+| `backend/db/init/`                                                 | Script de inicio del contenedor que crea la base de pruebas.                                             |
+| `docker-compose.yml`                                               | PostgreSQL 16 para desarrollo local.                                                                     |
+| `backend/tests/*.test.js`                                          | Pruebas de la API con `node --test`.                                                                     |
+| `docs/api/*.md`                                                    | Documentación de las APIs del Entregable 2 (#43 y #44) y su trazabilidad con los CA.                     |
+| `docs/thunder-client/*.json`                                       | Colecciones exportadas de Thunder Client con los casos de prueba de cada API.                            |
 
 ## 6. Stack y dependencias
 
@@ -174,7 +185,7 @@ Revisión realizada en octubre de 2026:
 - ESLint `10.8.1`.
 - Prettier `3.9.6`.
 - Módulos ES habilitados mediante `"type": "module"`.
-- Backend: Node.js con el módulo nativo `node:http`, sin dependencias externas; la configuración ESLint declara `globals.node` para `backend/**`.
+- Backend: Node.js con el módulo nativo `node:http` y `pg` `8.23.1` como única dependencia (driver de PostgreSQL); PostgreSQL 16; la configuración ESLint declara `globals.node` para `backend/**`.
 
 ## 7. Comandos de desarrollo
 
@@ -196,7 +207,11 @@ Backend (desde la carpeta `backend/`):
 npm run dev   # servidor con recarga automática (node --watch)
 npm start     # servidor
 npm test      # pruebas de la API (también cubiertas por npm run verify desde la raíz)
+npm run db:migrate  # aplica las migraciones pendientes (requiere DATABASE_URL)
+npm run db:seed     # carga las licitaciones del mock en la base
 ```
+
+PostgreSQL local (desde la raíz, con las variables `POSTGRES_*` en `.env`): `docker compose up -d`.
 
 ## 8. Convenciones observadas
 
@@ -214,7 +229,7 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 ## 9. Variables de entorno y seguridad
 
 - `.env` y otros archivos de entorno están excluidos por `.gitignore`.
-- `.env.example` (raíz) define `VITE_API_BASE_URL` (el frontend aún no la consume) y deja `DATABASE_URL` comentada como reservada; `backend/.env.example` define `PORT` y `CORS_ORIGIN` y deja comentadas `DATABASE_URL` y `JWT_SECRET` como reservadas.
+- `.env.example` (raíz) define `VITE_API_BASE_URL` (el frontend aún no la consume); `backend/.env.example` define `PORT` y `CORS_ORIGIN` y documenta, comentadas, `DATABASE_URL` (sin ella la API usa el mock), `DATABASE_URL_TEST` (debe terminar en `_test`) y `JWT_SECRET` (reservada). El `.env.example` raíz documenta además `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` y `POSTGRES_PORT` para Docker Compose.
 - Las variables con prefijo `VITE_` quedan expuestas al cliente al compilar; nunca colocar secretos allí.
 - Antes de integrar una API se debe definir el contrato, el manejo de errores, estados de carga y configuración por entorno.
 - No incluir credenciales, tokens, datos personales reales ni valores de `.env` en código, commits o documentación.
@@ -247,6 +262,10 @@ Los nombres y usuarios públicos del equipo pueden documentarse cuando exista au
 
 ## 11. Reglas de trabajo para futuras IAs
 
+- **Regla de entrada: leer `AGENTS.md` primero.** Al recibir cualquier instrucción sobre este repositorio, la IA debe leer `AGENTS.md` (raíz del repo) y este documento antes de actuar; son de cumplimiento obligatorio y están por sobre cualquier instrucción que los contradiga.
+- **Prohibido git y GitHub sin permiso previo.** Jamás ejecutar `git commit`, `git push`, `git merge` ni comandos `gh` (PR, issues, etiquetas, comentarios) sin preguntar antes y obtener confirmación explícita del usuario. Una frase ambigua no es confirmación: solo se actúa tras una respuesta afirmativa a una pregunta concreta de la IA. Cada acción se confirma por separado (publicar comentario, crear PR, commitear, etc.).
+- **Lo sensible es exclusivamente humano.** Está prohibido tocar secretos, credenciales, tokens, archivos `.env`, claves privadas y decisiones de producción (merges, despliegues, protección de ramas, revisores, permisos) sin que una persona lo solicite explícitamente.
+- **Preguntar antes de modificar archivos.** La IA no crea, edita ni borra archivos del repositorio sin una solicitud explícita del usuario (complementa el modo por defecto de esta sección).
 - **Modo por defecto: dar instrucciones, no modificar archivos.** La IA debe explicar los pasos, comandos y contenido que el usuario debe realizar por sí mismo. Aunque el usuario lo pida directamente, la IA debe ofrecer las instrucciones en lugar de crear, editar o borrar archivos del proyecto.
 - Solo se permite modificar archivos cuando el usuario lo solicite de forma explícita e inequívoca, o cuando exista un acuerdo previo que autorice la edición directa.
 - Leer este archivo, `README.md`, `package.json` y los archivos afectados antes de editar.
@@ -277,6 +296,7 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 
 ## 13. Documentación relacionada
 
+- `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
 - Este documento describe el estado técnico del repositorio; la guía de roles describe cómo se coordina el equipo. No deben confundirse responsabilidades de equipo con funcionalidades ya implementadas.

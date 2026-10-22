@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
-import { filterLicitaciones } from '../licitacionFilters.js'
+import { filterLicitaciones, countActiveFilters } from '../licitacionFilters.js'
 import mockData from '../data/licitaciones.mock.json'
 import './LicitacionesExplorerPage.css'
 
@@ -14,7 +14,7 @@ function LicitacionesExplorerPage() {
     return filterLicitaciones(mockData, filters)
   }, [filters])
 
-  const activeFiltersCount = [filters.keyword, filters.region, filters.tipo].filter(Boolean).length
+  const activeFiltersCount = countActiveFilters(filters)
 
   return (
     <section className="licitaciones-explorer">
@@ -48,7 +48,7 @@ function LicitacionesExplorerPage() {
 
       {/* Barra de Resumen y Control Móvil */}
       <div className="licitaciones-results-bar">
-        <div className="results-counter">
+        <div className="results-counter" role="status" aria-live="polite" aria-atomic="true">
           Mostrando <strong>{filteredData.length}</strong> de <strong>{mockData.length}</strong>{' '}
           licitaciones disponibles
         </div>
@@ -58,6 +58,7 @@ function LicitacionesExplorerPage() {
           className={`mobile-filter-toggle ${showMobileFilters ? 'active' : ''}`}
           onClick={() => setShowMobileFilters(!showMobileFilters)}
           aria-expanded={showMobileFilters}
+          aria-controls="filter-sidebar-wrapper"
         >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
             <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
@@ -70,7 +71,10 @@ function LicitacionesExplorerPage() {
       </div>
 
       <div className="licitaciones-layout">
-        <div className={`filter-sidebar-wrapper ${showMobileFilters ? 'mobile-open' : ''}`}>
+        <div
+          id="filter-sidebar-wrapper"
+          className={`filter-sidebar-wrapper ${showMobileFilters ? 'mobile-open' : ''}`}
+        >
           <FilterSidebar />
         </div>
         <div className="licitaciones-content">
