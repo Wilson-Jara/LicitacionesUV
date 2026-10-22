@@ -1,0 +1,259 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "API 2 - Detalle de licitacion (HU #44).",
+    "collectionId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+    "dateExported": "2026-10-19T04:09:52.033Z",
+    "version": "1.4",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "7e65c241-2246-4383-a86a-5fbcae08a2bc",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D01 Exito: id existente devuelve la licitacion",
+            "url": "http://localhost:3000/api/licitaciones/licitacion-002",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2026-10-19T03:35:35.376Z",
+            "modified": "2026-10-19T03:35:35.376Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.id",
+                    "action": "equal",
+                    "value": "licitacion-002"
+                }
+            ]
+        },
+        {
+            "_id": "6be89bb4-a531-4a56-a84f-cb0bf4ed2295",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D02 Contrato: el detalle incluye los campos de la HU",
+            "url": "http://localhost:3000/api/licitaciones/licitacion-002",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2026-10-19T03:37:05.862Z",
+            "modified": "2026-10-19T03:37:05.862Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.amount",
+                    "action": "equal",
+                    "value": "8700000"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.closingDate",
+                    "action": "equal",
+                    "value": "2026-10-15"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.sourceUrl",
+                    "action": "contains",
+                    "value": "https://"
+                }
+            ]
+        },
+        {
+            "_id": "bf1643af-07af-476c-ba57-f27d9404f112",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D03 Limite: primer id valido del catalogo",
+            "url": "http://localhost:3000/api/licitaciones/licitacion-001",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2026-10-19T03:43:10.388Z",
+            "modified": "2026-10-19T03:43:10.388Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.id",
+                    "action": "equal",
+                    "value": "licitacion-001"
+                }
+            ]
+        },
+        {
+            "_id": "a1d37d10-d723-41d0-a3bb-905cf528d7f2",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D04 Limite: ultimo id valido del catalogo",
+            "url": "http://localhost:3000/api/licitaciones/licitacion-006",
+            "method": "GET",
+            "sortNum": 60000,
+            "created": "2026-10-19T03:47:36.951Z",
+            "modified": "2026-10-19T03:47:36.951Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.id",
+                    "action": "equal",
+                    "value": "licitacion-006"
+                }
+            ]
+        },
+        {
+            "_id": "15794d6c-39a5-499b-845a-78acc0f4d9f4",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D05 Limite: id justo antes del rango",
+            "url": "http://localhost:3000/api/licitaciones/licitacion-000",
+            "method": "GET",
+            "sortNum": 70000,
+            "created": "2026-10-19T03:50:07.086Z",
+            "modified": "2026-10-19T03:50:07.086Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "404"
+                }
+            ]
+        },
+        {
+            "_id": "f98a8d37-2b2a-4646-a4d6-24aff9a186e3",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D06 Limite: id justo despues del rango",
+            "url": "http://localhost:3000/api/licitaciones/licitacion-007",
+            "method": "GET",
+            "sortNum": 80000,
+            "created": "2026-10-19T03:51:14.131Z",
+            "modified": "2026-10-19T03:51:14.131Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "404"
+                }
+            ]
+        },
+        {
+            "_id": "5a38a6b3-d5d8-483c-9d6a-e2bbe026971a",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D07 Negocio: el id distingue mayusculas",
+            "url": "http://localhost:3000/api/licitaciones/LICITACION-001",
+            "method": "GET",
+            "sortNum": 90000,
+            "created": "2026-10-19T03:51:57.117Z",
+            "modified": "2026-10-19T03:51:57.117Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "404"
+                }
+            ]
+        },
+        {
+            "_id": "48db61ed-8439-4957-8e36-caee2823fc8b",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D08 Negocio: id con caracteres codificados que no existe responde 404",
+            "url": "http://localhost:3000/api/licitaciones/%E0%A4%A",
+            "method": "GET",
+            "sortNum": 100000,
+            "created": "2026-10-19T03:54:06.109Z",
+            "modified": "2026-10-19T03:54:06.109Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "404"
+                }
+            ]
+        },
+        {
+            "_id": "3eb4f818-89cc-4d67-8c63-9d419b96e032",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D09 Equivalencia: barra final no corresponde a la ruta",
+            "url": "http://localhost:3000/api/licitaciones/licitacion-001/",
+            "method": "GET",
+            "sortNum": 110000,
+            "created": "2026-10-19T03:55:06.786Z",
+            "modified": "2026-10-19T03:55:06.786Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "404"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.error",
+                    "action": "equal",
+                    "value": "Ruta no encontrada"
+                }
+            ]
+        },
+        {
+            "_id": "1a9d75af-e2d6-47a0-8ba8-783f4bf334a6",
+            "colId": "d9fee495-c9ed-4628-a8cc-7ce853d743aa",
+            "containerId": "",
+            "name": "TC-D10 Negocio: licitacion vencida entrega su fecha de cierre",
+            "url": "http://localhost:3000/api/licitaciones/licitacion-005",
+            "method": "GET",
+            "sortNum": 120000,
+            "created": "2026-10-19T03:56:50.534Z",
+            "modified": "2026-10-19T03:56:50.534Z",
+            "headers": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.closingDate",
+                    "action": "equal",
+                    "value": "2026-09-15"
+                }
+            ]
+        }
+    ],
+    "ref": "X_RDOLRfK39LaIf_Qd_hq8kc8e4tamEjUKzdD9leABCYGoWaIlLA1GRqX6Pl5dQ5LU2uHEZ2HQ2TCSe22PcIBQ"
+}

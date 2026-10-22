@@ -1,0 +1,223 @@
+# Diseño Arquitectónico — LicitacionesUV
+
+> **Estado de los módulos:** están implementados `App`, `Autenticación`, `Licitaciones`, `Favoritos`, `Shared` y la fuente de datos mock. El módulo **Aprobaciones** y el bloque **Configuración** (umbrales y subrogancias) pertenecen al change request **CR-302** y están **planificados: aún no existen en `src/features/`**. Se documentan aquí como diseño objetivo.
+
+## 1. Estilo Arquitectónico
+
+**Estilo adoptado:** Aplicación monolítica de cliente (**SPA**) en React, con **descomposición modular Feature-Driven** (módulos por dominio de negocio en capas: `pages` → `components` → `hooks` → `data`).
+
+### Justificación basada en REF priorizados
+
+| REF ID | Descripción                                      | Prioridad | Cómo lo aborda el estilo                                                                                                                                                                                                                 |
+| ------ | ------------------------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| REF-01 | Resultados filtrados en menos de 2 segundos      | Alta      | Al ser una SPA, el filtrado se ejecuta localmente en el cliente (hook `useLicitacionFilters`) sin viajes al servidor ni recargas de página; el cambio de filtros re-renderiza solo la lista.                                             |
+| REF-02 | Autenticación obligatoria para acciones privadas | Alta      | Existe un módulo de **Autenticación** aislado (`features/auth`) que expone el estado de sesión global (`AuthProvider` + `useAuth`); el resto de los módulos consulta la sesión antes de habilitar acciones privadas (favoritos, perfil). |
+| REF-03 | Secretos nunca versionados                       | Alta      | La arquitectura cliente no embebe secretos en el bundle: la configuración sensible se gestiona vía variables de entorno documentadas en `.env.example` y excluidas por `.gitignore`.                                                     |
+| REF-04 | Disponibilidad ≥ 99% en horario laboral          | Alta      | Un monolito de cliente compila a archivos estáticos desplegables en CDN/hosting estático, eliminando en la Fase 1 dependencias de servidores de aplicación que puedan caer; la disponibilidad depende solo del hosting estático.         |
+
+### Explicación textual
+
+El estilo SPA con módulos Feature-Driven es adecuado porque el producto es, en esencia, un **explorador de información con búsqueda y filtrado intensivo**: el valor (velocidad de consulta, REF-01) se obtiene ejecutando el filtrado en el cliente. La organización por _features_ de dominio (`licitaciones`, `auth`, `favoritos`) mantiene **responsabilidad única y bajo acoplamiento** (REF-06), y permite incorporar la Fase 2 (scraper/API) como un nuevo módulo proveedor de datos **sin rediseñar los existentes** (REF-10), porque los módulos consumen contratos de datos y no la fuente concreta.
+
+Todos los REF de prioridad Alta quedan abordados: rendimiento (filtrado en cliente), seguridad de acciones privadas (módulo Auth con sesión global), protección de secretos (variables de entorno fuera del bundle) y disponibilidad (despliegue como estáticos).
+
+## 2. Diagrama de Arquitectura
+
+```mermaid
+flowchart TB
+    subgraph Cliente["Navegador (SPA React + Vite)"]
+        subgraph App["Módulo App (src/app)"]
+            Rutas["AppRoutes / PublicLayout"]
+            Providers["AuthProvider (sesión global)"]
+        end
+        subgraph Feats["Módulos de dominio (src/features)"]
+            L["Licitaciones<br/>explorador + filtros + tarjetas"]
+            A["Auth<br/>AuthModal + useAuth"]
+            F["Favoritos<br/>MisFavoritosPage"]
+            AP["Aprobaciones (CR-302, planificado)<br/>nivel según monto + aprobador efectivo"]
+        end
+        Shared["Shared (src/shared)<br/>Navbar y UI común"]
+        Conf["Configuración (CR-302, planificado)<br/>umbrales y subrogancias (datos)"]
+    end
+    Datos["Fuente de datos<br/>licitaciones.mock.json<br/>(Fase 2: scraper/API con mismo contrato)"]
+
+    subgraph Backend["Servidor (backend/, Fase 2)"]
+        API["API REST con http nativo<br/>GET /api/health, /api/licitaciones, /api/licitaciones/:id"]
+        Seed["Seed<br/>licitaciones.seed.json<br/>(mismo contrato que el mock)"]
+    end
+    API --> Seed
+
+    Rutas --> L
+    Rutas --> F
+    Rutas --> AP
+    Providers --> A
+    A --> Shared
+    Shared --> L
+    L --> Datos
+    F --> Datos
+    AP --> L
+    AP --> Conf
+    AP -.consulta sesión.-> A
+    F -.consulta sesión.-> A
+    L -.migración pendiente: consumirá /api/licitaciones.-> API
+```
+
+## 3. Descomposición Modular
+
+**Fundamentación:** la descomposición sigue el criterio de **dominio de negocio** (cada feature agrupa lo que cambia por la misma razón) más un módulo transversal `shared` para UI común y un módulo `app` para composición (rutas, layouts y providers globales). Esto minimiza el acoplamiento: los módulos se comunican por interfaces explícitas (hooks y props) y no acceden a los internos de otro feature.
+
+### Módulo 1: App (composición)
+
+- **Responsabilidad:** definir el enrutamiento, el layout público y los providers globales de la aplicación.
+- **Ofrece a otros módulos:** el árbol de rutas que monta cada feature, el layout base y el contexto de sesión (`AuthProvider`).
+- **Depende de:** módulos de dominio (para montar sus páginas) y `shared`.
+
+### Módulo 2: Autenticación (`features/auth`)
+
+- **Responsabilidad:** gestionar la identidad del usuario: registro, inicio de sesión (incluido social simulado) y exposición del estado de sesión.
+- **Ofrece a otros módulos:** hook `useAuth` (sesión actual, login, logout, registro) y componente `AuthModal`.
+- **Depende de:** `app` (providers) y `shared` (componentes de UI comunes).
+
+### Módulo 3: Licitaciones (`features/licitaciones`)
+
+- **Responsabilidad:** explorar, listar y filtrar licitaciones; formatear montos y fechas; mantener el estado de filtros sincronizado con la URL.
+- **Ofrece a otros módulos:** página `LicitacionesExplorerPage`, componentes `LicitacionCard`, `LicitacionList`, `FilterSidebar` y hook `useLicitacionFilters`; el contrato de datos de una licitación (`id`, `titulo`, `institucion`, `monto`, `moneda`, `fechaCierre`, `tipo`, `region`).
+- **Depende de:** `app` (rutas/layout) y `shared` (Navbar). No depende de Auth ni Favoritos.
+
+### Módulo 4: Favoritos (`features/favoritos`)
+
+- **Responsabilidad:** permitir al usuario guardado y revisar licitaciones de interés (requiere sesión).
+- **Ofrece a otros módulos:** página `MisFavoritosPage`.
+- **Depende de:** Autenticación (verifica sesión antes de operar) y del contrato de datos de Licitaciones para mostrar el detalle guardado.
+
+### Módulo 5: Shared (`src/shared`)
+
+- **Responsabilidad:** proveer UI transversal (p. ej. `Navbar` con estado dinámico de sesión) reutilizable por todos los features.
+- **Ofrece a otros módulos:** componentes comunes sin lógica de dominio.
+- **Depende de:** Autenticación (para mostrar avatar/botón de login según sesión); ningún feature depende de él de forma cíclica.
+
+### Módulo 6: Aprobaciones (`features/aprobaciones`) — CR-302, planificado
+
+- **Estado:** planificado (change request CR-302); aún no existe código en `src/features/aprobaciones`.
+- **Responsabilidad:** manejar el flujo de aprobación de licitaciones: según el monto y la unidad se determina el nivel que corresponde, se resuelve quién aprueba considerando las subrogancias vigentes y se guarda la decisión.
+- **Ofrece a otros módulos:** una consulta de quién aprueba una licitación y en qué nivel, y el registro de las decisiones tomadas.
+- **Depende de:** Licitaciones (el monto de la licitación), Autenticación (la identidad de quien aprueba) y los datos de configuración (umbrales y subrogancias). No tiene relación con Favoritos.
+
+### Módulo 7: Backend (`backend/`)
+
+- **Responsabilidad:** exponer la API REST de la Fase 2. En la base actual sirve el estado del servicio (`/api/health`) y el catálogo de licitaciones (`/api/licitaciones`, con filtros opcionales y detalle por `id`), leyendo el seed `licitaciones.seed.json` que replica el contrato del mock del frontend (REF-10).
+- **Ofrece a otros módulos:** endpoints HTTP bajo `/api/*` con JSON, CORS para el dev server de Vite y configuración por entorno (`backend/.env.example`).
+- **Depende de:** solo del runtime Node.js (módulo nativo `node:http`, sin dependencias externas). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
+
+## 4. Decisiones de Diseño
+
+### Decisión 1: SPA con datos mock y contrato estable para la Fase 2
+
+- **Decisión:** implementar la Fase 1 como SPA que consume `licitaciones.mock.json`, manteniendo un contrato de datos que luego será reemplazado por el scraper/API real.
+- **Motivación:** REF-01 (respuesta < 2 s sin latencia de red) y REF-10 (migrar a datos reales sin rediseñar módulos).
+- **Alternativas consideradas:** MPA tradicional (descartada: recargas completas y peor rendimiento percibido); SSR con Next.js (descartada: complejidad y dependencias innecesarias para la Fase 1 y el tamaño del equipo).
+- **Impacto:** módulos Licitaciones, Favoritos y App; habilita REF-08 (SPA en navegadores modernos).
+
+### Decisión 2: Sesión global con Context API propia
+
+- **Decisión:** gestionar la sesión con `AuthProvider` + hook `useAuth` (Context API de React, estado en memoria).
+- **Motivación:** REF-02 (todas las acciones privadas deben consultar autenticación) con la menor complejidad posible; evita dependencias externas y permite al `Navbar` reaccionar a la sesión.
+- **Alternativas consideradas:** Redux/Zustand (descartadas: sobredimensionado para un solo estado global); persistencia en `localStorage` (pospuesta: requiere backend real de sesiones en la Fase 2).
+- **Impacto:** módulos Auth, Shared (Navbar) y Favoritos (guardas de sesión).
+
+### Decisión 3: Filtros sincronizados con la URL
+
+- **Decisión:** el estado de búsqueda y filtrado vive en la URL (`useSearchParams`), que actúa como única fuente de verdad; los parámetros vacíos se limpian automáticamente.
+- **Motivación:** REF-05 (usabilidad: enlaces compartibles, botón atrás/adelante funcional y resultados reproducibles) y REF-01 (aplicación inmediata del filtro en cliente).
+- **Alternativas consideradas:** estado interno con `useState` (descartado: no compartible ni recuperable); librería de estado de URL externa (descartada: `useSearchParams` ya cubre el caso).
+- **Impacto:** módulo Licitaciones (FilterSidebar + useLicitacionFilters + ExplorerPage).
+
+### Decisión 4: Organización Feature-Driven del código
+
+- **Decisión:** agrupar el código por dominio (`features/licitaciones`, `features/auth`, `features/favoritos`) con capas internas `pages/components/hooks/data`, dejando lo transversal en `shared` y la composición en `app`.
+- **Motivación:** REF-06 (responsabilidad única, bajo acoplamiento y verificación con ESLint) y REF-10 (agregar el scraper como nueva fuente de datos sin tocar los features existentes).
+- **Alternativas consideradas:** organización por tipo de archivo (carpetas globales de componentes/hooks; descartada: alto acoplamiento y difícil de escalar por dominio).
+- **Impacto:** todos los módulos; define la convención de ramas y PRs del equipo (REF-11).
+
+### Decisión 5: Línea base reproducible con verificación única
+
+- **Decisión:** comando integrador `npm run verify` (clean + lint + format:check + test + build), dependencias con SemVer explícito, `package-lock.json`, `.env.example` y Prettier obligatorio.
+- **Motivación:** REF-07 (cualquier integrante levanta y valida el proyecto con un comando) y REF-03 (secretos fuera del repositorio desde la línea base).
+- **Alternativas consideradas:** Gradle wrapper (no aplica a JavaScript); scripts manuales sueltos (descartados: no reproducibles ni verificables en PR).
+- **Impacto:** tooling del repositorio completo y flujo de PR del equipo (REF-11).
+
+### Decisión 6: Umbrales de aprobación como configuración (CR-302, planificado)
+
+- **Decisión:** los rangos de monto que definen el nivel de aprobación (jefe de unidad, dirección económica, rectoría) se manejan como datos configurables por unidad (entidad UmbralAprobacion), no como constantes en el código.
+- **Motivación:** la regla R4 del CR-302: la normativa cambia y los umbrales se actualizan. Si son datos, se ajustan sin modificar ni volver a desplegar código.
+- **Alternativas consideradas:** dejar los umbrales fijos en el código (descartada: cada cambio de normativa exige un cambio de código y un nuevo despliegue); un solo umbral global (descartada: no cubre las variantes por facultad/unidad de la regla R2).
+- **Impacto:** módulo Aprobaciones (lee los umbrales), módulo Configuración (los entrega) y las futuras pantallas de administración de umbrales.
+
+### Decisión 7: Resolución del aprobador efectivo centralizada (CR-302, planificado)
+
+- **Decisión:** decidir quién aprueba (titular o su subrogante, según la fecha de la solicitud y la entidad Delegacion) se implementa como una sola regla dentro del módulo Aprobaciones y se expone como consulta.
+- **Motivación:** la regla R3 del CR-302: las delegaciones tienen fecha de inicio y fin, y pueden cambiar. Al centralizar, todas las vistas usan el mismo criterio y no hay contradicciones sobre quién aprueba.
+- **Alternativas consideradas:** resolver el aprobador efectivo en cada vista (descartada: se repite la lógica y es difícil de mantener y auditar); guardar la delegación vigente en el cliente (descartada: riesgo de aprobar con un subrogante cuya delegación ya venció).
+- **Impacto:** módulo Aprobaciones (regla de consulta de aprobador), módulo de datos (entidades Delegacion y Aprobacion) y las vistas de bandeja de aprobaciones.
+
+### Decisión 8: Base del backend con `node:http` nativo y sin dependencias
+
+- **Decisión:** la base del backend (Fase 2) se implementa con el módulo nativo `node:http` de Node.js 20 (enrutador propio, JSON y CORS a mano), sin dependencias externas, en la carpeta `backend/` con entrada `src/server.js`.
+- **Motivación:** arranque inmediato sin `npm install` (REF-07), alineación con el minimalismo del repositorio y foco de esta entrega en fijar el contrato de la API (REF-10) antes que en un framework. Los endpoints actuales son de solo lectura, por lo que un framework HTTP aún no aporta valor.
+- **Alternativas consideradas:** Express y Fastify (pospuestos: se reevaluarán cuando lleguen autenticación, PostgreSQL y middlewares de sesión; migrar en esta etapa es de bajo costo porque la capa HTTP queda aislada en `src/app.js` y `src/lib/router.js`).
+- **Impacto:** carpeta `backend/` (servidor, rutas, seed y pruebas), configuración ESLint con `globals.node` para `backend/**`, cobertura de las pruebas de la API en el `npm run verify` de la raíz y documentación (`Arquitectura.md`, `AI_context.md`).
+
+### Decisión 9: Se mantiene `node:http` para la Fase 2 completa
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** el backend continúa sobre `node:http` con el enrutador propio de `src/lib/router.js` al incorporar autenticación, PostgreSQL y sesiones; las piezas nuevas (lectura de cookies, middleware de sesión) se implementan como funciones pequeñas en `src/lib/`.
+- **Motivación:** cierra la reevaluación pendiente de la Decisión 8. Las necesidades de la Fase 2 (cookies, un middleware de autenticación y validación de entrada) son acotadas y se cubren con poco código propio, manteniendo el número de dependencias al mínimo (REF-07).
+- **Alternativas consideradas:** Express (descartada por ahora: aporta middlewares listos, pero agrega dependencias y no resuelve un problema que hoy exista); Fastify (descartada por ahora: mismo motivo, con una curva de aprendizaje adicional para el equipo).
+- **Impacto:** `backend/src/lib/` (cookies y middleware de sesión) y `backend/src/app.js` (aplicación del middleware a rutas privadas). Si la cantidad de middlewares crece, se reevalúa en una decisión nueva.
+
+### Decisión 10: Autenticación con sesiones en servidor y cookie `HttpOnly`
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** al iniciar sesión, el servidor genera un identificador aleatorio con `node:crypto`, guarda su hash en la tabla `sesiones` (usuario, expiración) y lo entrega en una cookie `HttpOnly`, `SameSite=Lax` y `Secure` fuera de desarrollo. Las contraseñas se almacenan con `scrypt` de `node:crypto` y sal por usuario. En desarrollo, `vite.config.js` define un proxy de `/api` hacia el backend para que frontend y API compartan origen.
+- **Motivación:** cumple REF-02 (acciones privadas exigen sesión) y CA3 del #78 sin dependencias nuevas. El cierre de sesión es real (se elimina la fila) y la cookie `HttpOnly` no es accesible desde JavaScript, lo que reduce el impacto de un XSS. El proxy evita configurar CORS con credenciales entre orígenes distintos.
+- **Alternativas consideradas:** JWT en `localStorage` (descartada: expuesto a XSS y el logout no invalida el token antes de su expiración); JWT en cookie (descartada: requiere `jsonwebtoken` y una lista de revocación para tener logout real, lo que equivale a mantener sesiones); bcrypt (descartada: requiere dependencia nativa, y `scrypt` cumple el mismo propósito).
+- **Impacto:** tabla `sesiones`, endpoints de autenticación, middleware de sesión, `vite.config.js` (proxy), `backend/.env.example` (`JWT_SECRET` se reemplaza por `SESSION_SECRET` si se requiere firmar la cookie) y `AuthProvider` del frontend al migrar a la API.
+
+### Decisión 11: Acceso a PostgreSQL con `pg` y migraciones SQL versionadas
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** el backend se conecta a PostgreSQL con el driver `pg` y consultas SQL parametrizadas escritas a mano. El esquema se gestiona con archivos `.sql` numerados en `backend/migrations/` (`001_...sql`, `002_...sql`), aplicados en orden por un script propio que registra las migraciones ejecutadas en una tabla de control. Un script de seed carga las licitaciones desde el mock del frontend.
+- **Motivación:** `pg` es la única dependencia imprescindible para hablar con PostgreSQL (excepción justificada a la Decisión 8). Las consultas parametrizadas previenen inyección SQL, el SQL explícito facilita la revisión de pares y las migraciones numeradas hacen el esquema reproducible en cualquier máquina y en CI (REF-07).
+- **Alternativas consideradas:** ORM como Prisma o Sequelize (descartada: varias dependencias y herramienta propia que oculta el SQL); query builder como Knex (descartada: capa adicional que no aporta lo suficiente a este tamaño de proyecto); `node-pg-migrate` (descartada por ahora: el script propio cubre el caso con pocas líneas).
+- **Impacto:** `backend/package.json` (dependencia `pg`), `backend/migrations/`, scripts de migración y seed, `backend/src/` (capa de acceso a datos) y eliminación de `licitaciones.seed.json` cuando los endpoints lean desde la BD.
+
+### Decisión 12: PostgreSQL con Docker Compose en local y servicio en CI
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** el repositorio incluye un `docker-compose.yml` con `postgres:16` para desarrollo local, y `.github/workflows/verify.yml` declara un servicio `postgres:16` para las pruebas. Las pruebas usan una base separada (`DATABASE_URL_TEST`), distinta de la de desarrollo. Las credenciales del CI son de prueba y desechables; las locales viven solo en `.env`.
+- **Motivación:** todos los integrantes y el CI usan la misma versión y configuración, y `npm run verify` sigue funcionando con un único comando (REF-07). La base de pruebas separada permite que los tests creen y borren datos sin afectar el trabajo local. Los secretos reales no entran al repositorio (REF-03).
+- **Alternativas consideradas:** instalación directa de PostgreSQL en cada equipo (aceptada solo como respaldo para quien no pueda usar Docker, con la misma versión 16); base de datos en la nube compartida (descartada: requiere credenciales compartidas y las pruebas de un integrante afectan a los demás).
+- **Impacto:** `docker-compose.yml`, `.github/workflows/verify.yml`, `backend/.env.example` (`DATABASE_URL` y `DATABASE_URL_TEST` sin valores reales), README (instrucciones de arranque) y configuración de las pruebas del backend.
+
+### Decisión 13: CR-302 fuera del alcance del #78
+
+- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Decisión:** el #78 crea las tablas de Aprobacion, Delegacion y UmbralAprobacion para completar el modelo de las 8 entidades, pero los endpoints y la lógica del flujo CR-302 se implementan en sus historias propias (US-09, US-10 y US-11).
+- **Motivación:** el #78 queda acotado a la infraestructura de la Fase 2 y puede cerrarse con evidencia verificable. CR-302 tiene reglas propias (Decisiones 6 y 7) que merecen criterios de aceptación y revisión independientes.
+- **Alternativas consideradas:** implementar CR-302 completo dentro del #78 (descartada: amplía un épico ya grande y retrasa su cierre); posponer también las tablas (descartada: el CA1 del #78 exige el modelo completo de entidades).
+- **Impacto:** migraciones (tablas de CR-302 sin endpoints), alcance y criterios del #78, y dependencias de los issues de US-09, US-10 y US-11.
+
+## 5. Trazabilidad REF ↔ Módulos ↔ HU
+
+| REF                         | Módulo que lo aborda                                  | HU relacionadas     |
+| --------------------------- | ----------------------------------------------------- | ------------------- |
+| REF-01 Rendimiento          | Licitaciones (filtrado en cliente)                    | US-03, US-04        |
+| REF-02 Seguridad (sesión)   | Autenticación + Favoritos                             | US-01, US-02, US-06 |
+| REF-03 Seguridad (secretos) | Línea base del repositorio (.env.example, .gitignore) | Transversal         |
+| REF-04 Disponibilidad       | Estilo SPA desplegable como estáticos                 | Transversal         |
+| REF-10 Restricción (mocks)  | Backend + Licitaciones (contrato estable, Decisión 8) | US-03, US-04, US-05 |
+| REF-14 Mantenibilidad       | Aprobaciones + Configuración (Decisión 6)             | US-10               |
+| REF-15 Confiabilidad        | Aprobaciones (registro de decisiones de aprobación)   | US-09, US-11        |
+| REF-16 Fiabilidad           | Aprobaciones (Decisión 7)                             | US-09, US-11        |
+
+> Las filas REF-14, REF-15 y REF-16 corresponden al change request **CR-302**: el módulo Aprobaciones y el bloque Configuración están **planificados y aún no implementados** en el código. Las HU US-09 a US-11 y sus REF están fuera del alcance de la Fase 1 (ver `README.md`).

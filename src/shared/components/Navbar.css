@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 32px;
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 1px 3px 0 rgba(14, 27, 56, 0.04);
   position: sticky;
@@ -75,12 +75,12 @@
 
 .navbar__links a:hover {
   color: var(--primary);
-  background-color: rgba(14, 27, 56, 0.04);
+  background-color: var(--hover-bg);
 }
 
 .navbar__btn-login {
   background: var(--primary);
-  color: #ffffff;
+  color: var(--primary-contrast);
   border: none;
   padding: 8px 18px;
   border-radius: 6px;
@@ -127,8 +127,8 @@
 
 .navbar__btn-logout {
   background: none;
-  border: 1px solid #e2e8f0;
-  color: #ef4444;
+  border: 1px solid var(--border);
+  color: var(--danger);
   padding: 5px 10px;
   border-radius: 6px;
   cursor: pointer;
@@ -138,8 +138,8 @@
 }
 
 .navbar__btn-logout:hover {
-  background: #fef2f2;
-  border-color: #fca5a5;
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
 }
 
 @media (max-width: 768px) {

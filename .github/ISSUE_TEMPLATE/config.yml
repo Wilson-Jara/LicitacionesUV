@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Guía del proyecto (README)
+    url: https://github.com/Wilson-Jara/LicitacionesUV/blob/develop/README.md
+    about: Instalación, comandos, flujo de trabajo en Git y verificación antes del merge.
+  - name: Contexto técnico para IA
+    url: https://github.com/Wilson-Jara/LicitacionesUV/blob/develop/docs/AI_context.md
+    about: Arquitectura, estructura de archivos y convenciones del repositorio.

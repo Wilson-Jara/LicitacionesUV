@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mockup 2 · Panel de umbrales y subrogancias · CR-302</title>
+    <style>
+      :root {
+        --navy: #0e1b38;
+        --navy-dark: #091226;
+        --gold: #c59b27;
+        --text: #475569;
+        --text-h: #0f172a;
+        --muted: #64748b;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --border: #e2e8f0;
+        --green: #10b981;
+        --amber: #f59e0b;
+        --red: #ef4444;
+        --info-bg: #eff6ff;
+        --info-border: #bfdbfe;
+        --info-text: #1e40af;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .watermark {
+        position: fixed;
+        top: 12px;
+        right: 16px;
+        background: var(--gold);
+        color: var(--navy-dark);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        z-index: 10;
+      }
+      header.navbar {
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+        padding: 14px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand { display: flex; align-items: center; gap: 10px; }
+      .shield {
+        width: 36px; height: 36px;
+        background: var(--navy);
+        color: var(--gold);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800;
+      }
+      .brand-name { font-weight: 700; color: var(--navy); }
+      .brand-sub { font-size: 10.5px; color: var(--muted); }
+      .page { max-width: 1000px; margin: 0 auto; padding: 28px 24px 56px; }
+      .overline {
+        color: var(--gold);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      h1 { color: var(--navy); margin: 0 0 6px; font-size: 26px; }
+      .subtitle { margin: 0 0 22px; color: var(--muted); font-size: 14px; max-width: 720px; }
+      h2 {
+        color: var(--navy);
+        font-size: 17px;
+        margin: 28px 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      h2 .rule {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--gold);
+        border: 1px solid var(--gold);
+        border-radius: 999px;
+        padding: 1px 8px;
+        letter-spacing: 0.5px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      table.grid { width: 100%; border-collapse: collapse; }
+      table.grid th {
+        text-align: left;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+        background: var(--bg);
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      table.grid td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13.5px;
+      }
+      table.grid tr:last-child td { border-bottom: none; }
+      .unit-name { font-weight: 700; color: var(--navy); }
+      .range { font-weight: 600; color: var(--text-h); }
+      .arrow { color: var(--muted); margin: 0 6px; }
+      .level-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .level-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+      .lvl-1 { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); }
+      .lvl-1 .dot { background: var(--green); }
+      .lvl-2 { background: rgba(245, 158, 11, 0.12); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.25); }
+      .lvl-2 .dot { background: var(--amber); }
+      .lvl-3 { background: rgba(239, 68, 68, 0.1); color: #b91c1c; border: 1px solid rgba(239, 68, 68, 0.25); }
+      .lvl-3 .dot { background: var(--red); }
+      .btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--navy);
+      }
+      .btn.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+      .btn + .btn { margin-left: 6px; }
+      .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .columns { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
+      .form { padding: 18px; }
+      .form-group { margin-bottom: 14px; }
+      .form-group label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-h);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 13.5px;
+        color: var(--text-h);
+        background: var(--bg);
+        font-family: inherit;
+      }
+      .date-pair { display: flex; gap: 10px; }
+      .date-pair .form-group { flex: 1; }
+      .form-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
+      }
+      .status .dot { width: 7px; height: 7px; border-radius: 50%; }
+      .status.vigente { color: #059669; }
+      .status.vigente .dot { background: var(--green); }
+      .status.proxima { color: #b45309; }
+      .status.proxima .dot { background: var(--amber); }
+      .note {
+        margin-top: 22px;
+        background: var(--info-bg);
+        border: 1px solid var(--info-border);
+        color: var(--info-text);
+        font-size: 12px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        line-height: 1.5;
+      }
+      .trace {
+        margin-top: 14px;
+        font-size: 11.5px;
+        color: var(--muted);
+        background: var(--card);
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+      }
+      .trace b { color: var(--navy); }
+    </style>
+  </head>
+  <body>
+    <div class="watermark">MOCKUP · BAJA FIDELIDAD · CR-302</div>
+
+    <header class="navbar">
+      <div class="brand">
+        <div class="shield">UV</div>
+        <div>
+          <div class="brand-name">Licitaciones<span style="color: var(--gold)">UV</span></div>
+          <div class="brand-sub">Universidad de Valparaíso</div>
+        </div>
+      </div>
+      <nav style="display: flex; gap: 16px; font-size: 13.5px; font-weight: 500">
+        <span>Licitaciones</span><span>Favoritos</span><span style="color: var(--navy); font-weight: 700">Administración</span>
+      </nav>
+    </header>
+
+    <main class="page">
+      <div class="overline">Configuración del flujo · R2 y R4</div>
+      <h1>Umbrales y subrogancias</h1>
+      <p class="subtitle">
+        La normativa de aprobación se gestiona aquí como datos configurables: cada unidad define sus
+        propios umbrales y cada delegación tiene vigencia por fecha. Actualizar estos valores no
+        requiere modificar el sistema.
+      </p>
+
+      <h2>Umbrales de aprobación por unidad <span class="rule">R2 · R4</span></h2>
+      <div class="card">
+        <table class="grid">
+          <thead>
+            <tr>
+              <th>Unidad / Facultad</th>
+              <th>Jefe de unidad</th>
+              <th>Dirección económica</th>
+              <th>Rectoría</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="unit-name">Facultad de Ingeniería</td>
+              <td><span class="range">$0</span><span class="arrow">→</span><span class="range">$10.000.000</span> <span class="level-badge lvl-1"><span class="dot"></span>Jefe</span></td>
+              <td><span class="range">$10.000.001</span><span class="arrow">→</span><span class="range">$50.000.000</span> <span class="level-badge lvl-2"><span class="dot"></span>Dir. económica</span></td>
+              <td><span class="range">&gt; $50.000.000</span> <span class="level-badge lvl-3"><span class="dot"></span>Rectoría</span></td>
+              <td><button class="btn">Editar</button></td>
+            </tr>
+            <tr>
+              <td class="unit-name">Facultad de Ciencias</td>
+              <td><span class="range">$0</span><span class="arrow">→</span><span class="range">$5.000.000</span> <span class="level-badge lvl-1"><span class="dot"></span>Jefe</span></td>
+              <td><span class="range">$5.000.001</span><span class="arrow">→</span><span class="range">$30.000.000</span> <span class="level-badge lvl-2"><span class="dot"></span>Dir. económica</span></td>
+              <td><span class="range">&gt; $30.000.000</span> <span class="level-badge lvl-3"><span class="dot"></span>Rectoría</span></td>
+              <td><button class="btn">Editar</button></td>
+            </tr>
+            <tr>
+              <td class="unit-name">Rectoría</td>
+              <td><span class="range">$0</span><span class="arrow">→</span><span class="range">$20.000.000</span> <span class="level-badge lvl-1"><span class="dot"></span>Jefe</span></td>
+              <td><span class="range">$20.000.001</span><span class="arrow">→</span><span class="range">$80.000.000</span> <span class="level-badge lvl-2"><span class="dot"></span>Dir. económica</span></td>
+              <td><span class="range">&gt; $80.000.000</span> <span class="level-badge lvl-3"><span class="dot"></span>Rectoría</span></td>
+              <td><button class="btn">Editar</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="card-footer">
+          <span>Última actualización: 01/09/2026 · queda registro de quién modificó y cuándo</span>
+          <button class="btn primary">+ Agregar unidad</button>
+        </div>
+      </div>
+
+      <h2>Subrogancias (delegaciones con vigencia) <span class="rule">R3</span></h2>
+      <div class="columns">
+        <div class="card">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>Titular</th>
+                <th>Subrogante</th>
+                <th>Vigencia</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="unit-name">María Jiménez<span style="display: block; font-weight: 400; font-size: 11.5px; color: var(--muted)">Jefa, Unidad de Compras · Ing.</span></td>
+                <td>Roberto Contreras</td>
+                <td>15/12/2026 → 05/01/2027</td>
+                <td><span class="status proxima"><span class="dot"></span>Próxima</span></td>
+              </tr>
+              <tr>
+                <td class="unit-name">Carmen Fuentes<span style="display: block; font-weight: 400; font-size: 11.5px; color: var(--muted)">Directora Económica · UV</span></td>
+                <td>Alvaro Rojas</td>
+                <td>01/09/2026 → 30/09/2026</td>
+                <td><span class="status vigente"><span class="dot"></span>Vigente</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="card-footer">
+            <span>El aprobador efectivo se resuelve por la fecha de cada solicitud</span>
+            <button class="btn">Ver historial</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form">
+            <div class="form-group">
+              <label>Titular (quien delega)</label>
+              <select>
+                <option>María Jiménez — Jefa, Unidad de Compras</option>
+                <option>Carmen Fuentes — Directora Económica</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Subrogante (quien aprueba)</label>
+              <select>
+                <option>Roberto Contreras — Encargado de Adquisiciones</option>
+                <option>Alvaro Rojas — Subdirector Administrativo</option>
+              </select>
+            </div>
+            <div class="date-pair">
+              <div class="form-group">
+                <label>Fecha de inicio</label>
+                <input type="date" value="2026-12-15" />
+              </div>
+              <div class="form-group">
+                <label>Fecha de término</label>
+                <input type="date" value="2027-01-05" />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn primary">Programar delegación</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <b>Regla R4 (normativa cambiante):</b> los umbrales se almacenan como configuración. Cuando la
+        normativa cambie, el encargado administrativo actualiza los valores en esta pantalla; el
+        sistema no requiere cambios de código ni nueva versión.
+      </div>
+
+      <div class="trace">
+        <b>Trazabilidad:</b> implementa US-10 (umbrales por unidad, R2+R4) y US-11 (subrogancias
+        vigentes, R3) · usa entidades <b>UmbralAprobacion</b>, <b>Delegacion</b>, <b>Unidad</b> ·
+        respalda REF de mantenibilidad (configuración sin código).
+      </div>
+    </main>
+  </body>
+</html>

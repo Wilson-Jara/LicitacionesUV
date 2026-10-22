@@ -7,7 +7,8 @@
     "institution": "Universidad de Valparaíso",
     "closingDate": "2026-09-30",
     "type": "publica",
-    "region": "valparaiso"
+    "region": "valparaiso",
+    "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
     "id": "licitacion-002",
@@ -17,7 +18,8 @@
     "institution": "Empresa privada de servicios",
     "closingDate": "2026-10-15",
     "type": "privada",
-    "region": "metropolitana"
+    "region": "metropolitana",
+    "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
     "id": "licitacion-003",
@@ -27,7 +29,8 @@
     "institution": "Ministerio del Interior",
     "closingDate": "2026-11-01",
     "type": "publica",
-    "region": "metropolitana"
+    "region": "metropolitana",
+    "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
     "id": "licitacion-004",
@@ -37,7 +40,8 @@
     "institution": "Banco Internacional",
     "closingDate": "2026-12-20",
     "type": "privada",
-    "region": "biobio"
+    "region": "biobio",
+    "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
     "id": "licitacion-005",
@@ -47,7 +51,8 @@
     "institution": "Municipalidad de Viña del Mar",
     "closingDate": "2026-09-15",
     "type": "publica",
-    "region": "valparaiso"
+    "region": "valparaiso",
+    "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
     "id": "licitacion-006",
@@ -57,6 +62,7 @@
     "institution": "Corporación Privada",
     "closingDate": "2026-10-05",
     "type": "privada",
-    "region": "antofagasta"
+    "region": "antofagasta",
+    "sourceUrl": "https://www.mercadopublico.cl/"
   }
 ]

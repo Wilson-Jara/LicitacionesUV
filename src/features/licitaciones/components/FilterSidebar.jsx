@@ -1,4 +1,5 @@
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
+import { countActiveFilters } from '../licitacionFilters.js'
 import './FilterSidebar.css'
 
 const REGIONES = [
@@ -22,7 +23,8 @@ export function FilterSidebar() {
   const handleRegionChange = (e) => setFilter('region', e.target.value)
   const handleTipoChange = (value) => setFilter('tipo', value)
 
-  const activeCount = [filters.keyword, filters.region, filters.tipo].filter(Boolean).length
+  const trimmedKeyword = filters.keyword.trim()
+  const activeCount = countActiveFilters(filters)
   const hasActiveFilters = activeCount > 0
 
   const activeRegionLabel = REGIONES.find((r) => r.value === filters.region)?.label
@@ -51,12 +53,12 @@ export function FilterSidebar() {
 
       {/* Chips de filtros activos */}
       {hasActiveFilters && (
-        <div className="active-filters-chips">
+        <div className="active-filters-chips" role="region" aria-label="Filtros aplicados">
           <span className="chips-label">Aplicados:</span>
-          <div className="chips-list">
-            {filters.keyword && (
-              <span className="filter-chip">
-                <span>&ldquo;{filters.keyword}&rdquo;</span>
+          <ul className="chips-list">
+            {trimmedKeyword && (
+              <li className="filter-chip">
+                <span>&ldquo;{trimmedKeyword}&rdquo;</span>
                 <button
                   type="button"
                   onClick={() => setFilter('keyword', '')}
@@ -64,10 +66,10 @@ export function FilterSidebar() {
                 >
                   &times;
                 </button>
-              </span>
+              </li>
             )}
             {filters.region && (
-              <span className="filter-chip">
+              <li className="filter-chip">
                 <span>{activeRegionLabel}</span>
                 <button
                   type="button"
@@ -76,10 +78,10 @@ export function FilterSidebar() {
                 >
                   &times;
                 </button>
-              </span>
+              </li>
             )}
             {filters.tipo && (
-              <span className="filter-chip">
+              <li className="filter-chip">
                 <span>{activeTipoLabel}</span>
                 <button
                   type="button"
@@ -88,9 +90,9 @@ export function FilterSidebar() {
                 >
                   &times;
                 </button>
-              </span>
+              </li>
             )}
-          </div>
+          </ul>
         </div>
       )}
 
@@ -105,7 +107,7 @@ export function FilterSidebar() {
           <input
             type="text"
             id="keyword"
-            placeholder="Título, institución..."
+            placeholder="Buscar por título..."
             value={filters.keyword}
             onChange={handleKeywordChange}
           />
@@ -141,8 +143,14 @@ export function FilterSidebar() {
       </div>
 
       <div className="filter-group">
-        <span className="filter-group-label">MODALIDAD DE LICITACIÓN</span>
-        <div className="filter-type-pills">
+        <span id="modalidad-licitacion-label" className="filter-group-label">
+          MODALIDAD DE LICITACIÓN
+        </span>
+        <div
+          className="filter-type-pills"
+          role="group"
+          aria-labelledby="modalidad-licitacion-label"
+        >
           {TIPOS.map((t) => {
             const isSelected = filters.tipo === t.value
             return (
@@ -151,6 +159,7 @@ export function FilterSidebar() {
                 type="button"
                 className={`type-pill ${isSelected ? 'active' : ''} ${t.value ? t.value : 'all'}`}
                 onClick={() => handleTipoChange(t.value)}
+                aria-pressed={isSelected}
               >
                 {t.label}
               </button>
@@ -160,7 +169,12 @@ export function FilterSidebar() {
       </div>
 
       {hasActiveFilters && (
-        <button type="button" className="clear-filters-btn" onClick={clearFilters}>
+        <button
+          type="button"
+          className="clear-filters-btn"
+          onClick={clearFilters}
+          aria-label="Restablecer todos los filtros"
+        >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
           </svg>

@@ -10,7 +10,7 @@
    HERO HEADER INSTITUCIONAL UV
    ======================================================== */
 .licitaciones-hero {
-  background: linear-gradient(180deg, rgba(14, 27, 56, 0.04) 0%, rgba(248, 250, 252, 0) 100%);
+  background: var(--hero-gradient);
   border-bottom: 1px solid var(--border);
   padding: 44px 16px 36px;
   margin: 0 -32px 28px;
@@ -56,7 +56,7 @@
   justify-content: center;
   gap: 24px;
   margin-top: 24px;
-  background: #ffffff;
+  background: var(--card-bg);
   padding: 10px 24px;
   border-radius: 999px;
   border: 1px solid var(--border);
@@ -86,7 +86,7 @@
 .hero-kpi-divider {
   width: 1px;
   height: 16px;
-  background: #e2e8f0;
+  background: var(--border);
 }
 
 /* ========================================================
@@ -116,8 +116,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: var(--card-bg);
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
@@ -127,13 +127,13 @@
 }
 
 .mobile-filter-toggle:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
+  background: var(--surface-soft);
+  border-color: var(--text-muted);
 }
 
 .mobile-filter-badge {
   background: var(--primary);
-  color: #ffffff;
+  color: var(--primary-contrast);
   font-size: 11px;
   padding: 1px 6px;
   border-radius: 999px;
