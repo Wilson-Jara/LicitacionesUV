@@ -75,6 +75,7 @@ describe('licitacionUtils', () => {
 
     it('muestra "Fecha no disponible" cuando no hay fecha', () => {
       assert.equal(formatLicitacionDate(null), 'Fecha no disponible')
+      assert.equal(formatLicitacionDate(undefined), 'Fecha no disponible')
       assert.equal(formatLicitacionDate(''), 'Fecha no disponible')
     })
 
