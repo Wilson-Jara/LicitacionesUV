@@ -1,5 +1,10 @@
+/** Claves de región aceptadas en los filtros; cualquier otro valor se descarta. */
 export const VALID_REGIONES = ['valparaiso', 'metropolitana', 'biobio', 'antofagasta']
+
+/** Tipos de licitación aceptados en los filtros (`publica` y `privada`). */
 export const VALID_TIPOS = ['publica', 'privada']
+
+/** Criterios de orden aceptados en `?sort=`; cualquier otro valor se descarta. */
 export const VALID_SORTS = ['fecha-asc', 'fecha-desc', 'monto-asc', 'monto-desc']
 
 function getAllParams(rawParams, key) {
