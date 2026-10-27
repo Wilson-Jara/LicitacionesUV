@@ -12,6 +12,8 @@
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
     "lint": "eslint .",
     "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/**/*.js\" --test-coverage-include=\"backend/src/**/*.js\" --test-coverage-lines=70 --test-coverage-functions=70 --test-coverage-branches=60",
+    "test:coverage:critico": "node --test --experimental-test-coverage --test-coverage-include=\"src/features/licitaciones/licitacionUtils.js\" --test-coverage-lines=80 --test-coverage-functions=80 --test-coverage-branches=70 tests/licitacionUtils.test.js",
     "build": "vite build",
     "verify": "npm run clean && npm run lint && npm run format:check && npm run test && npm run build",
     "format": "prettier --write .",
