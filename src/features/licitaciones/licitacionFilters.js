@@ -1,5 +1,6 @@
 export const VALID_REGIONES = ['valparaiso', 'metropolitana', 'biobio', 'antofagasta']
 export const VALID_TIPOS = ['publica', 'privada']
+export const VALID_SORTS = ['fecha-asc', 'fecha-desc', 'monto-asc', 'monto-desc']
 
 function getAllParams(rawParams, key) {
   if (!rawParams) return []
@@ -60,18 +61,21 @@ function resolveKeywordParam(values) {
  * evaluar la coincidencia (`filterLicitaciones`) y al contar activos (`countActiveFilters`).
  *
  * @param {URLSearchParams|Record<string, unknown>} [rawParams={}] - Parámetros en bruto.
- * @returns {{keyword: string, region: string, tipo: string}} Filtros saneados.
+ * @returns {{keyword: string, region: string, tipo: string, sort: string}} Filtros y
+ *   criterio de orden saneados.
  */
 export function sanitizeFilterParams(rawParams = {}) {
   const keywordValues = getAllParams(rawParams, 'keyword')
   const regionValues = getAllParams(rawParams, 'region')
   const tipoValues = getAllParams(rawParams, 'tipo')
+  const sortValues = getAllParams(rawParams, 'sort')
 
   const keyword = resolveKeywordParam(keywordValues)
   const region = resolveLastValidParam(regionValues, VALID_REGIONES)
   const tipo = resolveLastValidParam(tipoValues, VALID_TIPOS)
+  const sort = resolveLastValidParam(sortValues, VALID_SORTS)
 
-  return { keyword, region, tipo }
+  return { keyword, region, tipo, sort }
 }
 
 /**
@@ -135,4 +139,65 @@ export function filterLicitaciones(licitaciones = [], filters = {}) {
   if (!Array.isArray(licitaciones)) return []
   const safeFilters = sanitizeFilterParams(filters)
   return licitaciones.filter((licitacion) => matchesAllFilters(licitacion, safeFilters))
+}
+
+function getSortableValue(licitacion, field) {
+  if (field === 'monto') {
+    const rawValue = licitacion?.amount
+    if (typeof rawValue === 'string' && rawValue.trim() === '') return null
+    const numero = typeof rawValue === 'string' ? Number(rawValue) : rawValue
+    return Number.isFinite(numero) ? numero : null
+  }
+  const rawDate = licitacion?.closingDate
+  if (typeof rawDate !== 'string' || Number.isNaN(Date.parse(rawDate))) return null
+  return Date.parse(rawDate)
+}
+
+function compareById(aId, bId) {
+  const a = String(aId ?? '')
+  const b = String(bId ?? '')
+  if (a === b) return 0
+  return a.localeCompare(b)
+}
+
+function compareSortableValues(aValue, bValue, directionFactor, aId, bId) {
+  const aIsValid = aValue !== null
+  const bIsValid = bValue !== null
+  if (!aIsValid && !bIsValid) return 0
+  if (!aIsValid) return 1
+  if (!bIsValid) return -1
+  if (aValue < bValue) return -directionFactor
+  if (aValue > bValue) return directionFactor
+  return compareById(aId, bId)
+}
+
+/**
+ * Ordena una lista de licitaciones según el criterio indicado, sin mutar la
+ * lista original. Los elementos sin fecha o monto válidos se ubican siempre al
+ * final, independientemente de la dirección. Un criterio ausente o inválido
+ * conserva el orden original.
+ *
+ * @param {Array<{closingDate?: string, amount?: number}>} [licitaciones=[]] -
+ *   Lista a ordenar.
+ * @param {string} [sort=''] - Criterio de orden: `fecha-asc`, `fecha-desc`,
+ *   `monto-asc` o `monto-desc`.
+ * @returns {Array} Nueva lista ordenada.
+ */
+export function sortLicitaciones(licitaciones = [], sort = '') {
+  if (!Array.isArray(licitaciones)) return []
+  const criterio = typeof sort === 'string' ? sort.trim().toLowerCase() : ''
+  if (!VALID_SORTS.includes(criterio)) return [...licitaciones]
+
+  const [field, direccion] = criterio.split('-')
+  const directionFactor = direccion === 'asc' ? 1 : -1
+
+  return [...licitaciones].sort((a, b) =>
+    compareSortableValues(
+      getSortableValue(a, field),
+      getSortableValue(b, field),
+      directionFactor,
+      a?.id,
+      b?.id,
+    ),
+  )
 }

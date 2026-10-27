@@ -111,6 +111,46 @@
   font-weight: 700;
 }
 
+.results-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.sort-select {
+  padding: 8px 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.sort-select:hover {
+  border-color: var(--text-muted);
+}
+
+.sort-select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .mobile-filter-toggle {
   display: none;
   align-items: center;
@@ -185,6 +225,26 @@
 
   .mobile-filter-toggle {
     display: inline-flex;
+  }
+
+  .licitaciones-results-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .results-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sort-control {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sort-select {
+    flex: 1;
+    min-width: 0;
   }
 
   .licitaciones-layout {
