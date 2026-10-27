@@ -2,6 +2,25 @@ import PropTypes from 'prop-types'
 import { LicitacionCard } from './LicitacionCard'
 import './LicitacionList.css'
 
+/**
+ * Renderiza la grilla de tarjetas de licitación o un estado vacío ilustrado
+ * cuando ningún proceso coincide con los criterios de búsqueda seleccionados.
+ *
+ * @param {object} props - Propiedades del componente.
+ * @param {Array<{
+ *   id: string,
+ *   title: string,
+ *   amount: number,
+ *   currency: string,
+ *   institution: string,
+ *   closingDate: string,
+ *   type: string,
+ *   region: string
+ * }>} props.licitaciones - Lista de licitaciones a renderizar.
+ * @param {() => void} [props.onResetFilters] - Callback opcional para restablecer
+ *   los filtros activos cuando se muestra el estado vacío.
+ * @returns {import('react').JSX.Element} Grilla de tarjetas o contenedor de estado vacío.
+ */
 export function LicitacionList({ licitaciones, onResetFilters }) {
   if (!licitaciones || licitaciones.length === 0) {
     return (
