@@ -1,5 +1,7 @@
 # Depuración sistemática · Búsqueda por palabra clave
 
+> **Historia:** #43 · **Correcciones originales:** PR #71 (frontend) y PR #88 (API) · **Fecha:** 27-10-2026
+
 Registro de la depuración de un defecto real del proyecto, siguiendo el método **reproducir → aislar → hipótesis → corregir → verificar**.
 
 ## 1. El defecto
