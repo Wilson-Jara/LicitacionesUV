@@ -153,7 +153,14 @@ function getSortableValue(licitacion, field) {
   return Date.parse(rawDate)
 }
 
-function compareSortableValues(aValue, bValue, directionFactor) {
+function compareById(aId, bId) {
+  const a = String(aId ?? '')
+  const b = String(bId ?? '')
+  if (a === b) return 0
+  return a.localeCompare(b)
+}
+
+function compareSortableValues(aValue, bValue, directionFactor, aId, bId) {
   const aIsValid = aValue !== null
   const bIsValid = bValue !== null
   if (!aIsValid && !bIsValid) return 0
@@ -161,7 +168,7 @@ function compareSortableValues(aValue, bValue, directionFactor) {
   if (!bIsValid) return -1
   if (aValue < bValue) return -directionFactor
   if (aValue > bValue) return directionFactor
-  return 0
+  return compareById(aId, bId)
 }
 
 /**
@@ -185,6 +192,12 @@ export function sortLicitaciones(licitaciones = [], sort = '') {
   const directionFactor = direccion === 'asc' ? 1 : -1
 
   return [...licitaciones].sort((a, b) =>
-    compareSortableValues(getSortableValue(a, field), getSortableValue(b, field), directionFactor),
+    compareSortableValues(
+      getSortableValue(a, field),
+      getSortableValue(b, field),
+      directionFactor,
+      a?.id,
+      b?.id,
+    ),
   )
 }

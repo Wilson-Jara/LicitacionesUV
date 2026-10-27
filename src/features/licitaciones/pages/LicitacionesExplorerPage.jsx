@@ -2,7 +2,12 @@ import { useState, useMemo } from 'react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
-import { filterLicitaciones, countActiveFilters, sortLicitaciones } from '../licitacionFilters.js'
+import {
+  VALID_SORTS,
+  countActiveFilters,
+  filterLicitaciones,
+  sortLicitaciones,
+} from '../licitacionFilters.js'
 import mockData from '../data/licitaciones.mock.json'
 import './LicitacionesExplorerPage.css'
 
@@ -14,13 +19,20 @@ const SORT_OPTIONS = [
   { value: 'monto-desc', label: 'Monto: mayor a menor' },
 ]
 
+const SORT_OPTION_VALUES = new Set(SORT_OPTIONS.map((option) => option.value))
+const VALID_SORT_OPTION_VALUES = new Set(['', ...VALID_SORTS])
+
+if (![...SORT_OPTION_VALUES].every((value) => VALID_SORT_OPTION_VALUES.has(value))) {
+  throw new Error('SORT_OPTIONS contiene valores no válidos frente a VALID_SORTS')
+}
+
 function LicitacionesExplorerPage() {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   const filteredData = useMemo(() => {
     return sortLicitaciones(filterLicitaciones(mockData, filters), filters.sort)
-  }, [filters])
+  }, [filters.keyword, filters.region, filters.tipo, filters.sort])
 
   const activeFiltersCount = countActiveFilters(filters)
 

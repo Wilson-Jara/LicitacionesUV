@@ -409,6 +409,23 @@ describe('sortLicitaciones', () => {
     )
   })
 
+  it('desempata por id cuando los valores son iguales', () => {
+    const catalogo = [
+      { id: 'b', title: 'B', closingDate: '2026-11-01', amount: 1000 },
+      { id: 'a', title: 'A', closingDate: '2026-11-01', amount: 1000 },
+      { id: 'c', title: 'C', closingDate: '2026-11-01', amount: 1000 },
+    ]
+
+    assert.deepEqual(
+      sortLicitaciones(catalogo, 'fecha-asc').map(({ id }) => id),
+      ['a', 'b', 'c'],
+    )
+    assert.deepEqual(
+      sortLicitaciones(catalogo, 'monto-desc').map(({ id }) => id),
+      ['a', 'b', 'c'],
+    )
+  })
+
   it('responde defensivamente si la lista no es un arreglo', () => {
     assert.deepEqual(sortLicitaciones(null, 'fecha-asc'), [])
     assert.deepEqual(sortLicitaciones(undefined, 'monto-asc'), [])
