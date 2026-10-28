@@ -11,6 +11,10 @@ import {
 import mockData from '../data/licitaciones.mock.json'
 import './LicitacionesExplorerPage.css'
 
+/**
+ * Opciones de ordenamiento disponibles para la lista de licitaciones.
+ * @type {Array<{value: string, label: string}>}
+ */
 const SORT_OPTIONS = [
   { value: '', label: 'Orden por defecto' },
   { value: 'fecha-asc', label: 'Fecha de cierre: más próxima' },
@@ -26,6 +30,16 @@ if (![...SORT_OPTION_VALUES].every((value) => VALID_SORT_OPTION_VALUES.has(value
   throw new Error('SORT_OPTIONS contiene valores no válidos frente a VALID_SORTS')
 }
 
+/**
+ * Página principal del explorador de licitaciones institucionales.
+ *
+ * Integra la cabecera Hero con KPIs institucionales, la barra lateral de filtros,
+ * selector de ordenamiento y la grilla de resultados. Gestiona la visualización
+ * responsiva de filtros en dispositivos móviles y memoriza el filtrado y ordenamiento
+ * del catálogo de datos mock.
+ *
+ * @returns {import('react').JSX.Element} Vista completa del explorador de licitaciones.
+ */
 function LicitacionesExplorerPage() {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const [showMobileFilters, setShowMobileFilters] = useState(false)

@@ -3,6 +3,16 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import './LoginPage.css'
 
+/**
+ * Página dedicada de inicio de sesión y registro institucional (`/login`).
+ *
+ * Implementa la experiencia split-screen completa según el wireframe oficial de Figma,
+ * con identidad visual de la Universidad de Valparaíso (escudo, métricas y colores
+ * oficiales), alternancia entre login y registro de usuarios, validaciones y
+ * redirección automática hacia `/licitaciones` al iniciar sesión.
+ *
+ * @returns {import('react').JSX.Element} Página completa del módulo de acceso institucional.
+ */
 function LoginPage() {
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
