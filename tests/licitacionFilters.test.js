@@ -3,9 +3,11 @@ import assert from 'node:assert/strict'
 import {
   VALID_REGIONES,
   VALID_TIPOS,
+  VALID_SORTS,
   countActiveFilters,
   filterLicitaciones,
   sanitizeFilterParams,
+  sortLicitaciones,
 } from '../src/features/licitaciones/licitacionFilters.js'
 
 const licitaciones = [
@@ -22,6 +24,33 @@ const licitaciones = [
     institution: 'Empresa de transporte',
     region: 'metropolitana',
     type: 'privada',
+  },
+]
+
+const licitacionesOrdenables = [
+  {
+    id: 'a',
+    title: 'Servicio de aseo',
+    region: 'valparaiso',
+    type: 'publica',
+    closingDate: '2026-11-15',
+    amount: 1500000,
+  },
+  {
+    id: 'b',
+    title: 'Compra de equipos',
+    region: 'metropolitana',
+    type: 'privada',
+    closingDate: '2026-10-30',
+    amount: 900000,
+  },
+  {
+    id: 'c',
+    title: 'Servicio de vigilancia',
+    region: 'biobio',
+    type: 'publica',
+    closingDate: '2026-12-05',
+    amount: 2200000,
   },
 ]
 
@@ -146,6 +175,7 @@ describe('sanitizeFilterParams', () => {
       keyword: '  salud  ',
       region: '',
       tipo: '',
+      sort: '',
     })
   })
 
@@ -159,6 +189,7 @@ describe('sanitizeFilterParams', () => {
       keyword: '',
       region: 'valparaiso',
       tipo: 'publica',
+      sort: '',
     })
   })
 
@@ -170,16 +201,28 @@ describe('sanitizeFilterParams', () => {
       keyword: 'transporte',
       region: 'biobio',
       tipo: 'privada',
+      sort: '',
     })
   })
 
   it('maneja valores no textuales o nulos de manera defensiva', () => {
-    assert.deepEqual(sanitizeFilterParams(null), { keyword: '', region: '', tipo: '' })
-    assert.deepEqual(sanitizeFilterParams(undefined), { keyword: '', region: '', tipo: '' })
+    assert.deepEqual(sanitizeFilterParams(null), {
+      keyword: '',
+      region: '',
+      tipo: '',
+      sort: '',
+    })
+    assert.deepEqual(sanitizeFilterParams(undefined), {
+      keyword: '',
+      region: '',
+      tipo: '',
+      sort: '',
+    })
     assert.deepEqual(sanitizeFilterParams({ keyword: 123, region: {}, tipo: [] }), {
       keyword: '',
       region: '',
       tipo: '',
+      sort: '',
     })
   })
 })
@@ -225,6 +268,171 @@ describe('sanitizeFilterParams - parámetros repetidos', () => {
   })
 })
 
+describe('sanitizeFilterParams - orden', () => {
+  it('expone los criterios de orden válidos', () => {
+    assert.deepEqual(VALID_SORTS, ['fecha-asc', 'fecha-desc', 'monto-asc', 'monto-desc'])
+  })
+
+  it('acepta un criterio válido y lo normaliza sin importar mayúsculas ni espacios', () => {
+    const sanea = sanitizeFilterParams({ sort: '  MONTO-DESC  ' })
+    assert.equal(sanea.sort, 'monto-desc')
+  })
+
+  it('descarta criterios de orden inválidos o desconocidos', () => {
+    assert.equal(sanitizeFilterParams({ sort: 'precio' }).sort, '')
+    assert.equal(sanitizeFilterParams({ sort: 'monto' }).sort, '')
+    assert.equal(sanitizeFilterParams({ sort: 123 }).sort, '')
+  })
+
+  it('sanea el orden desde una instancia de URLSearchParams junto a los filtros', () => {
+    const params = new URLSearchParams('keyword=aseo&region=biobio&sort=fecha-asc')
+    const sanea = sanitizeFilterParams(params)
+
+    assert.deepEqual(sanea, {
+      keyword: 'aseo',
+      region: 'biobio',
+      tipo: '',
+      sort: 'fecha-asc',
+    })
+  })
+
+  it('resuelve ?sort=fecha-asc&sort=monto-desc -> sort=monto-desc', () => {
+    const params = new URLSearchParams('sort=fecha-asc&sort=monto-desc')
+    assert.equal(sanitizeFilterParams(params).sort, 'monto-desc')
+  })
+
+  it('conserva el último valor válido si el último repetido es inválido', () => {
+    const params = new URLSearchParams('sort=monto-asc&sort=invalido')
+    assert.equal(sanitizeFilterParams(params).sort, 'monto-asc')
+  })
+})
+
+describe('sortLicitaciones', () => {
+  it('ordena por fecha de cierre ascendente', () => {
+    const resultado = sortLicitaciones(licitacionesOrdenables, 'fecha-asc')
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['b', 'a', 'c'],
+    )
+  })
+
+  it('ordena por fecha de cierre descendente', () => {
+    const resultado = sortLicitaciones(licitacionesOrdenables, 'fecha-desc')
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['c', 'a', 'b'],
+    )
+  })
+
+  it('ordena por monto ascendente', () => {
+    const resultado = sortLicitaciones(licitacionesOrdenables, 'monto-asc')
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['b', 'a', 'c'],
+    )
+  })
+
+  it('ordena por monto descendente', () => {
+    const resultado = sortLicitaciones(licitacionesOrdenables, 'monto-desc')
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['c', 'a', 'b'],
+    )
+  })
+
+  it('mantiene el orden original si el criterio está ausente o es inválido', () => {
+    const sinOrden = sortLicitaciones(licitacionesOrdenables, '')
+    const criterioInvalido = sortLicitaciones(licitacionesOrdenables, 'precio-asc')
+
+    assert.deepEqual(
+      sinOrden.map(({ id }) => id),
+      ['a', 'b', 'c'],
+    )
+    assert.deepEqual(
+      criterioInvalido.map(({ id }) => id),
+      ['a', 'b', 'c'],
+    )
+  })
+
+  it('no muta la lista original', () => {
+    const original = licitacionesOrdenables.map((licitacion) => licitacion.id)
+    sortLicitaciones(licitacionesOrdenables, 'monto-desc')
+    assert.deepEqual(
+      licitacionesOrdenables.map(({ id }) => id),
+      original,
+    )
+  })
+
+  it('ubica al final los elementos sin fecha o monto válidos en ambas direcciones', () => {
+    const catalogo = [
+      { id: 'sin-datos', title: 'Sin datos' },
+      { id: 'valida-1', title: 'Válida 1', closingDate: '2026-11-01', amount: 500 },
+      { id: 'fecha-invalida', title: 'Fecha inválida', closingDate: 'no-es-fecha', amount: 100 },
+      { id: 'valida-2', title: 'Válida 2', closingDate: '2026-10-01', amount: 900 },
+    ]
+
+    const fechas = sortLicitaciones(catalogo, 'fecha-asc').map(({ id }) => id)
+    const fechasDesc = sortLicitaciones(catalogo, 'fecha-desc').map(({ id }) => id)
+    const montos = sortLicitaciones(catalogo, 'monto-asc').map(({ id }) => id)
+    const montosDesc = sortLicitaciones(catalogo, 'monto-desc').map(({ id }) => id)
+
+    assert.deepEqual(fechas, ['valida-2', 'valida-1', 'sin-datos', 'fecha-invalida'])
+    assert.deepEqual(fechasDesc, ['valida-1', 'valida-2', 'sin-datos', 'fecha-invalida'])
+    assert.deepEqual(montos, ['fecha-invalida', 'valida-1', 'valida-2', 'sin-datos'])
+    assert.deepEqual(montosDesc, ['valida-2', 'valida-1', 'fecha-invalida', 'sin-datos'])
+  })
+
+  it('trata montos vacíos o no numéricos como datos ausentes', () => {
+    const catalogo = [
+      { id: 'vacio', title: 'Monto vacío', amount: '' },
+      { id: 'texto', title: 'Monto no numérico', amount: 'no-es-numero' },
+      { id: 'valido', title: 'Monto válido', amount: 1000 },
+    ]
+
+    assert.deepEqual(
+      sortLicitaciones(catalogo, 'monto-asc').map(({ id }) => id),
+      ['valido', 'vacio', 'texto'],
+    )
+  })
+
+  it('combina el orden con los filtros activos sin perderlos', () => {
+    const filtradas = filterLicitaciones(licitacionesOrdenables, {
+      keyword: 'servicio',
+      region: '',
+      tipo: 'publica',
+    })
+    const resultado = sortLicitaciones(filtradas, 'monto-desc')
+
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['c', 'a'],
+    )
+  })
+
+  it('desempata por id cuando los valores son iguales', () => {
+    const catalogo = [
+      { id: 'b', title: 'B', closingDate: '2026-11-01', amount: 1000 },
+      { id: 'a', title: 'A', closingDate: '2026-11-01', amount: 1000 },
+      { id: 'c', title: 'C', closingDate: '2026-11-01', amount: 1000 },
+    ]
+
+    assert.deepEqual(
+      sortLicitaciones(catalogo, 'fecha-asc').map(({ id }) => id),
+      ['a', 'b', 'c'],
+    )
+    assert.deepEqual(
+      sortLicitaciones(catalogo, 'monto-desc').map(({ id }) => id),
+      ['a', 'b', 'c'],
+    )
+  })
+
+  it('responde defensivamente si la lista no es un arreglo', () => {
+    assert.deepEqual(sortLicitaciones(null, 'fecha-asc'), [])
+    assert.deepEqual(sortLicitaciones(undefined, 'monto-asc'), [])
+    assert.deepEqual(sortLicitaciones('no-es-arreglo', 'monto-asc'), [])
+  })
+})
+
 describe('countActiveFilters', () => {
   it('cuenta correctamente los filtros activos', () => {
     assert.equal(countActiveFilters({ keyword: '', region: '', tipo: '' }), 0)
@@ -242,5 +450,13 @@ describe('countActiveFilters', () => {
     assert.equal(countActiveFilters(null), 0)
     assert.equal(countActiveFilters(undefined), 0)
     assert.equal(countActiveFilters({}), 0)
+  })
+
+  it('no contabiliza el criterio de orden como filtro activo', () => {
+    assert.equal(countActiveFilters({ keyword: '', region: '', tipo: '', sort: 'monto-desc' }), 0)
+    assert.equal(
+      countActiveFilters({ keyword: 'aseo', region: '', tipo: '', sort: 'fecha-asc' }),
+      1,
+    )
   })
 })

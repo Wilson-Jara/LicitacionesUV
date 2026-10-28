@@ -9,7 +9,7 @@
 - **Tipo:** aplicación web cliente.
 - **Idioma de negocio/documentación:** español.
 - **Propósito declarado:** crear, centralizar y gestionar licitaciones universitarias, además de comparar ofertas y ayudar a seleccionar la mejor propuesta de proveedores.
-- **Estado real actual:** aplicación web en React con enrutamiento (`react-router-dom`), interfaz y módulo de acceso basados en el wireframe oficial de Figma de la Universidad de Valparaíso, explorador de licitaciones con filtros sincronizados en URL y gestión de favoritos.
+- **Estado real actual:** aplicación web en React con enrutamiento (`react-router-dom`), interfaz y módulo de acceso basados en el wireframe oficial de Figma de la Universidad de Valparaíso, explorador de licitaciones con filtros y orden sincronizados en URL y gestión de favoritos.
 
 ## 2. Estado verificado
 
@@ -17,7 +17,7 @@ Revisión realizada en octubre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros accesibles, umbrales de aprobación y API del backend pasando (111/111 tests; las pruebas de integración con PostgreSQL se omiten sin `DATABASE_URL_TEST` y corren en CI).
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros accesibles, ordenamiento por fecha/monto y API del backend pasando (98/98 tests; las pruebas de integración con PostgreSQL se omiten sin `DATABASE_URL_TEST` y corren en CI).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`, con un servicio `postgres:16` para las pruebas de integración del backend.
@@ -42,6 +42,7 @@ Revisión realizada en octubre de 2026:
 - **Explorador de Licitaciones:**
   - Header Hero institucional con sobretítulo dorado, estadísticas clave del portal y tipografía institucional.
   - Barra lateral de filtros (`FilterSidebar`) con la estética de Figma: sobretítulo dorado, buscador con limpieza rápida, búsqueda por título, selectores estilizados, botones _pills_ de tipo, chips interactivos de filtros activos con eliminación individual, aviso informativo institucional y estado sincronizado con URL.
+  - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
   - Tarjetas de licitación (`LicitacionCard`) con iconos vectoriales, indicador de estado por puntos (verde para Pública, ámbar para Privada), etiqueta de región, botón de acción y botón Guardar/Quitar favorito.
   - Enlace a la vista de detalle (`/licitaciones/:id`) desde el título y la acción de cada tarjeta.
   - Lista de licitaciones (`LicitacionList`) con estado vacío ilustrado y botón directo de restablecimiento de filtros.
@@ -114,7 +115,7 @@ Revisión realizada en octubre de 2026:
 | `src/shared/components/ThemeToggle.jsx`                            | Botón accesible de alternancia de tema claro/oscuro.                                                     |
 | `src/shared/components/ThemeToggle.css`                            | Estilos del botón de tema.                                                                               |
 | `src/shared/hooks/useTheme.js`                                     | Hook de consumo del contexto de tema.                                                                    |
-| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones.                                                         |
+| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones con selector de orden.                                   |
 | `src/features/licitaciones/pages/LicitacionDetailPage.jsx`         | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación.                |
 | `src/features/licitaciones/services/exportLicitacionPdf.js`        | Punto de entrada del navegador: crea el Web Worker y delega en la orquestación.                          |
 | `src/features/licitaciones/services/exportLicitacionPdfCore.js`    | Orquestación pura: crea el worker, recibe el PDF y dispara la descarga (testeable).                      |
@@ -122,8 +123,8 @@ Revisión realizada en octubre de 2026:
 | `src/features/licitaciones/services/buildLicitacionPdf.js`         | Lógica pura de generación del PDF de resumen (formato chileno y español).                                |
 | `src/features/licitaciones/services/licitacionPdfFilename.js`      | Nombre de archivo estable `licitacion-<id>.pdf` sin dependencias.                                        |
 | `src/features/licitaciones/licitacionUtils.js`                     | Formateo compartido y regla para determinar si una licitación está cerrada.                              |
-| `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo.                                                                      |
-| `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros con URL.                                                               |
+| `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo, y ordenamiento por fecha de cierre o monto.                          |
+| `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros y orden con URL.                                                       |
 | `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                                |
 | `src/features/licitaciones/components/LicitacionCard.jsx`          | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                                      |
 | `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                                   |
@@ -144,9 +145,7 @@ Revisión realizada en octubre de 2026:
 | `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                                     |
 | `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).                 |
 | `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                          |
-| `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda y combinación de filtros.                                                            |
-| `tests/umbralesUtils.test.js`                                      | Pruebas de la lógica pura de umbrales (etiquetas, validación y resolución).                              |
-| `tests/umbralesStorage.test.js`                                    | Pruebas de la persistencia y las operaciones CRUD de umbrales.                                           |
+| `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda, combinación de filtros y ordenamiento.                                              |
 | `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                                      |
 | `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.                           |
 | `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                 |
@@ -299,4 +298,5 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 - `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
+- `docs/depuracion.md` registra la depuración sistemática del filtro por palabra clave (método, evidencia con el depurador y prueba de regresión).
 - Este documento describe el estado técnico del repositorio; la guía de roles describe cómo se coordina el equipo. No deben confundirse responsabilidades de equipo con funcionalidades ya implementadas.
