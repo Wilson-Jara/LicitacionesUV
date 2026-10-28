@@ -32,7 +32,7 @@ function LicitacionesExplorerPage() {
 
   const filteredData = useMemo(() => {
     return sortLicitaciones(filterLicitaciones(mockData, filters), filters.sort)
-  }, [filters.keyword, filters.region, filters.tipo, filters.sort])
+  }, [filters])
 
   const activeFiltersCount = countActiveFilters(filters)
 
