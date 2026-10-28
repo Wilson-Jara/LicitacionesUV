@@ -6,6 +6,11 @@ import { UmbralesProvider } from './providers/UmbralesProvider.jsx'
 import { ThemeProvider } from './providers/ThemeProvider.jsx'
 import './App.css'
 
+/**
+ * Compone los proveedores de tema, sesión, favoritos y umbrales con el enrutador principal.
+ *
+ * @returns {JSX.Element} Aplicación lista para mostrar sus rutas.
+ */
 function App() {
   return (
     <ThemeProvider>
