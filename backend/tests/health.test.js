@@ -21,7 +21,7 @@ describe('GET /api/health', () => {
     const response = await fetch(`${baseUrl}/api/health`)
     assert.equal(response.status, 200)
     const body = await response.json()
-    assert.equal(body.status, 'ol')
+    assert.equal(body.status, 'oy')
     assert.equal(body.service, 'licitacionesuv-backend')
     assert.ok(body.timestamp)
   })
