@@ -1,0 +1,26 @@
+EVIDENCIA DE CONTRATOS
+Fecha: 27 de octubre de 2026 (Chile, America/Santiago)
+Entorno: Node.js 24.22.1 y npm 11.19.1
+Origen: bloque PowerShell de docs/ejercicio-2-2.md, sección Reproducir la evidencia.
+Servidor: HTTP temporal en 127.0.0.1 con datos mock; cerrado al terminar.
+Código de salida: 0
+
+OPERACION 1: filterLicitaciones
+Valido: ["licitacion-005"]
+Invalido 1 (catalogo null): []
+Invalido 2: {"keyword":"","region":"","tipo":"","sort":""} -> 6 de 6
+Invariantes: catalogo y filtros sin cambios; arreglo de salida nuevo
+
+OPERACION 2: GET /api/licitaciones/:id
+licitacion-002 -> 200 {"id":"licitacion-002","title":"Adquisición de equipamiento tecnológico"}
+licitacion-999 -> 404 {"error":"Licitación no encontrada"}
+%E0%A4%A -> 400 {"error":"Parámetro de ruta mal codificado"}
+
+OPERACION 3: addFavorito
+Valido: {"usuario-prueba":[{"idLicitacion":"licitacion-002","fechaGuardado":"2026-10-27T12:00:00.000Z"}]} | original: {}
+Invalido 1 (sin usuario): mismo estado = true
+Invalido 2 (id vacio): mismo estado = true
+Duplicado: mismo estado = true; mantiene fecha original
+Dependencia reemplazada: lectura/escritura con almacenamiento en memoria = OK
+
+RESULTADO: todas las comprobaciones pasaron
