@@ -3,6 +3,15 @@ import { useAuth } from '../../features/auth/hooks/useAuth'
 import ThemeToggle from './ThemeToggle'
 import './Navbar.css'
 
+/**
+ * Barra de navegación institucional, presente en todas las páginas públicas.
+ * Muestra la marca, los enlaces a Licitaciones, Favoritos, Estadísticas y
+ * Administración (configuración de umbrales) y el botón de tema. Con sesión
+ * iniciada muestra el usuario y "Cerrar sesión"; sin sesión, un botón que abre
+ * el modal de acceso.
+ *
+ * @returns {JSX.Element}
+ */
 function Navbar() {
   const { user, logout, openAuthModal } = useAuth()
 
