@@ -33,6 +33,14 @@ function addDataRow(doc, y, label, value) {
   return y + 12 + (valueLines - 1) * 5.5
 }
 
+/**
+ * Genera el PDF de resumen de una licitación con jsPDF en A4 y milímetros.
+ * Incluye identificación, organismo, fecha de cierre, presupuesto en CLP, tipo,
+ * región y enlace a las bases oficiales, con formato local chileno (REF-12).
+ *
+ * @param {object} licitacion - Licitación con el contrato de datos del mock (REF-10).
+ * @returns {object} Documento `jsPDF` listo para serializar o descargar.
+ */
 export function buildLicitacionPdf(licitacion) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const { title, institution, amount, currency, closingDate, type, region, sourceUrl } = licitacion
