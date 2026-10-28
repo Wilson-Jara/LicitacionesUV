@@ -17,7 +17,7 @@ Revisión realizada el 27 de octubre de 2026:
 
 - `npm run lint`: pasa sin errores; permanece una advertencia de dependencias de `useMemo` en `LicitacionesExplorerPage.jsx`.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: 117 pruebas aprobadas en la validación local, incluyendo contratos de la API, filtros, favoritos y exportación PDF. La suite de integración con PostgreSQL se omitió en esa ejecución; CI está configurado para ejecutarla con una base de pruebas.
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros y ordenamiento por fecha/monto, distribuciones de estadísticas y contratos de la API del backend. Las pruebas de integración con PostgreSQL se omiten sin `DATABASE_URL_TEST` y se ejecutan en CI con una base de pruebas.
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - `npm run test:coverage`: pasa los umbrales con 97,08 % de líneas, 90,94 % de ramas y 98,84 % de funciones en los módulos JavaScript medidos; los componentes JSX quedan fuera de esa medición.
@@ -26,6 +26,7 @@ Revisión realizada el 27 de octubre de 2026:
 - Asignación automática de revisores en Pull Requests mediante `.github/CODEOWNERS`, complementaria a la protección de ramas (al menos 1 aprobación de un par).
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
+- Configuración de umbrales de aprobación por unidad con `UmbralesProvider` y hook `useUmbrales`, persistida en `localStorage` como datos editables (REF-14).
 - Router con navegación interna (`react-router-dom` v7).
 - Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
 - Backend base en `backend/`: API REST con el módulo nativo `node:http` y PostgreSQL mediante `pg`, endpoints de salud y licitaciones con el mismo contrato del mock (REF-10), configuración por entorno y pruebas con `node --test` cubiertas por `npm run test` desde la raíz.
@@ -48,6 +49,11 @@ Revisión realizada el 27 de octubre de 2026:
   - Enlace a la vista de detalle (`/licitaciones/:id`) desde el título y la acción de cada tarjeta.
   - Lista de licitaciones (`LicitacionList`) con estado vacío ilustrado y botón directo de restablecimiento de filtros.
   - Barra de resumen de resultados y alternancia de filtros para dispositivos móviles.
+- **Panel de Estadísticas (`/estadisticas`):**
+  - Distribuciones por región, tipo (`publica`/`privada`) y sector, calculadas como cantidad de licitaciones sobre el conjunto filtrado del explorador.
+  - Se recalcula al cambiar, combinar o limpiar filtros; al quedar sin resultados muestra un estado vacío y no conserva cifras anteriores.
+  - El sector se deriva de la institución (Universidad, Municipalidad, Ministerio, Banco, Empresa u Otro) porque el mock no trae un campo de etiqueta propio; cada licitación cuenta en una categoría.
+  - Cada distribución ofrece una alternativa textual accesible (texto para lectores de pantalla y tabla con categorías y valores) además de las barras visuales.
 - **Detalle de Licitación:**
   - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
   - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos.
@@ -59,13 +65,18 @@ Revisión realizada el 27 de octubre de 2026:
   - Persistencia local por usuario en `localStorage` (clave `licitacionesuv-favoritos`) con el par `idLicitacion` + `fechaGuardado`.
   - Página `/favoritos` (`MisFavoritosPage`) que lista las licitaciones guardadas con título, monto y fecha de cierre mediante `LicitacionCard`, permite quitarlas al instante y muestra estado vacío cuando no hay favoritos (o invitación a iniciar sesión si no hay sesión).
 - **Barra de Navegación (`Navbar`):**
-  - Cabecera institucional con isotipo UV, enlaces a licitaciones/favoritos, información de usuario logueado con avatar y botón de acceso modal.
+  - Cabecera institucional con isotipo UV, enlaces a licitaciones/favoritos y a la administración de umbrales, información de usuario logueado con avatar y botón de acceso modal.
 - **Temas Claro/Oscuro:**
   - Alternancia de tema mediante atributo `data-theme` en `<html>`, con variables CSS duplicadas por tema en `src/index.css`.
   - Script inline en `index.html` que aplica el tema guardado o la preferencia del sistema antes del montaje de React, evitando el flash de tema incorrecto.
   - Persistencia de la elección en `localStorage` (clave `licitacionesuv-theme`).
   - Botón de alternancia accesible (`ThemeToggle` con `aria-label` y `aria-pressed`) en la barra de navegación.
   - Los componentes usan variables semánticas (`--card-bg`, `--surface-soft`, `--border-strong`, etc.); los hex restantes pertenecen a paneles de marca navy que permanecen oscuros en ambos temas.
+- **Configuración de Umbrales de Aprobación (US-10, CR-302):**
+  - Página `/configuracion/umbrales` (`ConfiguracionUmbralesPage`) que permite crear, editar y eliminar umbrales por unidad mediante los formularios `UmbralForm` y `UnidadForm` y el listado editable `UmbralesTable`.
+  - Los umbrales son **datos configurables**, no constantes del código (CA2, regla R4 / REF-14): el punto de partida vive en `umbralesIniciales.js` y la configuración vigente se persiste en `localStorage` (clave `licitacionesuv-umbrales`).
+  - El rango de cada umbral es `[montoMinimo, montoMaximo)`: el mínimo es inclusivo, el máximo es exclusivo y `null` en el máximo significa «sin tope». La validación impide montos negativos, rangos invertidos y solapamientos dentro de una unidad.
+  - Un simulador consulta el nivel aprobador que corresponde a un monto con la configuración vigente y se recalcula de inmediato al editar, sin recargar la página ni volver a desplegar (CA3).
 - **Backend (base Fase 2):**
   - Servidor HTTP con el módulo nativo `node:http` (sin dependencias): entrada `backend/src/server.js`, composición en `backend/src/app.js` (CORS, parseo JSON, enrutamiento y manejo de errores) y enrutador propio con parámetros de ruta en `backend/src/lib/router.js`.
   - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword` solo sobre el título y sin espacios externos, `region` y `tipo`; todos sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
@@ -80,8 +91,8 @@ Revisión realizada el 27 de octubre de 2026:
 
 1. `index.html` define el documento HTML, favicon y contenedor `#root`.
 2. `src/main.jsx` importa `index.css` y monta `<App />`.
-3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider` y `BrowserRouter`.
-4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, 404).
+3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider`, `UmbralesProvider` y `BrowserRouter`.
+4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/configuracion/umbrales`, 404).
 5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
 6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
 7. `backend/src/server.js` inicia el servidor HTTP de la API (por defecto en `http://localhost:3000`); el frontend todavía lee el mock local y la migración a la API corresponde a una entrega posterior.
@@ -93,7 +104,7 @@ Revisión realizada el 27 de octubre de 2026:
 | `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción). |
 | `index.html`                                                       | Punto de entrada HTML.                                                                                   |
 | `src/main.jsx`                                                     | Punto de montaje de React.                                                                               |
-| `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos y Router.                                             |
+| `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales y Router.                                   |
 | `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                         |
 | `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.                      |
 | `src/index.css`                                                    | Variables globales de diseño institucional UV, reset y tipografía.                                       |
@@ -125,14 +136,28 @@ Revisión realizada el 27 de octubre de 2026:
 | `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                                |
 | `src/features/licitaciones/components/LicitacionCard.jsx`          | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                                      |
 | `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                                   |
+| `src/features/estadisticas/estadisticasUtils.js`                   | Cálculo puro de distribuciones por región, tipo y sector, y alternativa textual accesible.               |
+| `src/features/estadisticas/components/DistribucionPanel.jsx`       | Panel de una distribución con barras y alternativa textual accesible.                                    |
+| `src/features/estadisticas/pages/PanelEstadisticasPage.jsx`        | Página `/estadisticas` que muestra las distribuciones del conjunto filtrado.                             |
 | `src/features/favoritos/pages/MisFavoritosPage.jsx`                | Página de favoritos: listado, estado vacío y quitar licitaciones.                                        |
 | `src/features/favoritos/pages/MisFavoritosPage.css`                | Estilos de la página de favoritos.                                                                       |
+| `src/app/providers/UmbralesProvider.jsx`                           | Proveedor de umbrales de aprobación con persistencia en localStorage.                                    |
+| `src/features/aprobaciones/hooks/useUmbrales.js`                   | Hook de consumo del contexto de umbrales.                                                                |
+| `src/features/aprobaciones/data/umbralesIniciales.js`              | Datos iniciales editables de umbrales por unidad (semilla de configuración).                             |
+| `src/features/aprobaciones/data/umbralesStorage.js`                | Persistencia y normalización de umbrales en localStorage con CRUD por unidad.                            |
+| `src/features/aprobaciones/umbralesUtils.js`                       | Lógica pura de etiquetas, validación, formato y resolución de umbrales.                                  |
+| `src/features/aprobaciones/components/UmbralForm.jsx`              | Formulario para crear o editar un umbral con validación de rango y nivel.                                |
+| `src/features/aprobaciones/components/UnidadForm.jsx`              | Formulario para agregar una unidad con umbrales propios.                                                 |
+| `src/features/aprobaciones/components/UmbralesTable.jsx`           | Listado editable de umbrales por unidad con acciones de editar y eliminar.                               |
+| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.jsx`    | Panel de configuración de umbrales con simulador de resolución inmediata.                                |
+| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.css`    | Estilos del panel de configuración de umbrales.                                                          |
 | `tests/smoke.test.js`                                              | Pruebas automatizadas de línea base reproducible.                                                        |
 | `tests/favoritosStorage.test.js`                                   | Pruebas de la persistencia de favoritos.                                                                 |
 | `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                                     |
 | `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).                 |
 | `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                          |
 | `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda, combinación de filtros y ordenamiento.                                              |
+| `tests/estadisticasUtils.test.js`                                  | Pruebas de distribuciones, derivación de sector, filtros y accesibilidad.                                |
 | `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                                      |
 | `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.                           |
 | `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                 |
