@@ -17,7 +17,7 @@ Revisión realizada en octubre de 2026:
 
 - `npm run lint`: pasa sin errores.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros accesibles, ordenamiento por fecha/monto y API del backend pasando (98/98 tests; las pruebas de integración con PostgreSQL se omiten sin `DATABASE_URL_TEST` y corren en CI).
+- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros accesibles, ordenamiento por fecha/monto, distribuciones de estadísticas y API del backend pasando (124/124 tests; las pruebas de integración con PostgreSQL se omiten sin `DATABASE_URL_TEST` y corren en CI).
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`, con un servicio `postgres:16` para las pruebas de integración del backend.
@@ -47,6 +47,11 @@ Revisión realizada en octubre de 2026:
   - Enlace a la vista de detalle (`/licitaciones/:id`) desde el título y la acción de cada tarjeta.
   - Lista de licitaciones (`LicitacionList`) con estado vacío ilustrado y botón directo de restablecimiento de filtros.
   - Barra de resumen de resultados y alternancia de filtros para dispositivos móviles.
+- **Panel de Estadísticas (`/estadisticas`):**
+  - Distribuciones por región, tipo (`publica`/`privada`) y sector, calculadas como cantidad de licitaciones sobre el conjunto filtrado del explorador.
+  - Se recalcula al cambiar, combinar o limpiar filtros; al quedar sin resultados muestra un estado vacío y no conserva cifras anteriores.
+  - El sector se deriva de la institución (Universidad, Municipalidad, Ministerio, Banco, Empresa u Otro) porque el mock no trae un campo de etiqueta propio; cada licitación cuenta en una categoría.
+  - Cada distribución ofrece una alternativa textual accesible (texto para lectores de pantalla y tabla con categorías y valores) además de las barras visuales.
 - **Detalle de Licitación:**
   - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
   - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos.
@@ -128,6 +133,9 @@ Revisión realizada en octubre de 2026:
 | `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                                |
 | `src/features/licitaciones/components/LicitacionCard.jsx`          | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                                      |
 | `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                                   |
+| `src/features/estadisticas/estadisticasUtils.js`                   | Cálculo puro de distribuciones por región, tipo y sector, y alternativa textual accesible.               |
+| `src/features/estadisticas/components/DistribucionPanel.jsx`       | Panel de una distribución con barras y alternativa textual accesible.                                    |
+| `src/features/estadisticas/pages/PanelEstadisticasPage.jsx`        | Página `/estadisticas` que muestra las distribuciones del conjunto filtrado.                             |
 | `src/features/favoritos/pages/MisFavoritosPage.jsx`                | Página de favoritos: listado, estado vacío y quitar licitaciones.                                        |
 | `src/features/favoritos/pages/MisFavoritosPage.css`                | Estilos de la página de favoritos.                                                                       |
 | `src/app/providers/UmbralesProvider.jsx`                           | Proveedor de umbrales de aprobación con persistencia en localStorage.                                    |
@@ -146,6 +154,7 @@ Revisión realizada en octubre de 2026:
 | `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).                 |
 | `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                          |
 | `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda, combinación de filtros y ordenamiento.                                              |
+| `tests/estadisticasUtils.test.js`                                  | Pruebas de distribuciones, derivación de sector, filtros y accesibilidad.                                |
 | `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                                      |
 | `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.                           |
 | `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                 |
