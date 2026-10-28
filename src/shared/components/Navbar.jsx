@@ -26,6 +26,7 @@ function Navbar() {
           <Link to="/licitaciones">Licitaciones</Link>
           <Link to="/favoritos">Favoritos</Link>
           <Link to="/estadisticas">Estadísticas</Link>
+          <Link to="/configuracion/umbrales">Administración</Link>
           <ThemeToggle />
           {user ? (
             <div className="navbar__user">

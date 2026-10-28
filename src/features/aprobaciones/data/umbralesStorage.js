@@ -6,6 +6,10 @@ import {
   generarIdUnidad,
 } from '../umbralesUtils.js'
 
+/**
+ * Clave empleada para persistir la configuración editable de umbrales en `localStorage`.
+ * @type {string}
+ */
 export const UMBRALES_STORAGE_KEY = 'licitacionesuv-umbrales'
 
 function normalizeUmbral(umbral, idUnidad) {

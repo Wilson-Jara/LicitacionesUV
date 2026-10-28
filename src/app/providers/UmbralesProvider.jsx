@@ -11,6 +11,9 @@ import {
   writeUmbralesStore,
 } from '../../features/aprobaciones/data/umbralesStorage'
 
+/**
+ * Contexto de React para compartir la configuración de umbrales y unidades de aprobación.
+ */
 export const UmbralesContext = createContext(null)
 
 function getStorage() {
@@ -22,6 +25,14 @@ function getStorage() {
   }
 }
 
+/**
+ * Proveedor de contexto que administra el estado y persistencia de umbrales de aprobación por unidad.
+ * Permite consultar unidades y realizar operaciones CRUD sobre umbrales y unidades (CA2, REF-14).
+ *
+ * @param {object} props - Propiedades del componente.
+ * @param {import('react').ReactNode} props.children - Componentes descendientes con acceso al contexto.
+ * @returns {import('react').JSX.Element} Proveedor de contexto con operaciones de umbrales.
+ */
 export const UmbralesProvider = ({ children }) => {
   const [store, setStore] = useState(() => readUmbralesStore(getStorage()))
 

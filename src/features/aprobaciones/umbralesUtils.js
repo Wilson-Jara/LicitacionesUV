@@ -9,12 +9,20 @@
  * inclusivo y el máximo es exclusivo. Un `montoMaximo` nulo significa «sin tope».
  */
 
+/**
+ * Diccionario con los niveles de autoridad de aprobación permitidos y sus etiquetas legibles.
+ * @type {Record<string, string>}
+ */
 export const NIVELES_APROBADOR = {
   jefe_unidad: 'Jefe de unidad',
   direccion_economica: 'Dirección económica',
   rectoria: 'Rectoría',
 }
 
+/**
+ * Diccionario con las clasificaciones válidas de unidad organizacional y sus etiquetas.
+ * @type {Record<string, string>}
+ */
 export const TIPOS_UNIDAD = {
   facultad: 'Facultad',
   direccion: 'Dirección',

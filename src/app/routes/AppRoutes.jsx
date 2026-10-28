@@ -4,6 +4,7 @@ import LicitacionesExplorerPage from '../../features/licitaciones/pages/Licitaci
 import LicitacionDetailPage from '../../features/licitaciones/pages/LicitacionDetailPage.jsx'
 import MisFavoritosPage from '../../features/favoritos/pages/MisFavoritosPage.jsx'
 import PanelEstadisticasPage from '../../features/estadisticas/pages/PanelEstadisticasPage.jsx'
+import ConfiguracionUmbralesPage from '../../features/aprobaciones/pages/ConfiguracionUmbralesPage.jsx'
 import LoginPage from '../../features/auth/pages/LoginPage.jsx'
 import NotFoundPage from './NotFoundPage.jsx'
 
@@ -17,6 +18,7 @@ function AppRoutes() {
         <Route path="/licitaciones/:id" element={<LicitacionDetailPage />} />
         <Route path="/favoritos" element={<MisFavoritosPage />} />
         <Route path="/estadisticas" element={<PanelEstadisticasPage />} />
+        <Route path="/configuracion/umbrales" element={<ConfiguracionUmbralesPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
