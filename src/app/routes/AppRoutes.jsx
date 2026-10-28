@@ -8,6 +8,11 @@ import ConfiguracionUmbralesPage from '../../features/aprobaciones/pages/Configu
 import LoginPage from '../../features/auth/pages/LoginPage.jsx'
 import NotFoundPage from './NotFoundPage.jsx'
 
+/**
+ * Define las rutas públicas de la aplicación, la redirección inicial y la página 404.
+ *
+ * @returns {JSX.Element} Árbol de rutas de la aplicación.
+ */
 function AppRoutes() {
   return (
     <Routes>

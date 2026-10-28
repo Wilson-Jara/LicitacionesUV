@@ -11,6 +11,7 @@ import {
   writeFavoritosStore,
 } from '../../features/favoritos/data/favoritosStorage'
 
+/** Contexto de favoritos del usuario actual; se consume mediante `useFavoritos`. */
 export const FavoritosContext = createContext(null)
 
 function getStorage() {
@@ -22,6 +23,15 @@ function getStorage() {
   }
 }
 
+/**
+ * Provee los favoritos del usuario autenticado y las acciones para guardarlos o quitarlos.
+ * Lee la configuración local al iniciar y persiste los cambios cuando el almacenamiento está disponible.
+ * Sin un usuario identificado, las acciones de agregar y quitar no modifican los favoritos.
+ *
+ * @param {object} props
+ * @param {React.ReactNode} props.children - Contenido con acceso al contexto de favoritos.
+ * @returns {JSX.Element} Proveedor de favoritos para los componentes descendientes.
+ */
 export const FavoritosProvider = ({ children }) => {
   const { user } = useAuth()
   const [store, setStore] = useState(() => readFavoritosStore(getStorage()))
