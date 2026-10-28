@@ -1,0 +1,56 @@
+VALIDACION FINAL DE CONTRATOS
+Fecha: 27 de octubre de 2026 (Chile, America/Santiago)
+Entorno: Node.js 24.22.1 y npm 11.19.1
+
+1. npm run verify
+Código de salida: 0
+Clean, lint, format:check, test y build completados.
+ℹ tests 117
+ℹ suites 32
+ℹ pass 117
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+
+ESLint: 0 errores y 1 advertencia preexistente en
+src/features/licitaciones/pages/LicitacionesExplorerPage.jsx:35
+React Hook useMemo has a missing dependency: 'filters'.
+
+2. npm run test:coverage
+Código de salida: 0
+ℹ all files                         |  97.08 |    90.94 |   98.84 | 
+Orden de columnas del reporte: líneas, ramas, funciones.
+Umbrales configurados: 70 % de líneas, 60 % de ramas y 70 % de funciones.
+La cobertura se refiere a los módulos JavaScript cargados por las pruebas;
+no incluye componentes JSX ni representa una prueba de la interfaz completa.
+
+3. npm run test:coverage:critico
+Código de salida: 0
+ℹ all files             | 100.00 |   100.00 |  100.00 | 
+Módulo medido: src/features/licitaciones/licitacionUtils.js
+20 pruebas aprobadas.
+Umbrales configurados: 80 % de líneas, 70 % de ramas y 80 % de funciones.
+
+Alcance de base de datos:
+Las ejecuciones locales usan DATABASE_URL_TEST vacío en el entorno del proceso
+de prueba para omitir la suite destructiva de integración con PostgreSQL.
+No se ejecutaron migraciones ni se modificaron bases de datos.
+El workflow de CI tiene un servicio PostgreSQL para esa suite; no se ejecutó CI
+como parte de esta comprobación local.
+
+4. Comprobación de la aserción
+La carga del endpoint se modificó solo en memoria con un hook temporal de Node.
+Con la aserción desactivada:
+- Código de salida de la prueba: 1 (fallo esperado).
+- La comparación que falló fue: 200 !== 500.
+Con el código original:
+- Código de salida de la prueba: 0.
+- 1 prueba aprobada y 0 fallos.
+El hash SHA-256 del archivo del endpoint fue igual antes y después.
+
+5. Documentación
+Las tres fichas contienen precondiciones, postcondiciones, invariantes,
+validación defensiva, dependencia y evidencia.
+La ficha 1 dispone de Word y PDF sincronizados, con 2 páginas revisadas.
+El texto del Word y del PDF coincide al normalizar espacios.

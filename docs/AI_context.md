@@ -13,13 +13,15 @@
 
 ## 2. Estado verificado
 
-Revisión realizada en octubre de 2026:
+Revisión realizada el 27 de octubre de 2026:
 
-- `npm run lint`: pasa sin errores.
+- `npm run lint`: pasa sin errores; permanece una advertencia de dependencias de `useMemo` en `LicitacionesExplorerPage.jsx`.
 - `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros accesibles, ordenamiento por fecha/monto y API del backend pasando (98/98 tests; las pruebas de integración con PostgreSQL se omiten sin `DATABASE_URL_TEST` y corren en CI).
+- `npm run test`: 117 pruebas aprobadas en la validación local, incluyendo contratos de la API, filtros, favoritos y exportación PDF. La suite de integración con PostgreSQL se omitió en esa ejecución; CI está configurado para ejecutarla con una base de pruebas.
 - `npm run format:check`: pasa con formato consistente Prettier.
 - `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
+- `npm run test:coverage`: pasa los umbrales con 97,08 % de líneas, 90,94 % de ramas y 98,84 % de funciones en los módulos JavaScript medidos; los componentes JSX quedan fuera de esa medición.
+- `npm run test:coverage:critico`: 20 pruebas aprobadas y 100 % de líneas, ramas y funciones en `licitacionUtils.js`.
 - Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`, con un servicio `postgres:16` para las pruebas de integración del backend.
 - Asignación automática de revisores en Pull Requests mediante `.github/CODEOWNERS`, complementaria a la protección de ramas (al menos 1 aprobación de un par).
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
@@ -68,6 +70,7 @@ Revisión realizada en octubre de 2026:
   - Servidor HTTP con el módulo nativo `node:http` (sin dependencias): entrada `backend/src/server.js`, composición en `backend/src/app.js` (CORS, parseo JSON, enrutamiento y manejo de errores) y enrutador propio con parámetros de ruta en `backend/src/lib/router.js`.
   - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword` solo sobre el título y sin espacios externos, `region` y `tipo`; todos sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
   - Manejo de errores: cuerpo JSON inválido o `:id` mal codificado responden 400, cuerpos de más de 1 MB responden 413 y los errores 5xx devuelven un mensaje genérico (el detalle solo se registra con `console.error`).
+  - El detalle de licitación comprueba con `assert.equal` que el identificador devuelto por el repositorio coincide con el solicitado; si se rompe esta invariante interna, responde 500 con el mensaje genérico de error. Una prueba en `backend/tests/licitaciones.test.js` inyecta un repositorio falso que devuelve otro identificador y verifica el código 500 y el cuerpo genérico completo.
   - Datos de licitaciones mediante un repositorio (`backend/src/data/licitaciones.repository.js`): PostgreSQL cuando existe `DATABASE_URL` y, si no, el mock del frontend en memoria, con el mismo contrato y los mismos filtros en ambos casos (REF-10). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
   - Esquema PostgreSQL con migraciones SQL numeradas en `backend/migrations/` (las 8 entidades del dominio y el catálogo de regiones), aplicadas con `npm run db:migrate` y registradas en `schema_migrations`; `npm run db:seed` carga las licitaciones desde el mock. Las tablas de CR-302 existen sin endpoints.
   - PostgreSQL 16 local con `docker-compose.yml` (raíz), que también crea la base de pruebas `licitaciones_test`.
@@ -283,4 +286,5 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
 - `docs/depuracion.md` registra la depuración sistemática del filtro por palabra clave (método, evidencia con el depurador y prueba de regresión).
+- `docs/ejercicio-2-2.md` documenta los contratos de filtrado, detalle de la API y alta de favoritos, con precondiciones, postcondiciones, invariantes, validaciones y evidencia reproducible sobre el mock. La ficha de filtrado también está disponible, sincronizada, en `docs/Ejercicio_2_2_Ficha_Operacion_1.docx` y `docs/Ejercicio_2_2_Ficha_Operacion_1.pdf`.
 - Este documento describe el estado técnico del repositorio; la guía de roles describe cómo se coordina el equipo. No deben confundirse responsabilidades de equipo con funcionalidades ya implementadas.
