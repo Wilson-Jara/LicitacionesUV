@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict'
 import { HttpError, sendJson } from '../lib/http.js'
 
 /**
@@ -25,6 +26,12 @@ export function registerLicitacionesRoutes(router, repository) {
   router.get('/api/licitaciones/:id', async (req, res) => {
     const licitacion = await repository.findById(req.params.id)
     if (!licitacion) throw new HttpError(404, 'Licitación no encontrada')
+    // Invariante: el repositorio devuelve la licitación solicitada.
+    assert.equal(
+      licitacion.id,
+      req.params.id,
+      'Invariante: el repositorio devolvió una licitación con un id distinto al solicitado',
+    )
     sendJson(res, 200, licitacion)
   })
 }
