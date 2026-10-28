@@ -29,6 +29,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Recursos generados y binarios
+# Colecciones exportadas tal cual desde Thunder Client (no se reformatean)
+docs/thunder-client/
 docs/mockups/
 public/*.svg
 src/assets/*.svg

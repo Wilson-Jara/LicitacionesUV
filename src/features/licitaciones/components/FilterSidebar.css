@@ -84,6 +84,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .filter-chip {
@@ -112,6 +115,12 @@
   align-items: center;
   justify-content: center;
   transition: color 0.2s;
+}
+
+.filter-chip button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .filter-chip button:hover {
@@ -178,6 +187,12 @@
   color: var(--text-h);
 }
 
+.clear-input-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+
 .filter-select-wrapper select {
   width: 100%;
   padding: 9px 32px 9px 12px;
@@ -241,6 +256,11 @@
   box-shadow: 0 2px 4px rgba(14, 27, 56, 0.15);
 }
 
+.type-pill:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* Botón Restablecer */
 .clear-filters-btn {
   display: flex;
@@ -262,6 +282,11 @@
 .clear-filters-btn:hover {
   background-color: var(--danger-bg);
   border-color: var(--danger-border);
+}
+
+.clear-filters-btn:focus-visible {
+  outline: 2px solid var(--danger-border);
+  outline-offset: 2px;
 }
 
 /* Aviso Institucional */

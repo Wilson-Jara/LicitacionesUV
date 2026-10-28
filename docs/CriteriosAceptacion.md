@@ -12,15 +12,16 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ## Índice
 
-| Issue | Historia de usuario                                                     | Etiquetas                                                                        |
-| ----- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| #43   | Buscar licitaciones por palabra clave                                   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance` |
-| #44   | Ver el detalle de una licitación                                        | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                       |
-| #45   | Asistente guiado de requerimientos de la licitación                     | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                  |
-| #46   | Visualizar licitaciones favoritas en vistas de calendario y lista       | `enhancement`, `licitaciones`, `frontend`, `ui`, `favoritos`, `security`         |
-| #47   | Mostrar todos los resultados de búsqueda y filtros con estado accesible | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`       |
-| #48   | Configurar alertas de nuevas licitaciones                               | `enhancement`, `licitaciones`, `frontend`, `alertas`, `security`                 |
-| #49   | Exportar resumen y bases de licitación en PDF                           | `enhancement`, `licitaciones`, `frontend`, `export`                              |
+| Issue | Historia de usuario                                                     | Etiquetas                                                                          |
+| ----- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| #43   | Buscar licitaciones por palabra clave                                   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance`   |
+| #44   | Ver el detalle de una licitación                                        | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                         |
+| #45   | Asistente guiado de requerimientos de la licitación                     | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                    |
+| #46   | Visualizar licitaciones favoritas en vistas de calendario y lista       | `enhancement`, `licitaciones`, `frontend`, `ui`, `favoritos`, `security`           |
+| #47   | Mostrar todos los resultados de búsqueda y filtros con estado accesible | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`         |
+| #48   | Configurar alertas de nuevas licitaciones                               | `enhancement`, `licitaciones`, `frontend`, `alertas`, `security`                   |
+| #49   | Exportar resumen y bases de licitación en PDF                           | `enhancement`, `licitaciones`, `frontend`, `export`                                |
+| #91   | Ordenar resultados por fecha de cierre y monto                          | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `accessibility` |
 
 ---
 
@@ -30,7 +31,7 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ### Criterios de aceptación
 
-- **CA1:** Existe un campo de búsqueda en el explorador de licitaciones; al ingresar un término y confirmar, el listado muestra solo las licitaciones cuyo `title` o `institution` contienen el texto (comparación sin distinguir mayúsculas/minúsculas).
+- **CA1:** Existe un campo de búsqueda en el explorador de licitaciones; al ingresar un término, el listado muestra solo las licitaciones cuyo `title` contiene el texto (comparación sin distinguir mayúsculas/minúsculas y quitando espacios externos con `trim`; la institución no se considera).
 - **CA2:** El término buscado se refleja en la URL como `?keyword=...`; al recargar o compartir el enlace, el filtro se conserva (REF-09).
 - **CA3:** El listado filtrado se actualiza en menos de 2 segundos para el conjunto de datos mock (REF-01).
 - **CA4:** Si no hay coincidencias, se muestra el estado vacío con un botón que limpia el filtro de búsqueda (REF-05).
@@ -72,18 +73,30 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ## #46 · Visualizar licitaciones favoritas en vistas de calendario y lista
 
-**Como** usuario autenticado, **quiero** ver mis licitaciones favoritas en vista de calendario y de lista, **para** planificar mi trabajo según las fechas de cierre.
+**Como** usuario autenticado, **quiero** ver las licitaciones que guardé en favoritos en una vista de calendario y alternarla con una vista de lista, **para** llevar un orden de cuándo las guardé y elegir cómo consultarlas.
+
+> Alcance: #46 consume la persistencia de favoritos de #42 (`licitacionesuv-favoritos`, con `idLicitacion` y `fechaGuardado` por usuario) y **extiende su manejo de errores de lectura** (CA9), sin cambiar la clave ni el formato. Eso implica ajustar `favoritosStorage.js` (la lectura informa el error en vez de devolver `{}`) y `FavoritosProvider.jsx` (no escribe el store mientras exista un error de lectura). Las alertas de #48 tienen su propia clave y formato; solo comparten el mecanismo de lectura defensiva.
 
 ### Criterios de aceptación
 
-- **CA1:** Sin sesión iniciada, la página `/favoritos` invita a iniciar sesión y no muestra favoritos de ningún usuario (REF-02, ya implementado en `MisFavoritosPage`).
-- **CA2:** Con sesión iniciada, se listan únicamente los favoritos del usuario autenticado, leídos desde `localStorage` (clave `licitacionesuv-favoritos`; REF-10).
-- **CA3:** Existe un selector de vista "Lista" / "Calendario", operable por teclado; alternar entre ambas no recarga la página ni pierde los datos (REF-13).
-- **CA4:** La vista Calendario ubica cada favorito en el día de su `closingDate`; si hay varias el mismo día, se agrupan y se indica su cantidad.
-- **CA5:** Al quitar un favorito desde cualquiera de las dos vistas, la licitación desaparece de ambas de forma inmediata.
-- **CA6:** Si el usuario no tiene favoritos, ambas vistas muestran un estado vacío con una invitación a guardar licitaciones (REF-05).
-- **CA7:** El calendario abre en el mes actual y permite navegar al mes anterior y siguiente.
-- **CA8:** Montos y fechas se muestran con formato local chileno (CLP y `Intl`, REF-12).
+- **CA1:** Sin sesión iniciada, `/favoritos` invita a iniciar sesión con un botón que abre el modal de acceso y no muestra favoritos de ningún usuario (REF-02).
+- **CA2:** Con sesión iniciada, se muestran solo los favoritos del usuario autenticado, leídos de la persistencia de #42 (REF-10).
+- **CA3:** El selector de vista sigue el patrón de pestañas ARIA: un contenedor `role="tablist"` con `aria-label="Vista de favoritos"`; dos pestañas "Lista" y "Calendario" con `role="tab"`, `aria-selected` y `aria-controls` hacia su panel; cada panel con `role="tabpanel"` y `aria-labelledby` hacia su pestaña. Foco itinerante: solo la pestaña activa tiene `tabindex="0"` (la otra `tabindex="-1"`); las flechas izquierda y derecha mueven el foco y activan la pestaña, e Inicio y Fin van a la primera y la última. Cambiar de vista no recarga la página ni pierde datos (REF-13).
+- **CA4:** La vista elegida se conserva al volver a `/favoritos` y tras recargar o cerrar el navegador, por usuario y en el mismo navegador, en la clave `licitacionesuv-favoritos-vista` con formato `{ "<idUsuario>": "lista" | "calendario" }`, donde `<idUsuario>` es el mismo identificador que usan los favoritos (`getUserId`: el correo del usuario o, si no existe, su nombre). La vista predeterminada es "Lista", también si el valor guardado es inválido o `localStorage` no está disponible. Se aplica en el primer render, sin mostrar antes la otra vista.
+- **CA5:** El calendario ubica cada favorito en el día local (zona horaria del navegador) de su `fechaGuardado`; varios el mismo día se agrupan con su cantidad. Abre en el mes actual y permite ir al mes anterior y al siguiente.
+- **CA6:** Un favorito con `fechaGuardado` ausente o no interpretable como fecha no se ubica en el calendario ni recibe una fecha inventada; sigue visible en la vista Lista. Si hay al menos uno, al inicio del panel del calendario se muestra como texto informativo (sin región _live_) exactamente "1 favorito sin fecha de guardado válida no aparece en el calendario." o, con N ≥ 2, "N favoritos sin fecha de guardado válida no aparecen en el calendario.", junto a un botón "Ver en Lista" que cambia a la vista Lista y guarda esa preferencia.
+- **CA7:** Al quitar un favorito desde cualquiera de las dos vistas, desaparece de ambas de inmediato.
+- **CA8:** Sin favoritos, ambas vistas muestran "Aún no tienes favoritos" y el enlace "Explorar licitaciones" a `/licitaciones`. Si los favoritos guardados ya no están en el catálogo, se muestra "Licitaciones no disponibles" con el mismo enlace (REF-05).
+- **CA9:** Si falla la lectura de los favoritos (`localStorage` bloqueado o JSON corrupto), no se muestra el estado vacío sino "No pudimos leer tus favoritos guardados en este navegador. Tus favoritos no se modificaron." con `role="alert"` y un botón "Reintentar" que vuelve a leer `localStorage`. Mientras exista el error no se escribe sobre los datos guardados (REF-05).
+- **CA10:** El cambio de vista usa un fundido de opacidad de 150 ms (máximo 200 ms) y no muestra contenido de la vista anterior al terminar; con `prefers-reduced-motion: reduce` el cambio es instantáneo. La ausencia de parpadeo se verifica manualmente con DevTools (REF-13).
+- **CA11:** Montos y fechas se muestran con formato local chileno (CLP e `Intl`, REF-12).
+
+### Definition of Done específico (además del común)
+
+- Pruebas automatizadas de: agrupación por día local (incluido un favorito guardado cerca de la medianoche UTC), fechas inválidas y sus dos textos exactos, preferencia de vista (por usuario, predeterminada e inválida) y error de lectura sin sobrescribir los datos.
+- Verificación manual del selector con teclado y lector de pantalla (patrón de pestañas del CA3), y de la transición con y sin `prefers-reduced-motion` revisada en DevTools (CA10).
+- `docs/AI_context.md` documenta la clave `licitacionesuv-favoritos-vista` al implementarse.
+- Notas del issue actualizadas: `MisFavoritosPage` ya lista los favoritos y la dependencia de #42 está cumplida.
 
 ---
 
@@ -93,13 +106,13 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ### Criterios de aceptación
 
-- **CA1:** El listado muestra todos los resultados que cumplen la combinación de filtros activos (`keyword`, `region`, `tipo`) sin truncar ni paginar de forma implícita.
-- **CA2:** Se muestra un contador con la cantidad de resultados y un resumen de los filtros activos, cada uno con acción de eliminación individual.
-- **CA3:** El resumen de resultados y filtros activos se anuncia a lectores de pantalla (`aria-live`) y cada chip de filtro es operable y removible con teclado (REF-13).
-- **CA4:** Cuando no hay resultados, se muestra el estado vacío con un botón "Limpiar filtros" que restablece la URL (REF-09).
-- **CA5:** El listado es responsive (escritorio y móvil) y muestra un estado de carga mientras aplica el filtrado (REF-05).
+- **CA1:** El listado muestra la totalidad de procesos que cumplen la combinación de filtros activos (`keyword`, `region`, `tipo`) sin truncar ni paginar de forma implícita. Para la palabra clave (`keyword`), la coincidencia se realiza únicamente sobre el título (`title`), sin distinguir mayúsculas de minúsculas y quitando espacios en blanco externos (`trim`), alineado con la regla acordada en #43.
+- **CA2:** Se muestra un contador con la cantidad de resultados respecto al total y un panel resumen de los filtros activos mediante chips, cada uno con acción de eliminación individual operable por teclado.
+- **CA3:** El contador de resultados se anuncia a lectores de pantalla mediante `aria-live="polite"` (`role="status"`). Cada chip de filtro es operable y removible mediante teclado (`Enter` o `Espacio`), con foco visible y compatibilidad verificada tanto en escritorio como en dispositivos móviles (REF-13).
+- **CA4:** Cuando no hay resultados, se muestra un estado vacío claro con un botón "Restablecer todos los filtros" que limpia la URL (REF-09). Si la URL contiene parámetros de filtro desconocidos, valores inválidos o parámetros repetidos (`region`, `tipo`), la aplicación los resuelve de manera defensiva del más reciente al más antiguo conservando el último valor válido (descartando los inválidos y eliminando el filtro si todos son inválidos), sin interrumpir la ejecución ni generar estados inconsistentes.
+- **CA5:** El listado y sus controles son totalmente responsive (escritorio y móvil). Dado que el filtrado sobre datos en memoria se ejecuta de manera síncrona e instantánea en el cliente, no se muestra un spinner de carga artificial innecesario que degrade la experiencia de uso (REF-01, REF-05).
 - **CA6:** El filtrado completo responde en menos de 2 segundos desde la interacción del usuario (REF-01).
-- **CA7:** Los componentes usan HTML semántico (`section`, `ul`/`li`, encabezados jerárquicos) y contraste de color suficiente (REF-13).
+- **CA7:** Los componentes utilizan HTML semántico (`section`, `aside`, `header`, `ul`/`li`, encabezados jerárquicos) y contraste de color suficiente (REF-13).
 
 ---
 
@@ -114,7 +127,7 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 - **CA1:** Solo un usuario con sesión iniciada puede crear o editar alertas; sin sesión, la acción abre el modal de autenticación (REF-02).
 - **CA2:** El formulario permite definir un nombre de alerta y sus criterios (palabra clave, región y tipo), reutilizando los mismos campos del explorador.
 - **CA3:** Una alerta se puede activar o desactivar sin eliminarla, y el cambio se refleja de inmediato en la lista.
-- **CA4:** Las alertas se persisten en `localStorage` asociadas al usuario y sobreviven a la recarga de la página (misma línea que favoritos; REF-10).
+- **CA4:** Las alertas se persisten en `localStorage` asociadas al usuario, en su propia clave (`licitacionesuv-alertas`) y con el mismo mecanismo de lectura defensiva que los favoritos, y sobreviven a la recarga de la página (REF-10).
 - **CA5:** Una alerta se puede eliminar y desaparece de la lista sin recargar la página.
 - **CA6:** Si una alerta no tiene ningún criterio, se muestra un mensaje de validación y no se guarda (REF-05).
 - **CA7:** Formulario y lista son operables por teclado y los mensajes de estado/error se anuncian a lectores de pantalla (REF-13).
@@ -138,17 +151,31 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ---
 
+## #91 · Ordenar resultados por fecha de cierre y monto
+
+**Como** visitante, **quiero** ordenar los resultados por fecha de cierre o monto, **para** priorizar las convocatorias más urgentes o convenientes.
+
+### Criterios de aceptación
+
+- **CA1:** Existe un selector de orden con las opciones fecha de cierre ascendente, fecha de cierre descendente, monto ascendente y monto descendente (además de la opción por defecto).
+- **CA2:** El orden se combina con los filtros activos (`keyword`, `region`, `tipo`) sin perderlos: primero se filtran los resultados y luego se ordenan.
+- **CA3:** El orden se refleja en la URL (`?sort=...`) y se conserva al recargar o compartir el enlace; los valores inválidos o repetidos se sanean de forma defensiva (REF-09).
+- **CA4:** El reordenamiento es inmediato, sin recargar la página, y el selector es operable por teclado con foco visible (REF-01, REF-13).
+
+---
+
 ## Matriz de trazabilidad HU ↔ Etiquetas ↔ REF
 
-| Issue | Etiquetas                                                                        | REF cubiertos                          |
-| ----- | -------------------------------------------------------------------------------- | -------------------------------------- |
-| #43   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance` | REF-01, REF-05, REF-09, REF-13         |
-| #44   | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                       | REF-05, REF-09, REF-12, REF-13         |
-| #45   | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                  | REF-06, REF-10, REF-13                 |
-| #46   | `enhancement`, `licitaciones`, `frontend`, `ui`, `favoritos`, `security`         | REF-02, REF-05, REF-10, REF-12, REF-13 |
-| #47   | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`       | REF-01, REF-05, REF-09, REF-13         |
-| #48   | `enhancement`, `licitaciones`, `frontend`, `alertas`, `security`                 | REF-02, REF-05, REF-10, REF-13         |
-| #49   | `enhancement`, `licitaciones`, `frontend`, `export`                              | REF-01, REF-05, REF-12                 |
+| Issue | Etiquetas                                                                          | REF cubiertos                          |
+| ----- | ---------------------------------------------------------------------------------- | -------------------------------------- |
+| #43   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance`   | REF-01, REF-05, REF-09, REF-13         |
+| #44   | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                         | REF-05, REF-09, REF-12, REF-13         |
+| #45   | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                    | REF-06, REF-10, REF-13                 |
+| #46   | `enhancement`, `licitaciones`, `frontend`, `ui`, `favoritos`, `security`           | REF-02, REF-05, REF-10, REF-12, REF-13 |
+| #47   | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`         | REF-01, REF-05, REF-09, REF-13         |
+| #48   | `enhancement`, `licitaciones`, `frontend`, `alertas`, `security`                   | REF-02, REF-05, REF-10, REF-13         |
+| #49   | `enhancement`, `licitaciones`, `frontend`, `export`                                | REF-01, REF-05, REF-12                 |
+| #91   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `accessibility` | REF-01, REF-09, REF-13                 |
 
 ## Revisión de correspondencia etiquetas ↔ REF
 
@@ -168,11 +195,11 @@ Las etiquetas del repositorio son **por área funcional**, no por requisito; por
 
 **Brecha detectada:** REF-05 y REF-12 no tienen etiqueta propia. Se decidió **no crear etiquetas adicionales** para evitar proliferación y verificarlos mediante los CA de cada historia. Si el equipo prefiere poder filtrarlos, bastaría con crear `usabilidad` y `formato-es-cl`.
 
-**REF fuera del alcance de estas siete historias:** REF-04 (disponibilidad), REF-07 (`npm run verify`), REF-08 (portabilidad en navegadores) y REF-11 (flujo Git con revisor) son requisitos transversales del proyecto; se verifican a nivel de proceso y CI (DoD y protección de rama), no mediante los CA de una historia. REF-14, REF-15 y REF-16 pertenecen al flujo de aprobaciones (US-09 a US-11, CR-302) y por eso no se trazan aquí.
+**REF fuera del alcance de estas ocho historias:** REF-04 (disponibilidad), REF-07 (`npm run verify`), REF-08 (portabilidad en navegadores) y REF-11 (flujo Git con revisor) son requisitos transversales del proyecto; se verifican a nivel de proceso y CI (DoD y protección de rama), no mediante los CA de una historia. REF-14, REF-15 y REF-16 pertenecen al flujo de aprobaciones (US-09 a US-11, CR-302) y por eso no se trazan aquí.
 
 ## Definition of Ready / Definition of Done
 
-Ambos son los de la plantilla de historia de usuario (`.github/ISSUE_TEMPLATE/historia-de-usuario.md`) y aplican a las siete historias:
+Ambos son los de la plantilla de historia de usuario (`.github/ISSUE_TEMPLATE/historia-de-usuario.md`) y aplican a las ocho historias:
 
 - **DoR:** criterios de aceptación definidos y verificables, alcance y dependencias identificados, estimación acordada y dudas funcionales resueltas antes de implementar.
 - **DoD:** todos los CA cumplidos, `npm run verify` en verde (lint, formato, test y build), revisión y aprobación de al menos un par (PR fusionado) y sin reapertura por errores atribuibles a la entrega.
