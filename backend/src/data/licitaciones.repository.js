@@ -12,6 +12,20 @@ function matchesKeyword(licitacion, keyword) {
   return licitacion.title.toLowerCase().includes(keyword.toLowerCase())
 }
 
+/**
+ * Crea un repositorio de licitaciones que filtra en memoria un arreglo ya cargado.
+ * Se usa en las pruebas y cuando no hay `DATABASE_URL`.
+ *
+ * Reglas de filtrado (mismas que el repositorio PostgreSQL y el frontend):
+ * `keyword` se busca solo en el título (CA1 de #43); `region` y `tipo` deben
+ * coincidir exactamente; las tres comparaciones ignoran mayúsculas y los filtros
+ * se combinan con Y lógico. Un filtro vacío no restringe el resultado.
+ *
+ * @param {Array<object>} licitaciones - Licitaciones con el contrato del mock (REF-10).
+ * @returns {{list: (filters?: {keyword?: string, region?: string, tipo?: string}) => Promise<Array<object>>, findById: (id: string) => Promise<object|null>}}
+ *   Repositorio: `list` devuelve las que cumplen los filtros y `findById` la de ese
+ *   `id` exacto (distingue mayúsculas) o `null`.
+ */
 export function createMemoryLicitacionesRepository(licitaciones) {
   return {
     async list({ keyword, region, tipo } = {}) {
@@ -33,8 +47,17 @@ const SELECT_LICITACION = `
     tipo, region_id, url_fuente
   FROM licitaciones`
 
-// BIGINT llega como texto desde pg y DATE se formatea en SQL para no depender
-// de la zona horaria del servidor.
+/**
+ * Convierte una fila de la tabla `licitaciones` al contrato de datos del frontend (REF-10).
+ *
+ * Decisiones no evidentes: `pg` entrega los `BIGINT` como texto, por eso el monto se
+ * convierte a número; la fecha de cierre ya llega como `YYYY-MM-DD` desde el SQL
+ * para no depender de la zona horaria del servidor.
+ *
+ * @param {object} row - Fila con las columnas de `SELECT_LICITACION`.
+ * @returns {{id: string, title: string, amount: number, currency: string, institution: string, closingDate: string, type: string, region: string, sourceUrl: string}}
+ *   Licitación con los 9 campos del contrato.
+ */
 export function mapLicitacionRow(row) {
   return {
     id: row.id,
@@ -53,6 +76,15 @@ function escapeLike(text) {
   return text.replace(/[\\%_]/g, '\\$&')
 }
 
+/**
+ * Arma la consulta SQL del listado con los filtros activos, siempre parametrizada
+ * (`$1`, `$2`…) para evitar inyección SQL. `keyword` usa `ILIKE` solo sobre el
+ * título y escapa `%`, `_` y `\` para que se busquen como texto literal;
+ * `region` y `tipo` se comparan sin distinguir mayúsculas. Ordena por `id`.
+ *
+ * @param {{keyword?: string, region?: string, tipo?: string}} [filters={}] - Filtros; uno vacío no se aplica.
+ * @returns {{text: string, values: Array<string>}} Consulta y valores para `db.query`.
+ */
 export function buildListQuery({ keyword, region, tipo } = {}) {
   const condiciones = []
   const params = []
@@ -72,6 +104,16 @@ export function buildListQuery({ keyword, region, tipo } = {}) {
   return { text: `${SELECT_LICITACION}${where} ORDER BY id`, values: params }
 }
 
+/**
+ * Crea un repositorio de licitaciones respaldado por PostgreSQL, con la misma
+ * interfaz y las mismas reglas de filtrado que el repositorio en memoria.
+ * La conexión se recibe por parámetro (un `pg.Pool` o un cliente), lo que
+ * permite reemplazarla por un doble en las pruebas.
+ *
+ * @param {{query: Function}} db - Objeto con `query(consulta)` que devuelve `{ rows }`.
+ * @returns {{list: (filters?: {keyword?: string, region?: string, tipo?: string}) => Promise<Array<object>>, findById: (id: string) => Promise<object|null>}}
+ *   Repositorio con el contrato del mock (REF-10).
+ */
 export function createPgLicitacionesRepository(db) {
   return {
     async list(filters) {

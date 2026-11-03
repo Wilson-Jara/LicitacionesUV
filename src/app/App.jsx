@@ -2,17 +2,25 @@ import { BrowserRouter } from 'react-router-dom'
 import AppRoutes from './routes/AppRoutes.jsx'
 import { AuthProvider } from './providers/AuthProvider.jsx'
 import { FavoritosProvider } from './providers/FavoritosProvider.jsx'
+import { UmbralesProvider } from './providers/UmbralesProvider.jsx'
 import { ThemeProvider } from './providers/ThemeProvider.jsx'
 import './App.css'
 
+/**
+ * Compone los proveedores de tema, sesión, favoritos y umbrales con el enrutador principal.
+ *
+ * @returns {JSX.Element} Aplicación lista para mostrar sus rutas.
+ */
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <FavoritosProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
+          <UmbralesProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </UmbralesProvider>
         </FavoritosProvider>
       </AuthProvider>
     </ThemeProvider>

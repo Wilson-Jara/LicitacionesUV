@@ -10,6 +10,20 @@ import {
 } from '../licitacionUtils.js'
 import './LicitacionCard.css'
 
+/**
+ * Tarjeta de una licitación en el listado: tipo, región, título, institución,
+ * fecha de cierre y monto en formato chileno, con enlace al detalle.
+ *
+ * Reglas del botón de favorito:
+ * - Sin sesión, en vez de guardar abre el modal de acceso (REF-02).
+ * - Una licitación cerrada no se puede guardar (botón desactivado, texto "Cerrada"),
+ *   pero si ya estaba guardada se puede quitar.
+ *
+ * @param {object} props
+ * @param {object} props.licitacion - Licitación con el contrato de datos (REF-10):
+ *   `id`, `title`, `amount`, `currency`, `institution`, `closingDate`, `type` y `region`.
+ * @returns {JSX.Element}
+ */
 export function LicitacionCard({ licitacion }) {
   const { id, title, amount, currency, institution, closingDate, type, region } = licitacion
   const { user, openAuthModal } = useAuth()

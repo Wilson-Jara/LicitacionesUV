@@ -2,8 +2,19 @@
 import { createContext, useState } from 'react'
 import PropTypes from 'prop-types'
 
+/**
+ * Contexto de React para compartir el estado de usuario y la apertura del modal de autenticación.
+ */
 export const AuthContext = createContext(null)
 
+/**
+ * Proveedor de contexto que administra el estado global de autenticación del usuario
+ * y la visibilidad del modal de acceso (`AuthModal`).
+ *
+ * @param {object} props - Propiedades del componente.
+ * @param {import('react').ReactNode} props.children - Nodos hijos que tendrán acceso al contexto.
+ * @returns {import('react').JSX.Element} Componente proveedor de contexto de autenticación.
+ */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)

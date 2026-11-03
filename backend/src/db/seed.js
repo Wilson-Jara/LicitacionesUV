@@ -1,5 +1,16 @@
-// Inserta o actualiza las licitaciones del mock del frontend (contrato REF-10).
-// Es idempotente: ejecutarlo de nuevo actualiza los registros existentes.
+/**
+ * Inserta o actualiza en la tabla `licitaciones` las licitaciones recibidas
+ * (normalmente el mock del frontend, contrato REF-10).
+ *
+ * Es idempotente: una licitación con un `id` existente se actualiza en vez de
+ * duplicarse (`ON CONFLICT ... DO UPDATE`). Todo corre en una sola transacción:
+ * si una inserción falla, no queda ninguna aplicada.
+ *
+ * @param {{query: Function}} client - Cliente de PostgreSQL (o un doble en las pruebas).
+ * @param {Array<object>} licitaciones - Licitaciones con el contrato del mock.
+ * @returns {Promise<number>} Cantidad de licitaciones procesadas.
+ * @throws {Error} Si una inserción falla; la causa queda en `cause`.
+ */
 export async function seedLicitaciones(client, licitaciones) {
   await client.query('BEGIN')
   try {

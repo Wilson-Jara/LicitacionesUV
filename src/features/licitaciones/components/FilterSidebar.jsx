@@ -2,6 +2,11 @@ import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
 import { countActiveFilters } from '../licitacionFilters.js'
 import './FilterSidebar.css'
 
+/**
+ * Opciones de regiones disponibles para el filtrado geográfico.
+ * Cada elemento define el valor del parámetro y su etiqueta visible.
+ * @type {Array<{value: string, label: string}>}
+ */
 const REGIONES = [
   { value: '', label: 'Todas las regiones' },
   { value: 'valparaiso', label: 'Valparaíso (UV)' },
@@ -10,12 +15,25 @@ const REGIONES = [
   { value: 'antofagasta', label: 'Antofagasta' },
 ]
 
+/**
+ * Opciones de tipos de convocatoria disponibles para el filtrado por modalidad.
+ * @type {Array<{value: string, label: string}>}
+ */
 const TIPOS = [
   { value: '', label: 'Todos' },
   { value: 'publica', label: 'Pública' },
   { value: 'privada', label: 'Privada' },
 ]
 
+/**
+ * Componente de barra lateral de filtros para el explorador de licitaciones.
+ *
+ * Proporciona controles interactivos para filtrar licitaciones por palabra clave,
+ * región y tipo de proceso, sincronizados con la URL mediante `useLicitacionFilters`.
+ * Incluye visualización de filtros activos como chips interactivos y opciones de limpieza.
+ *
+ * @returns {import('react').JSX.Element} Elemento aside con el formulario y controles de filtro.
+ */
 export function FilterSidebar() {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
 

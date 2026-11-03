@@ -29,6 +29,17 @@ function readPort() {
   return Number.isInteger(port) && port > 0 && port < 65536 ? port : 3000
 }
 
+/**
+ * Configuración del backend leída de las variables de entorno. Al importar este
+ * módulo se cargan las variables de `backend/.env`, si existe, sin sobrescribir
+ * las que ya estén definidas en el entorno (estas tienen prioridad).
+ *
+ * @type {{port: number, corsOrigin: string, databaseUrl: string, jwtSecret: string}}
+ * @property {number} port - Puerto HTTP (`PORT`); 3000 si falta o no es un entero entre 1 y 65535.
+ * @property {string} corsOrigin - Origen permitido por CORS (`CORS_ORIGIN`); por defecto, el dev server de Vite.
+ * @property {string} databaseUrl - Conexión a PostgreSQL (`DATABASE_URL`); vacía = se usan los datos en memoria.
+ * @property {string} jwtSecret - Reservada para la autenticación (`JWT_SECRET`); hoy no se usa.
+ */
 export const config = {
   port: readPort(),
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',

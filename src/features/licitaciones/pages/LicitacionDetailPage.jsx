@@ -14,6 +14,12 @@ import {
 } from '../licitacionUtils.js'
 import './LicitacionDetailPage.css'
 
+/**
+ * Página de detalle de una licitación (ruta `/licitaciones/:id`, HU #44).
+ * Busca la licitación por el `id` de la URL; si no existe, muestra la página 404.
+ *
+ * @returns {JSX.Element}
+ */
 function LicitacionDetailPage() {
   const { id } = useParams()
   const licitacion = mockData.find((item) => item.id === id)
@@ -23,6 +29,20 @@ function LicitacionDetailPage() {
   return <LicitacionDetail licitacion={licitacion} />
 }
 
+/**
+ * Contenido del detalle: todos los campos de la licitación, estado
+ * Vigente/Cerrada, enlace a la fuente oficial (pestaña nueva), botón de
+ * favorito y exportación a PDF.
+ *
+ * - Favorito: mismas reglas que `LicitacionCard` (sin sesión abre el modal de
+ *   acceso; cerrada no se puede guardar, pero sí quitar si ya estaba guardada).
+ * - PDF: el módulo y el Web Worker se cargan solo al hacer clic, y la generación
+ *   ocurre fuera del hilo principal para no congelar la página (HU #49).
+ *
+ * @param {object} props
+ * @param {object} props.licitacion - Licitación con los 9 campos del contrato (REF-10).
+ * @returns {JSX.Element}
+ */
 function LicitacionDetail({ licitacion }) {
   const { user, openAuthModal } = useAuth()
   const { isFavorito, agregarFavorito, quitarFavorito } = useFavoritos()

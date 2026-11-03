@@ -12,15 +12,16 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ## Índice
 
-| Issue | Historia de usuario                                                     | Etiquetas                                                                        |
-| ----- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| #43   | Buscar licitaciones por palabra clave                                   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance` |
-| #44   | Ver el detalle de una licitación                                        | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                       |
-| #45   | Asistente guiado de requerimientos de la licitación                     | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                  |
-| #46   | Visualizar licitaciones favoritas en vistas de calendario y lista       | `enhancement`, `licitaciones`, `frontend`, `ui`, `favoritos`, `security`         |
-| #47   | Mostrar todos los resultados de búsqueda y filtros con estado accesible | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`       |
-| #48   | Configurar alertas de nuevas licitaciones                               | `enhancement`, `licitaciones`, `frontend`, `alertas`, `security`                 |
-| #49   | Exportar resumen y bases de licitación en PDF                           | `enhancement`, `licitaciones`, `frontend`, `export`                              |
+| Issue | Historia de usuario                                                     | Etiquetas                                                                          |
+| ----- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| #43   | Buscar licitaciones por palabra clave                                   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance`   |
+| #44   | Ver el detalle de una licitación                                        | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                         |
+| #45   | Asistente guiado de requerimientos de la licitación                     | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                    |
+| #46   | Visualizar licitaciones favoritas en vistas de calendario y lista       | `enhancement`, `licitaciones`, `frontend`, `ui`, `favoritos`, `security`           |
+| #47   | Mostrar todos los resultados de búsqueda y filtros con estado accesible | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`         |
+| #48   | Configurar alertas de nuevas licitaciones                               | `enhancement`, `licitaciones`, `frontend`, `alertas`, `security`                   |
+| #49   | Exportar resumen y bases de licitación en PDF                           | `enhancement`, `licitaciones`, `frontend`, `export`                                |
+| #91   | Ordenar resultados por fecha de cierre y monto                          | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `accessibility` |
 
 ---
 
@@ -150,17 +151,31 @@ Criterios de aceptación (CA) de las historias de usuario abiertas del tablero, 
 
 ---
 
+## #91 · Ordenar resultados por fecha de cierre y monto
+
+**Como** visitante, **quiero** ordenar los resultados por fecha de cierre o monto, **para** priorizar las convocatorias más urgentes o convenientes.
+
+### Criterios de aceptación
+
+- **CA1:** Existe un selector de orden con las opciones fecha de cierre ascendente, fecha de cierre descendente, monto ascendente y monto descendente (además de la opción por defecto).
+- **CA2:** El orden se combina con los filtros activos (`keyword`, `region`, `tipo`) sin perderlos: primero se filtran los resultados y luego se ordenan.
+- **CA3:** El orden se refleja en la URL (`?sort=...`) y se conserva al recargar o compartir el enlace; los valores inválidos o repetidos se sanean de forma defensiva (REF-09).
+- **CA4:** El reordenamiento es inmediato, sin recargar la página, y el selector es operable por teclado con foco visible (REF-01, REF-13).
+
+---
+
 ## Matriz de trazabilidad HU ↔ Etiquetas ↔ REF
 
-| Issue | Etiquetas                                                                        | REF cubiertos                          |
-| ----- | -------------------------------------------------------------------------------- | -------------------------------------- |
-| #43   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance` | REF-01, REF-05, REF-09, REF-13         |
-| #44   | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                       | REF-05, REF-09, REF-12, REF-13         |
-| #45   | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                  | REF-06, REF-10, REF-13                 |
-| #46   | `enhancement`, `licitaciones`, `frontend`, `ui`, `favoritos`, `security`         | REF-02, REF-05, REF-10, REF-12, REF-13 |
-| #47   | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`       | REF-01, REF-05, REF-09, REF-13         |
-| #48   | `enhancement`, `licitaciones`, `frontend`, `alertas`, `security`                 | REF-02, REF-05, REF-10, REF-13         |
-| #49   | `enhancement`, `licitaciones`, `frontend`, `export`                              | REF-01, REF-05, REF-12                 |
+| Issue | Etiquetas                                                                          | REF cubiertos                          |
+| ----- | ---------------------------------------------------------------------------------- | -------------------------------------- |
+| #43   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `performance`   | REF-01, REF-05, REF-09, REF-13         |
+| #44   | `enhancement`, `licitaciones`, `frontend`, `routing`, `ui`                         | REF-05, REF-09, REF-12, REF-13         |
+| #45   | `enhancement`, `licitaciones`, `frontend`, `ui`, `architecture`                    | REF-06, REF-10, REF-13                 |
+| #46   | `enhancement`, `licitaciones`, `frontend`, `ui`, `favoritos`, `security`           | REF-02, REF-05, REF-10, REF-12, REF-13 |
+| #47   | `enhancement`, `filters`, `frontend`, `ui`, `accessibility`, `performance`         | REF-01, REF-05, REF-09, REF-13         |
+| #48   | `enhancement`, `licitaciones`, `frontend`, `alertas`, `security`                   | REF-02, REF-05, REF-10, REF-13         |
+| #49   | `enhancement`, `licitaciones`, `frontend`, `export`                                | REF-01, REF-05, REF-12                 |
+| #91   | `enhancement`, `filters`, `licitaciones`, `frontend`, `url-state`, `accessibility` | REF-01, REF-09, REF-13                 |
 
 ## Revisión de correspondencia etiquetas ↔ REF
 
@@ -180,11 +195,11 @@ Las etiquetas del repositorio son **por área funcional**, no por requisito; por
 
 **Brecha detectada:** REF-05 y REF-12 no tienen etiqueta propia. Se decidió **no crear etiquetas adicionales** para evitar proliferación y verificarlos mediante los CA de cada historia. Si el equipo prefiere poder filtrarlos, bastaría con crear `usabilidad` y `formato-es-cl`.
 
-**REF fuera del alcance de estas siete historias:** REF-04 (disponibilidad), REF-07 (`npm run verify`), REF-08 (portabilidad en navegadores) y REF-11 (flujo Git con revisor) son requisitos transversales del proyecto; se verifican a nivel de proceso y CI (DoD y protección de rama), no mediante los CA de una historia. REF-14, REF-15 y REF-16 pertenecen al flujo de aprobaciones (US-09 a US-11, CR-302) y por eso no se trazan aquí.
+**REF fuera del alcance de estas ocho historias:** REF-04 (disponibilidad), REF-07 (`npm run verify`), REF-08 (portabilidad en navegadores) y REF-11 (flujo Git con revisor) son requisitos transversales del proyecto; se verifican a nivel de proceso y CI (DoD y protección de rama), no mediante los CA de una historia. REF-14, REF-15 y REF-16 pertenecen al flujo de aprobaciones (US-09 a US-11, CR-302) y por eso no se trazan aquí.
 
 ## Definition of Ready / Definition of Done
 
-Ambos son los de la plantilla de historia de usuario (`.github/ISSUE_TEMPLATE/historia-de-usuario.md`) y aplican a las siete historias:
+Ambos son los de la plantilla de historia de usuario (`.github/ISSUE_TEMPLATE/historia-de-usuario.md`) y aplican a las ocho historias:
 
 - **DoR:** criterios de aceptación definidos y verificables, alcance y dependencias identificados, estimación acordada y dudas funcionales resueltas antes de implementar.
 - **DoD:** todos los CA cumplidos, `npm run verify` en verde (lint, formato, test y build), revisión y aprobación de al menos un par (PR fusionado) y sin reapertura por errores atribuibles a la entrega.

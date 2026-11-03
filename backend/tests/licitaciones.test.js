@@ -110,6 +110,29 @@ describe('GET /api/licitaciones/:id', () => {
   })
 })
 
+describe('contrato de GET /api/licitaciones/:id', () => {
+  it('responde 500 genérico si el repositorio rompe la invariante del id', async () => {
+    // Doble de prueba que devuelve una licitación distinta a la solicitada.
+    const repositorioRoto = {
+      list: async () => [],
+      findById: async () => ({ id: 'otra-licitacion' }),
+    }
+    const servidor = createServer(createApp({ licitacionesRepository: repositorioRoto }))
+    await new Promise((resolve) => servidor.listen(0, '127.0.0.1', resolve))
+    const url = `http://127.0.0.1:${servidor.address().port}`
+    const errorOriginal = console.error
+    console.error = () => {}
+    try {
+      const response = await fetch(`${url}/api/licitaciones/licitacion-001`)
+      assert.equal(response.status, 500)
+      assert.deepEqual(await response.json(), { error: 'Error interno del servidor' })
+    } finally {
+      console.error = errorOriginal
+      await new Promise((resolve) => servidor.close(resolve))
+    }
+  })
+})
+
 describe('rutas no registradas', () => {
   it('responde 404 con mensaje de error', async () => {
     const response = await fetch(`${baseUrl}/api/no-existe`)

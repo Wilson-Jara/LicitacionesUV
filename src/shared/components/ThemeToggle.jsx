@@ -1,6 +1,13 @@
 import { useTheme } from '../hooks/useTheme'
 import './ThemeToggle.css'
 
+/**
+ * Botón de la barra de navegación que alterna entre tema claro y oscuro.
+ * Es accesible: `aria-label` describe la acción que hará el clic y
+ * `aria-pressed` indica si el modo oscuro está activo.
+ *
+ * @returns {JSX.Element}
+ */
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'

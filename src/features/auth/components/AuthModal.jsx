@@ -3,6 +3,19 @@ import PropTypes from 'prop-types'
 import { useAuth } from '../hooks/useAuth'
 import './AuthModal.css'
 
+/**
+ * Modal de autenticación institucional basado en el diseño split-screen de Figma.
+ *
+ * Presenta un panel izquierdo con la identidad institucional de la Universidad de Valparaíso
+ * y un panel derecho con el formulario interactivo para alternar entre inicio de sesión
+ * y registro de cuenta, validación de credenciales, alternancia de visibilidad de contraseña
+ * y acceso social simulado (Google / GitHub).
+ *
+ * @param {object} props - Propiedades del componente.
+ * @param {boolean} props.isOpen - Indica si el modal se encuentra abierto y visible.
+ * @param {() => void} props.onClose - Callback para cerrar el modal.
+ * @returns {import('react').JSX.Element | null} Diálogo modal accesible o null si está cerrado.
+ */
 function AuthModal({ isOpen, onClose }) {
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [showPassword, setShowPassword] = useState(false)

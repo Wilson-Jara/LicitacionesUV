@@ -5,6 +5,13 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import mockData from '../../licitaciones/data/licitaciones.mock.json'
 import './MisFavoritosPage.css'
 
+/**
+ * Muestra las licitaciones favoritas del usuario dentro del catálogo actual.
+ * Sin sesión invita a iniciar sesión; si los registros guardados ya no están en el catálogo,
+ * muestra un estado vacío distinto al de una cuenta sin favoritos.
+ *
+ * @returns {JSX.Element} Página de favoritos o invitación a iniciar sesión.
+ */
 function MisFavoritosPage() {
   const { user, openAuthModal } = useAuth()
   const { favoritos } = useFavoritos()

@@ -13,6 +13,23 @@ function decodeParam(value) {
   }
 }
 
+/**
+ * Crea un enrutador HTTP mínimo con parámetros de ruta (`/api/licitaciones/:id`).
+ * Se usa en lugar de un framework para no agregar dependencias (Decisión 8).
+ *
+ * Reglas:
+ * - La ruta debe coincidir completa; una barra final no coincide.
+ * - Los caracteres especiales del patrón se escapan antes de armar la expresión regular.
+ * - Los parámetros se decodifican; una codificación inválida responde 400.
+ * - `req.params` y `req.query` quedan cargados antes de llamar al manejador.
+ *
+ * @returns {{
+ *   get: (pattern: string, handler: Function) => void,
+ *   register: (method: string, pattern: string, handler: Function) => void,
+ *   handle: (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => Promise<boolean>
+ * }} Enrutador: `get` y `register` agregan rutas; `handle` ejecuta la que coincide
+ *   y devuelve `false` si ninguna coincide (para responder 404).
+ */
 export function createRouter() {
   const routes = []
 

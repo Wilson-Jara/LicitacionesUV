@@ -2,6 +2,14 @@ import { getLicitacionPdfFilename } from './licitacionPdfFilename.js'
 
 const EXPORT_TIMEOUT_MS = 30000
 
+/**
+ * Descarga un PDF en el navegador a partir de su contenido binario, creando un
+ * enlace temporal y liberando el `Blob` al terminar.
+ *
+ * @param {ArrayBuffer} buffer - Contenido binario del PDF generado por el worker.
+ * @param {string} fileName - Nombre con el que se descarga el archivo.
+ * @returns {void}
+ */
 export function descargarBlob(buffer, fileName) {
   const blob = new Blob([buffer], { type: 'application/pdf' })
   const url = URL.createObjectURL(blob)

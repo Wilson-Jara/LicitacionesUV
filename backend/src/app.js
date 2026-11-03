@@ -18,7 +18,24 @@ function applyCors(req, res) {
   return false
 }
 
-// Sin repositorio explícito se usan los datos mock en memoria (pruebas y desarrollo sin BD)
+/**
+ * Arma la aplicación HTTP de la API: aplica CORS, responde el preflight `OPTIONS`,
+ * lee el cuerpo JSON en `POST`/`PUT`/`PATCH`, despacha al enrutador y traduce
+ * los errores a respuestas `{ error: mensaje }`.
+ *
+ * Decisiones no evidentes:
+ * - Un `HttpError` se responde con su código y su mensaje; cualquier otro error
+ *   responde 500 con un mensaje genérico, para no exponer detalles internos
+ *   (el detalle solo se registra con `console.error`).
+ * - El repositorio se recibe por parámetro: sin él se usan los datos de ejemplo
+ *   en memoria, lo que permite probar y desarrollar sin base de datos.
+ *
+ * @param {object} [options]
+ * @param {{list: Function, findById: Function}} [options.licitacionesRepository] -
+ *   Fuente de datos de licitaciones; por defecto, el mock del frontend en memoria.
+ * @returns {(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => Promise<void>}
+ *   Manejador para `http.createServer`.
+ */
 export function createApp({
   licitacionesRepository = createMemoryLicitacionesRepository(loadMockLicitaciones()),
 } = {}) {
