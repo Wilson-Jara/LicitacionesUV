@@ -611,13 +611,13 @@ Es arquitectónicamente significativo porque cumple las **tres señales**:
 
 Recorrido completo del ciclo de configuración sobre el repositorio, con un cambio pequeño: Issue → rama → commit → Pull Request con revisión → merge → tag y Release.
 
-| Artefacto | Enlace |
-| --- | --- |
-| Issue | [#114 · useAuth no avisa cuando se usa fuera de AuthProvider](https://github.com/Wilson-Jara/LicitacionesUV/issues/114) |
-| Rama | `fix/useauth-contexto-nulo` (eliminada tras el merge) |
-| Commit | `fix: useAuth detecta el uso fuera de AuthProvider (#114)` |
-| Pull Request | [#115](https://github.com/Wilson-Jara/LicitacionesUV/pull/115), con revisión y aprobación de otro integrante |
-| Integración en `main` | [#116 · release: v1.0.0](https://github.com/Wilson-Jara/LicitacionesUV/pull/116) |
-| Release | [v1.0.0](https://github.com/Wilson-Jara/LicitacionesUV/releases/tag/v1.0.0) |
+| Artefacto             | Enlace                                                                                                                  |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Issue                 | [#114 · useAuth no avisa cuando se usa fuera de AuthProvider](https://github.com/Wilson-Jara/LicitacionesUV/issues/114) |
+| Rama                  | `fix/useauth-contexto-nulo` (eliminada tras el merge)                                                                   |
+| Commit                | `fix: useAuth detecta el uso fuera de AuthProvider (#114)`                                                              |
+| Pull Request          | [#115](https://github.com/Wilson-Jara/LicitacionesUV/pull/115), con revisión y aprobación de otro integrante            |
+| Integración en `main` | [#116 · release: v1.0.0](https://github.com/Wilson-Jara/LicitacionesUV/pull/116)                                        |
+| Release               | [v1.0.0](https://github.com/Wilson-Jara/LicitacionesUV/releases/tag/v1.0.0)                                             |
 
 **Por qué `v1.0.0`:** es la primera versión publicada del proyecto; desde aquí, una corrección sube el tercer número (`v1.0.1`), una funcionalidad nueva el segundo (`v1.1.0`) y un cambio que rompe compatibilidad el primero (`v2.0.0`).
