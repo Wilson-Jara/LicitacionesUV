@@ -214,6 +214,10 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 - Antes de integrar una API se debe definir el contrato, el manejo de errores, estados de carga y configuración por entorno.
 - No incluir credenciales, tokens, datos personales reales ni valores de `.env` en código, commits o documentación.
 
+El revisor automático `.github/scripts/ai-review.mjs` limita la lectura a 75.000
+caracteres por archivo de contexto y 120.000 caracteres para el diff completo del
+PR. Estos límites se aplican antes de enviar el contenido redactado a DeepSeek.
+
 ## 10. Alcance y privacidad del contexto
 
 Este archivo es un contexto técnico público y debe contener únicamente información útil para comprender y mantener el software.

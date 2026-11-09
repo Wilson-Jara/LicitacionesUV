@@ -40,7 +40,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const MARKER = '<!-- deepseek-ai-review -->'
-const MAX_PATCH_CHARS = 40000
+const MAX_PATCH_CHARS = 120000
 // Contexto del repositorio inyectado al prompt para que la revisión conozca
 // el proyecto completo (trazabilidad, REFs, módulos) y no asuma cosas.
 const REPO_CONTEXT_FILES = [
@@ -50,7 +50,7 @@ const REPO_CONTEXT_FILES = [
   'docs/ReqExtrafuncionales.md',
   'package.json',
 ]
-const MAX_CONTEXT_CHARS = 25000
+const MAX_CONTEXT_CHARS = 75000
 // Archivos cuyo contenido nunca se envía al modelo.
 const SENSITIVE_FILES =
   /(^|\/)(\.env(\..*)?|\.npmrc|\.netrc|id_rsa[\w.-]*|id_ed25519[\w.-]*|secrets?[\w.-]*|.*\.(pem|key|p12|pfx|jks|keystore))$/i
