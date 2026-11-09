@@ -1,6 +1,6 @@
 # Diseño Arquitectónico — LicitacionesUV
 
-> **Estado de los módulos:** están implementados `App`, `Autenticación`, `Licitaciones`, `Favoritos`, `Shared` y la fuente de datos mock. El módulo **Aprobaciones** y el bloque **Configuración** (umbrales y subrogancias) pertenecen al change request **CR-302** y están **planificados: aún no existen en `src/features/`**. Se documentan aquí como diseño objetivo.
+> **Estado vigente:** este repositorio contiene el frontend React, incluidos explorador, estadísticas, favoritos y configuración local de umbrales. La API y PostgreSQL viven en `LicitacionesUV-backend`, con código, catálogo y comprobaciones propios. El frontend todavía usa su mock. Las decisiones anteriores sobre ubicación en `backend/` se conservan como antecedentes, no como rutas actuales. No hay flujo completo de aprobaciones ni subrogancias implementado.
 
 ## 1. Estilo Arquitectónico
 
@@ -37,19 +37,21 @@ flowchart TB
             AP["Aprobaciones (CR-302, planificado)<br/>nivel según monto + aprobador efectivo"]
         end
         Shared["Shared (src/shared)<br/>Navbar y UI común"]
-        Conf["Configuración (CR-302, planificado)<br/>umbrales y subrogancias (datos)"]
+        Conf["Configuración de umbrales local<br/>subrogancias futuras"]
     end
     Datos["Fuente de datos<br/>licitaciones.mock.json<br/>(Fase 2: scraper/API con mismo contrato)"]
 
-    subgraph Backend["Servidor (backend/, Fase 2)"]
+    subgraph Backend["API independiente (LicitacionesUV-backend)"]
         API["API REST con http nativo<br/>GET /api/health, /api/licitaciones, /api/licitaciones/:id"]
-        Seed["Seed<br/>licitaciones.seed.json<br/>(mismo contrato que el mock)"]
+        Seed["Catálogo propio<br/>src/data/licitaciones.mock.json"]
     end
-    API --> Seed
+    PG[(PostgreSQL 16 en repositorio backend)]
+    API --> PG
+    API -.sin DATABASE_URL.-> Seed
 
     Rutas --> L
     Rutas --> F
-    Rutas --> AP
+    Rutas -.flujo futuro.-> AP
     Providers --> A
     A --> Shared
     Shared --> L
@@ -96,20 +98,26 @@ flowchart TB
 - **Ofrece a otros módulos:** componentes comunes sin lógica de dominio.
 - **Depende de:** Autenticación (para mostrar avatar/botón de login según sesión); ningún feature depende de él de forma cíclica.
 
-### Módulo 6: Aprobaciones (`features/aprobaciones`) — CR-302, planificado
+### Módulo 6: Configuración de umbrales y diseño de aprobaciones (`features/aprobaciones`)
 
-- **Estado:** planificado (change request CR-302); aún no existe código en `src/features/aprobaciones`.
+- **Estado:** implementada la configuración local de unidades y umbrales y su simulador. El registro de decisiones y las subrogancias siguen como diseño futuro.
 - **Responsabilidad:** manejar el flujo de aprobación de licitaciones: según el monto y la unidad se determina el nivel que corresponde, se resuelve quién aprueba considerando las subrogancias vigentes y se guarda la decisión.
 - **Ofrece a otros módulos:** una consulta de quién aprueba una licitación y en qué nivel, y el registro de las decisiones tomadas.
 - **Depende de:** Licitaciones (el monto de la licitación), Autenticación (la identidad de quien aprueba) y los datos de configuración (umbrales y subrogancias). No tiene relación con Favoritos.
 
-### Módulo 7: Backend (`backend/`)
+### Backend como servicio independiente
 
-- **Responsabilidad:** exponer la API REST de la Fase 2. En la base actual sirve el estado del servicio (`/api/health`) y el catálogo de licitaciones (`/api/licitaciones`, con filtros opcionales y detalle por `id`), leyendo el seed `licitaciones.seed.json` que replica el contrato del mock del frontend (REF-10).
-- **Ofrece a otros módulos:** endpoints HTTP bajo `/api/*` con JSON, CORS para el dev server de Vite y configuración por entorno (`backend/.env.example`).
-- **Depende de:** solo del runtime Node.js (módulo nativo `node:http`, sin dependencias externas). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
+- **Ubicación:** [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend), fuera de este árbol.
+- **Responsabilidad:** salud, listado filtrado y detalle de licitaciones mediante `node:http`, con PostgreSQL usando `pg` o catálogo propio en memoria sin conexión configurada.
+- **Independencia:** migraciones, seed, instalación, pruebas e integración continua desde su propia raíz; no lee el mock del cliente.
+- **Contrato:** nueve campos compatibles con el cliente. El consumo de la API por React y la importación de Mercado Público son entregas posteriores.
+- **Configuración:** `CORS_ORIGIN` del servidor permite el origen Vite; el cliente todavía no consume `VITE_API_BASE_URL`.
 
 ## 4. Decisiones de Diseño
+
+Las decisiones 8, 11 y 12 conservan su redacción de origen como antecedentes.
+La ubicación actual de API, migraciones y pruebas es el repositorio independiente.
+Las propuestas de autenticación y aprobaciones no se implementan por esta separación.
 
 ### Decisión 1: SPA con datos mock y contrato estable para la Fase 2
 
@@ -146,7 +154,7 @@ flowchart TB
 - **Alternativas consideradas:** Gradle wrapper (no aplica a JavaScript); scripts manuales sueltos (descartados: no reproducibles ni verificables en PR).
 - **Impacto:** tooling del repositorio completo y flujo de PR del equipo (REF-11).
 
-### Decisión 6: Umbrales de aprobación como configuración (CR-302, planificado)
+### Decisión 6: Umbrales de aprobación como configuración (implementados en cliente)
 
 - **Decisión:** los rangos de monto que definen el nivel de aprobación (jefe de unidad, dirección económica, rectoría) se manejan como datos configurables por unidad (entidad UmbralAprobacion), no como constantes en el código.
 - **Motivación:** la regla R4 del CR-302: la normativa cambia y los umbrales se actualizan. Si son datos, se ajustan sin modificar ni volver a desplegar código.
@@ -160,7 +168,7 @@ flowchart TB
 - **Alternativas consideradas:** resolver el aprobador efectivo en cada vista (descartada: se repite la lógica y es difícil de mantener y auditar); guardar la delegación vigente en el cliente (descartada: riesgo de aprobar con un subrogante cuya delegación ya venció).
 - **Impacto:** módulo Aprobaciones (regla de consulta de aprobador), módulo de datos (entidades Delegacion y Aprobacion) y las vistas de bandeja de aprobaciones.
 
-### Decisión 8: Base del backend con `node:http` nativo y sin dependencias
+### Decisión 8 (antecedente anterior a la separación): Base del backend con `node:http` nativo y sin dependencias
 
 - **Decisión:** la base del backend (Fase 2) se implementa con el módulo nativo `node:http` de Node.js 20 (enrutador propio, JSON y CORS a mano), sin dependencias externas, en la carpeta `backend/` con entrada `src/server.js`.
 - **Motivación:** arranque inmediato sin `npm install` (REF-07), alineación con el minimalismo del repositorio y foco de esta entrega en fijar el contrato de la API (REF-10) antes que en un framework. Los endpoints actuales son de solo lectura, por lo que un framework HTTP aún no aporta valor.
@@ -183,7 +191,7 @@ flowchart TB
 - **Alternativas consideradas:** JWT en `localStorage` (descartada: expuesto a XSS y el logout no invalida el token antes de su expiración); JWT en cookie (descartada: requiere `jsonwebtoken` y una lista de revocación para tener logout real, lo que equivale a mantener sesiones); bcrypt (descartada: requiere dependencia nativa, y `scrypt` cumple el mismo propósito).
 - **Impacto:** tabla `sesiones`, endpoints de autenticación, middleware de sesión, `vite.config.js` (proxy), `backend/.env.example` (`JWT_SECRET` se reemplaza por `SESSION_SECRET` si se requiere firmar la cookie) y `AuthProvider` del frontend al migrar a la API.
 
-### Decisión 11: Acceso a PostgreSQL con `pg` y migraciones SQL versionadas
+### Decisión 11 (antecedente; PostgreSQL confirmado para el servicio independiente): Acceso a PostgreSQL con `pg` y migraciones SQL versionadas
 
 - **Estado:** Propuesta (pendiente de aprobación del equipo).
 - **Decisión:** el backend se conecta a PostgreSQL con el driver `pg` y consultas SQL parametrizadas escritas a mano. El esquema se gestiona con archivos `.sql` numerados en `backend/migrations/` (`001_...sql`, `002_...sql`), aplicados en orden por un script propio que registra las migraciones ejecutadas en una tabla de control. Un script de seed carga las licitaciones desde el mock del frontend.
@@ -191,13 +199,13 @@ flowchart TB
 - **Alternativas consideradas:** ORM como Prisma o Sequelize (descartada: varias dependencias y herramienta propia que oculta el SQL); query builder como Knex (descartada: capa adicional que no aporta lo suficiente a este tamaño de proyecto); `node-pg-migrate` (descartada por ahora: el script propio cubre el caso con pocas líneas).
 - **Impacto:** `backend/package.json` (dependencia `pg`), `backend/migrations/`, scripts de migración y seed, `backend/src/` (capa de acceso a datos) y eliminación de `licitaciones.seed.json` cuando los endpoints lean desde la BD.
 
-### Decisión 12: PostgreSQL con Docker Compose en local y servicio en CI
+### Decisión 12: PostgreSQL instalado directamente
 
-- **Estado:** Propuesta (pendiente de aprobación del equipo).
-- **Decisión:** el repositorio incluye un `docker-compose.yml` con `postgres:16` para desarrollo local, y `.github/workflows/verify.yml` declara un servicio `postgres:16` para las pruebas. Las pruebas usan una base separada (`DATABASE_URL_TEST`), distinta de la de desarrollo. Las credenciales del CI son de prueba y desechables; las locales viven solo en `.env`.
-- **Motivación:** todos los integrantes y el CI usan la misma versión y configuración, y `npm run verify` sigue funcionando con un único comando (REF-07). La base de pruebas separada permite que los tests creen y borren datos sin afectar el trabajo local. Los secretos reales no entran al repositorio (REF-03).
-- **Alternativas consideradas:** instalación directa de PostgreSQL en cada equipo (aceptada solo como respaldo para quien no pueda usar Docker, con la misma versión 16); base de datos en la nube compartida (descartada: requiere credenciales compartidas y las pruebas de un integrante afectan a los demás).
-- **Impacto:** `docker-compose.yml`, `.github/workflows/verify.yml`, `backend/.env.example` (`DATABASE_URL` y `DATABASE_URL_TEST` sin valores reales), README (instrucciones de arranque) y configuración de las pruebas del backend.
+- **Estado:** configuración vigente del backend independiente.
+- **Decisión:** PostgreSQL 16 se instala como servicio nativo en desarrollo. El CI del backend usa Ubuntu 24.04, instala el paquete PostgreSQL 16 y prepara su propia base de pruebas.
+- **Separación de datos:** `DATABASE_URL` apunta a desarrollo; `DATABASE_URL_TEST` debe apuntar a una base distinta cuyo nombre termine en `_test`. Las suites crean y eliminan solo sus esquemas temporales.
+- **Configuración:** los valores locales pertenecen al `.env` privado del backend. CI usa socket Unix y autenticación local, sin contraseñas incluidas en el workflow.
+- **Impacto:** README, `docs/PostgreSQL.md`, plantilla pública de variables y workflow del backend; el cliente no administra PostgreSQL.
 
 ### Decisión 13: CR-302 fuera del alcance del #78
 
@@ -220,4 +228,4 @@ flowchart TB
 | REF-15 Confiabilidad        | Aprobaciones (registro de decisiones de aprobación)   | US-09, US-11        |
 | REF-16 Fiabilidad           | Aprobaciones (Decisión 7)                             | US-09, US-11        |
 
-> Las filas REF-14, REF-15 y REF-16 corresponden al change request **CR-302**: el módulo Aprobaciones y el bloque Configuración están **planificados y aún no implementados** en el código. Las HU US-09 a US-11 y sus REF están fuera del alcance de la Fase 1 (ver `README.md`).
+> Las filas REF-14, REF-15 y REF-16 corresponden al change request **CR-302**: la configuración local de umbrales está implementada; el registro de aprobaciones y las subrogancias siguen como diseño futuro. Las HU US-09 a US-11 y sus REF están fuera del alcance de la Fase 1 (ver `README.md`).

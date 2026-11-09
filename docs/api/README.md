@@ -1,6 +1,6 @@
 # Documentación de la API — LicitacionesUV
 
-API REST del backend (`backend/`), implementada con el módulo nativo `node:http` de Node.js. Devuelve las licitaciones con el mismo contrato de datos que el mock del frontend (REF-10).
+Contratos de la API del [backend independiente](https://github.com/Wilson-Jara/LicitacionesUV-backend), implementada con el módulo nativo `node:http` de Node.js. Devuelve las licitaciones con el mismo contrato de datos que el mock del frontend (REF-10).
 
 ## APIs del Entregable 2
 
@@ -11,12 +11,16 @@ API REST del backend (`backend/`), implementada con el módulo nativo `node:http
 
 ## Cómo levantar la API
 
+Ejecutar desde la raíz de `LicitacionesUV-backend`:
+
 ```bash
-cd backend
+npm ci
 npm start
 ```
 
-La API queda en `http://localhost:3000`. No necesita base de datos: sin `DATABASE_URL` usa los datos de ejemplo del frontend.
+La API queda en `http://localhost:3000`. Sin `DATABASE_URL` usa su catálogo propio
+en memoria. Para PostgreSQL, seguir la instalación y `db:setup` del README del
+backend independiente. Este frontend no contiene el servidor.
 
 ## Cómo ejecutar las pruebas con Thunder Client
 
