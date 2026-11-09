@@ -4,6 +4,8 @@ Plataforma web desarrollada en **React + Vite** diseñada para centralizar, filt
 
 > 🤖 **Para asistentes de IA:** reglas obligatorias de trabajo en [`AGENTS.md`](AGENTS.md) y contexto técnico en [`docs/AI_context.md`](docs/AI_context.md).
 
+Este repositorio contiene el frontend. La API y PostgreSQL viven en [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend). La separación y sus verificaciones están documentadas en [Separación del backend](docs/separacion-backend.md).
+
 ---
 
 ## 📌 Descripción del sistema
@@ -273,6 +275,22 @@ npm run build        # compilación y empaquetado con Vite
 ```bash
 npm run dev
 ```
+
+### Ejecutar frontend y backend por separado
+
+Desde esta raíz, `npm ci` y `npm run dev` inician el frontend. Sus pruebas,
+compilación y cobertura son independientes de la API y no requieren PostgreSQL.
+
+Desde la raíz de `LicitacionesUV-backend`, `npm ci` y `npm start` sirven la API
+con su catálogo propio en memoria. Para persistencia PostgreSQL, una persona
+instala e inicia PostgreSQL 16 directamente, configura la conexión local y ejecuta
+`npm run db:setup` antes del servidor. Consultar la
+[guía del backend](https://github.com/Wilson-Jara/LicitacionesUV-backend).
+
+El frontend todavía usa `licitaciones.mock.json`; no realiza llamadas a la API.
+`VITE_API_BASE_URL` queda documentada para una integración posterior. El backend
+permite por defecto el origen Vite `http://localhost:5173` mediante `CORS_ORIGIN`.
+La integración con Mercado Público tampoco forma parte de esta separación.
 
 ### Variables de entorno
 

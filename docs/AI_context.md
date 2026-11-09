@@ -13,23 +13,21 @@
 
 ## 2. Estado verificado
 
-Revisión realizada el 27 de octubre de 2026:
+Revisión local del 8 de noviembre de 2026 tras separar la API:
 
-- `npm run lint`: pasa sin errores; permanece una advertencia de dependencias de `useMemo` en `LicitacionesExplorerPage.jsx`.
-- `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros y ordenamiento por fecha/monto, distribuciones de estadísticas y contratos de la API del backend. Las pruebas de integración con PostgreSQL se omiten sin `DATABASE_URL_TEST` y se ejecutan en CI con una base de pruebas.
-- `npm run format:check`: pasa con formato consistente Prettier.
-- `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
-- `npm run test:coverage`: pasa los umbrales con 97,08 % de líneas, 90,94 % de ramas y 98,84 % de funciones en los módulos JavaScript medidos; los componentes JSX quedan fuera de esa medición.
-- `npm run test:coverage:critico`: 20 pruebas aprobadas y 100 % de líneas, ramas y funciones en `licitacionUtils.js`.
-- Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`, con un servicio `postgres:16` para las pruebas de integración del backend.
-- Asignación automática de revisores en Pull Requests mediante `.github/CODEOWNERS`, complementaria a la protección de ramas (al menos 1 aprobación de un par).
+- Este repositorio contiene solo el frontend; `backend/` se retiró.
+- `npm run test` ejecuta las 121 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
+- El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
+- Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
+- `npm run verify` pasa tras retirar el backend: lint, formato, 121 pruebas y build. La cobertura propia del cliente es 99,13 % líneas, 90,67 % ramas y 99,06 % funciones; la crítica pasa con 100 % en las tres métricas. Son resultados locales, no del CI remoto.
+
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Configuración de umbrales de aprobación por unidad con `UmbralesProvider` y hook `useUmbrales`, persistida en `localStorage` como datos editables (REF-14).
 - Router con navegación interna (`react-router-dom` v7).
 - Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
-- Backend base en `backend/`: API REST con el módulo nativo `node:http` y PostgreSQL mediante `pg`, endpoints de salud y licitaciones con el mismo contrato del mock (REF-10), configuración por entorno y pruebas con `node --test` cubiertas por `npm run test` desde la raíz.
+- La API vive en el repositorio independiente `LicitacionesUV-backend`: PostgreSQL mediante `pg`, catálogo ficticio propio, migraciones, pruebas y CI propios. El cliente no importa ni lee sus archivos.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
@@ -77,15 +75,10 @@ Revisión realizada el 27 de octubre de 2026:
   - Los umbrales son **datos configurables**, no constantes del código (CA2, regla R4 / REF-14): el punto de partida vive en `umbralesIniciales.js` y la configuración vigente se persiste en `localStorage` (clave `licitacionesuv-umbrales`).
   - El rango de cada umbral es `[montoMinimo, montoMaximo)`: el mínimo es inclusivo, el máximo es exclusivo y `null` en el máximo significa «sin tope». La validación impide montos negativos, rangos invertidos y solapamientos dentro de una unidad.
   - Un simulador consulta el nivel aprobador que corresponde a un monto con la configuración vigente y se recalcula de inmediato al editar, sin recargar la página ni volver a desplegar (CA3).
-- **Backend (base Fase 2):**
-  - Servidor HTTP con el módulo nativo `node:http` (sin dependencias): entrada `backend/src/server.js`, composición en `backend/src/app.js` (CORS, parseo JSON, enrutamiento y manejo de errores) y enrutador propio con parámetros de ruta en `backend/src/lib/router.js`.
-  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword` solo sobre el título y sin espacios externos, `region` y `tipo`; todos sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
-  - Manejo de errores: cuerpo JSON inválido o `:id` mal codificado responden 400, cuerpos de más de 1 MB responden 413 y los errores 5xx devuelven un mensaje genérico (el detalle solo se registra con `console.error`).
-  - El detalle de licitación comprueba con `assert.equal` que el identificador devuelto por el repositorio coincide con el solicitado; si se rompe esta invariante interna, responde 500 con el mensaje genérico de error. Una prueba en `backend/tests/licitaciones.test.js` inyecta un repositorio falso que devuelve otro identificador y verifica el código 500 y el cuerpo genérico completo.
-  - Datos de licitaciones mediante un repositorio (`backend/src/data/licitaciones.repository.js`): PostgreSQL cuando existe `DATABASE_URL` y, si no, el mock del frontend en memoria, con el mismo contrato y los mismos filtros en ambos casos (REF-10). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
-  - Esquema PostgreSQL con migraciones SQL numeradas en `backend/migrations/` (las 8 entidades del dominio y el catálogo de regiones), aplicadas con `npm run db:migrate` y registradas en `schema_migrations`; `npm run db:seed` carga las licitaciones desde el mock. Las tablas de CR-302 existen sin endpoints.
-  - PostgreSQL 16 local con `docker-compose.yml` (raíz), que también crea la base de pruebas `licitaciones_test`.
-  - CORS habilitado para el dev server de Vite y configuración por entorno en `backend/.env.example` (`PORT`, `CORS_ORIGIN`, `DATABASE_URL`, `DATABASE_URL_TEST` y `JWT_SECRET` reservada).
+- **Límite con el backend independiente:**
+  - La API expone salud, listado filtrado y detalle con el mismo contrato de nueve campos. Usa PostgreSQL con conexión configurada y catálogo propio en memoria sin ella.
+  - Las migraciones, el seed y las pruebas de integración se administran desde la raíz de `LicitacionesUV-backend`.
+  - El frontend conserva su mock local y no consume `VITE_API_BASE_URL`. El consumo HTTP, la autenticación real y Mercado Público no se implementaron en esta separación.
 
 ## 4. Arquitectura y flujo de entrada
 
@@ -95,7 +88,7 @@ Revisión realizada el 27 de octubre de 2026:
 4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/configuracion/umbrales`, 404).
 5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
 6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
-7. `backend/src/server.js` inicia el servidor HTTP de la API (por defecto en `http://localhost:3000`); el frontend todavía lee el mock local y la migración a la API corresponde a una entrega posterior.
+7. La API se inicia desde el repositorio independiente, por defecto en `http://localhost:3000`. El frontend Vite usa `http://localhost:5173` y conserva sus datos locales.
 
 ## 5. Inventario de archivos relevantes
 
@@ -165,22 +158,6 @@ Revisión realizada el 27 de octubre de 2026:
 | `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                                 |
 | `.github/CODEOWNERS`                                               | Asigna automáticamente los revisores de cada PR según el área modificada.                                |
 | `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                               |
-| `backend/package.json`                                             | Dependencia `pg` y scripts del backend (`dev`, `start`, `test`, `db:migrate`, `db:seed`).                |
-| `backend/src/server.js`                                            | Punto de entrada del servidor HTTP de la API.                                                            |
-| `backend/src/app.js`                                               | Composición de la API: CORS, parseo JSON, enrutamiento y manejo de errores.                              |
-| `backend/src/lib/router.js`                                        | Enrutador HTTP propio con parámetros de ruta (`:id`).                                                    |
-| `backend/src/lib/http.js`                                          | Helpers de respuesta JSON, lectura de cuerpo y errores HTTP.                                             |
-| `backend/src/config/env.js`                                        | Configuración por entorno con carga de `backend/.env`.                                                   |
-| `backend/src/routes/health.routes.js`                              | Endpoint `GET /api/health`.                                                                              |
-| `backend/src/routes/licitaciones.routes.js`                        | Endpoints de listado y detalle de licitaciones.                                                          |
-| `backend/src/data/licitaciones.repository.js`                      | Repositorios de licitaciones (memoria y PostgreSQL) con el contrato del mock.                            |
-| `backend/src/data/mockLicitaciones.js`                             | Carga del mock del frontend como datos de ejemplo del backend.                                           |
-| `backend/src/db/`                                                  | Conexión (`pool.js`), migraciones (`migrator.js`) y carga del seed (`seed.js`).                          |
-| `backend/migrations/*.sql`                                         | Migraciones SQL numeradas del esquema PostgreSQL.                                                        |
-| `backend/scripts/`                                                 | Scripts `db:migrate` y `db:seed`.                                                                        |
-| `backend/db/init/`                                                 | Script de inicio del contenedor que crea la base de pruebas.                                             |
-| `docker-compose.yml`                                               | PostgreSQL 16 para desarrollo local.                                                                     |
-| `backend/tests/*.test.js`                                          | Pruebas de la API con `node --test`.                                                                     |
 | `docs/api/*.md`                                                    | Documentación de las APIs del Entregable 2 (#43 y #44) y su trazabilidad con los CA.                     |
 | `docs/thunder-client/*.json`                                       | Colecciones exportadas de Thunder Client con los casos de prueba de cada API.                            |
 
@@ -196,7 +173,7 @@ Revisión realizada el 27 de octubre de 2026:
 - ESLint `10.8.1`.
 - Prettier `3.9.6`.
 - Módulos ES habilitados mediante `"type": "module"`.
-- Backend: Node.js con el módulo nativo `node:http` y `pg` `8.23.1` como única dependencia (driver de PostgreSQL); PostgreSQL 16; la configuración ESLint declara `globals.node` para `backend/**`.
+- PostgreSQL y el driver `pg` pertenecen al backend independiente; no son dependencias de este cliente.
 
 ## 7. Comandos de desarrollo
 
@@ -212,17 +189,9 @@ npm run verify
 npm run preview
 ```
 
-Backend (desde la carpeta `backend/`):
-
-```bash
-npm run dev   # servidor con recarga automática (node --watch)
-npm start     # servidor
-npm test      # pruebas de la API (también cubiertas por npm run verify desde la raíz)
-npm run db:migrate  # aplica las migraciones pendientes (requiere DATABASE_URL)
-npm run db:seed     # carga las licitaciones del mock en la base
-```
-
-PostgreSQL local (desde la raíz, con las variables `POSTGRES_*` en `.env`): `docker compose up -d`.
+Los comandos de API, migraciones y seed se ejecutan desde la raíz del
+repositorio independiente y se describen en su README. No se ejecutan desde este
+proyecto. El backend no necesita un build de Vite.
 
 ## 8. Convenciones observadas
 
@@ -240,7 +209,7 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 ## 9. Variables de entorno y seguridad
 
 - `.env` y otros archivos de entorno están excluidos por `.gitignore`.
-- `.env.example` (raíz) define `VITE_API_BASE_URL` (el frontend aún no la consume); `backend/.env.example` define `PORT` y `CORS_ORIGIN` y documenta, comentadas, `DATABASE_URL` (sin ella la API usa el mock), `DATABASE_URL_TEST` (debe terminar en `_test`) y `JWT_SECRET` (reservada). El `.env.example` raíz documenta además `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` y `POSTGRES_PORT` para Docker Compose.
+- `.env.example` documenta únicamente `VITE_API_BASE_URL` para una integración posterior. Las variables PostgreSQL y del servidor se documentan en el backend independiente; no se trasladan archivos `.env` reales.
 - Las variables con prefijo `VITE_` quedan expuestas al cliente al compilar; nunca colocar secretos allí.
 - Antes de integrar una API se debe definir el contrato, el manejo de errores, estados de carga y configuración por entorno.
 - No incluir credenciales, tokens, datos personales reales ni valores de `.env` en código, commits o documentación.
@@ -307,6 +276,7 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 
 ## 13. Documentación relacionada
 
+- `docs/separacion-backend.md` describe los límites de ambos repositorios y las verificaciones de separación. La API independiente usa PostgreSQL; el principal contiene solo el cliente y no lo consume todavía.
 - `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
