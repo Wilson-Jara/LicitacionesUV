@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es-CL" data-theme="claro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Iniciar sesión · Licitaciones UV</title>
+    <link rel="stylesheet" href="estilos.css" />
+    <script src="demo.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="site-header">
+      <div class="frame header-inner">
+        <a class="brand" href="index.html" aria-label="Licitaciones UV, inicio">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="currentColor" />
+            <path d="M9 10h14M9 16h14M9 22h8" stroke="var(--mark-ink)" stroke-width="2" />
+          </svg>
+          Licitaciones UV
+        </a>
+        <nav class="main-nav" aria-label="Navegación principal">
+          <a href="index.html">Explorar</a>
+          <a href="acceso.html" aria-current="page">Iniciar sesión</a>
+        </nav>
+        <button class="theme-button" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.9 13.4A9 9 0 0 1 10.6 3.1a9 9 0 1 0 10.3 10.3Z" />
+          </svg>
+          <span>Tema oscuro</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="frame access-layout" id="contenido" tabindex="-1">
+      <section class="access-form-wrap" aria-labelledby="access-title">
+        <h1 id="access-title">Iniciar sesión</h1>
+        <p class="access-note" id="access-note">
+          <strong>Sesión simulada.</strong> Usa los datos de ejemplo para probar el acceso.
+        </p>
+        <form id="access-form" aria-describedby="access-note">
+          <div class="field">
+            <label for="email">Correo electrónico</label>
+            <input id="email" type="email" placeholder="demo@ejemplo.cl" autocomplete="off" required />
+          </div>
+          <div class="field">
+            <label for="password">Contraseña</label>
+            <div class="password-field">
+              <input id="password" type="password" autocomplete="off" required />
+              <button class="text-button password-toggle" type="button" aria-controls="password">Mostrar</button>
+            </div>
+          </div>
+          <button class="button button-primary" type="submit">Iniciar sesión de prueba</button>
+          <button class="text-button fill-demo" type="button">Rellenar con datos de ejemplo</button>
+          <p class="access-status" role="status"></p>
+        </form>
+      </section>
+      <aside class="access-intro">
+        <div class="file-mark" aria-hidden="true"><span></span></div>
+        <p class="access-statement">Retoma donde quedaste<span>.</span></p>
+        <p class="access-description">Inicia sesión para consultar tus licitaciones guardadas.</p>
+      </aside>
+    </main>
+  </body>
+</html>

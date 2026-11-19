@@ -49,11 +49,10 @@ export function buildLicitacionPdf(licitacion) {
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(18)
-  doc.setTextColor(14, 27, 56)
+  doc.setTextColor(96, 52, 137)
   doc.text('Resumen de licitación', MARGIN_MM, 24)
 
   doc.setFontSize(15)
-  doc.setTextColor(14, 27, 56)
   let y = 36
   for (let i = 0; i < titleLines.length; i += 1) {
     doc.text(titleLines[i], MARGIN_MM, y)
@@ -68,7 +67,7 @@ export function buildLicitacionPdf(licitacion) {
 
   y = addDataRow(doc, y, 'Identificador', licitacion.id)
   y = addDataRow(doc, y, 'Organismo licitante', institution)
-  y = addDataRow(doc, y, 'Cierre de postulación', formatLicitacionDate(closingDate))
+  y = addDataRow(doc, y, 'Fecha de cierre', formatLicitacionDate(closingDate))
   y = addDataRow(
     doc,
     y,
@@ -81,9 +80,9 @@ export function buildLicitacionPdf(licitacion) {
 
   doc.setFont('helvetica', 'italic')
   doc.setFontSize(8)
-  doc.setTextColor(140, 140, 140)
+  doc.setTextColor(97, 89, 100)
   doc.text(
-    'Resumen generado por LicitacionesUV. Consulte las bases oficiales para mayor detalle.',
+    'Resumen generado por Licitaciones UV. Consulte las bases oficiales para mayor detalle.',
     MARGIN_MM,
     doc.internal.pageSize.getHeight() - 15,
   )

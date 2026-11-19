@@ -1,127 +1,54 @@
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../../auth/hooks/useAuth'
-import { useFavoritos } from '../../favoritos/hooks/useFavoritos'
+import { Link, useLocation } from 'react-router-dom'
+import FavoritoButton from './FavoritoButton.jsx'
 import {
   formatLicitacionAmount,
   formatLicitacionDate,
   getRegionLabel,
+  getTypeLabel,
   isLicitacionCerrada,
 } from '../licitacionUtils.js'
 import './LicitacionCard.css'
 
-/**
- * Tarjeta de una licitación en el listado: tipo, región, título, institución,
- * fecha de cierre y monto en formato chileno, con enlace al detalle.
- *
- * Reglas del botón de favorito:
- * - Sin sesión, en vez de guardar abre el modal de acceso (REF-02).
- * - Una licitación cerrada no se puede guardar (botón desactivado, texto "Cerrada"),
- *   pero si ya estaba guardada se puede quitar.
- *
- * @param {object} props
- * @param {object} props.licitacion - Licitación con el contrato de datos (REF-10):
- *   `id`, `title`, `amount`, `currency`, `institution`, `closingDate`, `type` y `region`.
- * @returns {JSX.Element}
- */
-export function LicitacionCard({ licitacion }) {
+export function LicitacionCard({ licitacion, onRemove }) {
   const { id, title, amount, currency, institution, closingDate, type, region } = licitacion
-  const { user, openAuthModal } = useAuth()
-  const { isFavorito, agregarFavorito, quitarFavorito } = useFavoritos()
-  const guardado = isFavorito(id)
+  const { pathname, search } = useLocation()
   const cerrada = isLicitacionCerrada(closingDate)
-  const formattedAmount = formatLicitacionAmount(amount, currency)
-  const formattedDate = formatLicitacionDate(closingDate)
-
-  const isPublica = type === 'publica'
-  const regionLabel = getRegionLabel(region)
-
-  // CA1 (REF-02): sin sesión no se guarda; se abre el modal de autenticación
-  const handleToggleFavorito = () => {
-    if (cerrada && !guardado) return
-    if (!user) {
-      openAuthModal()
-      return
-    }
-    if (guardado) {
-      quitarFavorito(id)
-    } else {
-      agregarFavorito(licitacion)
-    }
-  }
 
   return (
     <article className="licitacion-card">
-      <header className="licitacion-card-header">
-        <div className="licitacion-badges-row">
-          <span className={`licitacion-badge ${isPublica ? 'publica' : 'privada'}`}>
-            <span className="badge-dot" aria-hidden="true"></span>
-            {isPublica ? 'Licitación Pública' : 'Licitación Privada'}
-          </span>
-          {regionLabel && <span className="licitacion-region-badge">{regionLabel}</span>}
-        </div>
-        <h3 className="licitacion-title">
-          <Link className="licitacion-title-link" to={`/licitaciones/${id}`}>
+      <div className="licitacion-card-heading">
+        <p className="licitacion-card-meta">
+          <strong>{getTypeLabel(type)}</strong>
+          <span>{getRegionLabel(region)}</span>
+        </p>
+        <h3>
+          <Link
+            to={'/licitaciones/' + id}
+            state={{ explorerSearch: pathname === '/licitaciones' ? search : '' }}
+          >
             {title}
           </Link>
         </h3>
-      </header>
-
-      <div className="licitacion-details">
-        <div className="licitacion-detail-item">
-          <span className="licitacion-detail-label">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
-              <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
-            </svg>
-            Institución
-          </span>
-          <span className="licitacion-detail-value">{institution}</span>
-        </div>
-
-        <div className="licitacion-detail-item">
-          <span className="licitacion-detail-label">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
-              <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
-            </svg>
-            Fecha de Cierre
-          </span>
-          <span className="licitacion-detail-value">{formattedDate}</span>
-        </div>
-
-        <div className="licitacion-detail-item">
-          <span className="licitacion-detail-label">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
-              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
-            </svg>
-            Monto Estimado
-          </span>
-          <span className="licitacion-detail-value amount">{formattedAmount}</span>
-        </div>
+        <p className="licitacion-institution">{institution}</p>
       </div>
-
-      <div className="licitacion-card-footer">
-        <div className="licitacion-card-actions">
-          <button
-            type="button"
-            className={`btn-card-favorite ${guardado ? 'is-saved' : ''}`}
-            onClick={handleToggleFavorito}
-            disabled={cerrada && !guardado}
-            aria-pressed={guardado}
-            title={cerrada && !guardado ? 'Licitación cerrada' : undefined}
-          >
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-            <span>{cerrada && !guardado ? 'Cerrada' : guardado ? 'Quitar' : 'Guardar'}</span>
-          </button>
-
-          <Link className="btn-card-action" to={`/licitaciones/${id}`}>
-            <span>Ver detalle</span>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-            </svg>
-          </Link>
+      <dl className="licitacion-card-data">
+        <div>
+          <dt>Cierre</dt>
+          <dd>
+            <time dateTime={closingDate}>{formatLicitacionDate(closingDate)}</time>
+          </dd>
         </div>
+        <div>
+          <dt>Monto estimado</dt>
+          <dd>{formatLicitacionAmount(amount, currency)}</dd>
+        </div>
+      </dl>
+      <div className="licitacion-card-actions">
+        <span className="licitacion-status" data-closed={cerrada}>
+          {cerrada ? 'Cerrada' : 'Vigente'}
+        </span>
+        <FavoritoButton licitacion={licitacion} compact onRemove={onRemove} />
       </div>
     </article>
   )
@@ -138,4 +65,5 @@ LicitacionCard.propTypes = {
     type: PropTypes.string.isRequired,
     region: PropTypes.string,
   }).isRequired,
+  onRemove: PropTypes.func,
 }

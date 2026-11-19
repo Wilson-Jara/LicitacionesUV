@@ -1,264 +1,235 @@
-.licitaciones-explorer {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 0 32px 56px;
-  box-sizing: border-box;
+.explore-hero {
+  color: var(--hero-ink);
+  background: var(--hero);
+  --border-focus: var(--hero-focus);
 }
 
-/* ========================================================
-   HERO HEADER INSTITUCIONAL UV
-   ======================================================== */
-.licitaciones-hero {
-  background: var(--hero-gradient);
-  border-bottom: 1px solid var(--border);
-  padding: 44px 16px 36px;
-  margin: 0 -32px 28px;
-  text-align: center;
+.hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 20rem);
+  align-items: end;
+  gap: 2.5rem;
+  padding-block: 3.25rem;
 }
 
-.hero-content {
-  max-width: 820px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.hero-main h1 {
+  color: var(--hero-ink);
+  font-size: clamp(2.5rem, 1.65rem + 3.4vw, 4.7rem);
 }
 
-.hero-overline {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 1.2px;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-}
-
-.hero-title {
-  margin: 0 0 12px;
-  font-size: 34px;
-  font-weight: 800;
+.hero-main h1 span {
   color: var(--primary);
-  letter-spacing: -0.6px;
 }
 
 .hero-description {
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--text-muted);
-  max-width: 640px;
-  margin: 0;
+  margin-top: 0.7rem;
+  color: var(--hero-muted);
+  font-size: 1.125rem;
 }
 
-.hero-kpis {
-  display: flex;
+.search-form {
+  max-width: 37rem;
+  margin-top: 1.5rem;
+}
+
+.search-form > label,
+.sort-control label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 650;
+}
+
+.search-field {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: center;
-  gap: 24px;
-  margin-top: 24px;
-  background: var(--card-bg);
-  padding: 10px 24px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 6px rgba(14, 27, 56, 0.04);
-}
-
-.hero-kpi-item {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.kpi-val {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--primary);
-}
-
-.kpi-lbl {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.hero-kpi-divider {
-  width: 1px;
-  height: 16px;
-  background: var(--border);
-}
-
-/* ========================================================
-   BARRA DE RESUMEN Y BOTÓN MÓVIL
-   ======================================================== */
-.licitaciones-results-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto 20px;
-  width: 100%;
-}
-
-.results-counter {
-  font-size: 13.5px;
+  gap: 0.5rem;
+  min-height: 3.6rem;
+  padding: 0.3rem 0.3rem 0.3rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.65rem;
   color: var(--text);
+  background: var(--card-bg);
 }
 
-.results-counter strong {
-  color: var(--primary);
-  font-weight: 700;
+.search-field:focus-within {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 3px;
 }
 
-.results-actions {
+.search-field input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.15rem;
+  border: 0;
+  outline: none;
+}
+
+.search-field svg,
+.demo-note svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+}
+
+.query-examples {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+  color: var(--hero-muted);
+  font-size: 0.9375rem;
+}
+
+.query-chip {
+  min-height: 2rem;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 1.5rem;
+  color: var(--hero-ink);
+  background: transparent;
+  line-height: 1.25;
+}
+
+.query-chip:hover {
+  background: var(--accent-bg);
+}
+
+.query-chip[aria-pressed='true'] {
+  color: var(--highlight-ink);
+  background: var(--highlight);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .query-chip[aria-pressed='true'] {
+    animation: query-selected 210ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes query-selected {
+    from {
+      transform: translateY(-2px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
+.hero-side {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.hero-side .file-mark {
+  justify-self: center;
+}
+
+.demo-note {
+  display: flex;
+  gap: 0.7rem;
+  padding: 1rem;
+  border-radius: 0.65rem;
+  background: var(--accent-bg);
+}
+
+.demo-note svg {
+  margin-top: 0.1rem;
+  color: var(--primary);
+}
+
+.demo-note h2 {
+  color: var(--hero-ink);
+  font-size: 1rem;
+}
+
+.demo-note p {
+  margin-top: 0.25rem;
+  color: var(--hero-muted);
+}
+
+.catalog {
+  display: grid;
+  grid-template-columns: minmax(10.5rem, 13.75rem) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  padding-block: 2.25rem 4rem;
+}
+
+.results-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.65rem 1.2rem;
+  padding-bottom: 1rem;
+}
+
+.results-header h2 {
+  font-family: var(--display);
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.results-header p {
+  margin-top: 0.2rem;
+  color: var(--text);
 }
 
 .sort-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sort-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.sort-select {
-  padding: 8px 12px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--text);
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.sort-select:hover {
-  border-color: var(--text-muted);
-}
-
-.sort-select:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  width: min(100%, 15.5rem);
 }
 
 .mobile-filter-toggle {
   display: none;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--primary);
-  cursor: pointer;
-  transition: all 0.2s;
 }
 
-.mobile-filter-toggle:hover {
-  background: var(--surface-soft);
-  border-color: var(--text-muted);
-}
-
-.mobile-filter-badge {
-  background: var(--primary);
-  color: var(--primary-contrast);
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 999px;
-}
-
-/* ========================================================
-   LAYOUT DE EXPLORACIÓN
-   ======================================================== */
-.licitaciones-layout {
-  display: flex;
-  gap: 28px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-  align-items: flex-start;
-}
-
-.filter-sidebar-wrapper {
-  flex-shrink: 0;
-  width: 300px;
-  position: sticky;
-  top: 88px;
-}
-
-.licitaciones-content {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Responsive */
-@media (max-width: 840px) {
-  .licitaciones-explorer {
-    padding: 0 16px 40px;
+@media (max-width: 45rem) {
+  .hero-inner,
+  .catalog {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
   }
 
-  .licitaciones-hero {
-    margin: 0 -16px 20px;
-    padding: 32px 16px 24px;
+  .hero-inner,
+  .catalog {
+    padding-block-start: 1.3rem;
   }
 
-  .hero-title {
-    font-size: 26px;
+  .hero-inner {
+    padding-block-end: 1.3rem;
   }
 
-  .hero-kpis {
-    gap: 14px;
-    padding: 8px 16px;
+  .hero-main h1 {
+    font-size: clamp(2rem, 1.35rem + 4.2vw, 3.2rem);
+  }
+
+  .hero-description {
+    font-size: 1rem;
+  }
+
+  .search-form {
+    margin-top: 1rem;
+  }
+
+  .search-field .button {
+    padding-inline: 0.65rem;
+  }
+
+  .query-examples > span,
+  .hero-side .file-mark,
+  #filter-sidebar-wrapper:not(.filters-open) {
+    display: none;
   }
 
   .mobile-filter-toggle {
     display: inline-flex;
+    justify-content: start;
   }
 
-  .licitaciones-results-bar {
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .results-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .sort-control {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .sort-select {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .licitaciones-layout {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .filter-sidebar-wrapper {
-    width: 100%;
-    position: static;
-    display: none;
-  }
-
-  .filter-sidebar-wrapper.mobile-open {
-    display: block;
+  .demo-note {
+    padding: 0.75rem;
   }
 }

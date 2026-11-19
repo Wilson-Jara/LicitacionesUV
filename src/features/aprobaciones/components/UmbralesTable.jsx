@@ -37,45 +37,54 @@ export function UmbralesTable({ unidades, onEditar, onEliminar, onEliminarUnidad
           {unidad.umbrales.length === 0 ? (
             <p className="umbrales-vacio">Sin umbrales configurados para esta unidad.</p>
           ) : (
-            <table className="umbrales-tabla" aria-label={`Umbrales de ${unidad.nombre}`}>
-              <thead>
-                <tr>
-                  <th scope="col">Rango de monto</th>
-                  <th scope="col">Nivel aprobador</th>
-                  <th scope="col">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {unidad.umbrales.map((umbral) => (
-                  <tr key={umbral.id}>
-                    <td className="umbrales-tabla__rango">{formatRangoUmbral(umbral)}</td>
-                    <td>
-                      <span className={`nivel-badge nivel-badge--${umbral.nivelAprobador}`}>
-                        {getNivelAprobadorLabel(umbral.nivelAprobador)}
-                      </span>
-                    </td>
-                    <td className="umbrales-tabla__acciones">
-                      <button
-                        type="button"
-                        className="umbral-btn"
-                        onClick={() => onEditar(unidad.id, umbral)}
-                        aria-label={`Editar umbral ${formatRangoUmbral(umbral)} de ${unidad.nombre}`}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        className="umbral-btn umbral-btn--danger"
-                        onClick={() => onEliminar(unidad.id, umbral)}
-                        aria-label={`Eliminar umbral ${formatRangoUmbral(umbral)} de ${unidad.nombre}`}
-                      >
-                        Eliminar
-                      </button>
-                    </td>
+            <div
+              className="umbrales-tabla-scroll"
+              tabIndex={0}
+              role="region"
+              aria-label={`Tabla de umbrales de ${unidad.nombre}`}
+            >
+              <table className="umbrales-tabla" aria-label={`Umbrales de ${unidad.nombre}`}>
+                <thead>
+                  <tr>
+                    <th scope="col">Rango de monto</th>
+                    <th scope="col">Nivel aprobador</th>
+                    <th scope="col">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {unidad.umbrales.map((umbral) => (
+                    <tr key={umbral.id}>
+                      <td className="umbrales-tabla__rango">{formatRangoUmbral(umbral)}</td>
+                      <td>
+                        <span className={`nivel-badge nivel-badge--${umbral.nivelAprobador}`}>
+                          {getNivelAprobadorLabel(umbral.nivelAprobador)}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="umbrales-tabla__acciones">
+                          <button
+                            type="button"
+                            className="umbral-btn"
+                            onClick={() => onEditar(unidad.id, umbral)}
+                            aria-label={`Editar umbral ${formatRangoUmbral(umbral)} de ${unidad.nombre}`}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            className="umbral-btn umbral-btn--danger"
+                            onClick={() => onEliminar(unidad.id, umbral)}
+                            aria-label={`Eliminar umbral ${formatRangoUmbral(umbral)} de ${unidad.nombre}`}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
       ))}

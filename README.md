@@ -162,6 +162,8 @@ erDiagram
 
 ## 🖼️ Mockups
 
+La [referencia visual de Licitaciones UV](docs/mockups/frontend-redesign/README.md) documenta el explorador y el acceso en temas claro y oscuro. La [implementación en React](docs/mockups/frontend-redesign/implementacion.md) reúne capturas de todas las rutas y los resultados de verificación.
+
 Los mockups de aprobaciones (CR-302) son prototipos HTML de baja fidelidad: se abren directamente en el navegador desde [`docs/mockups/`](docs/mockups/).
 
 | Mockup                                      | Archivo                                                                                                        | Historia de usuario relacionada |

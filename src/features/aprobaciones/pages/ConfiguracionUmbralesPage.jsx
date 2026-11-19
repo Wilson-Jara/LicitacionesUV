@@ -103,13 +103,10 @@ function ConfiguracionUmbralesPage() {
   }
 
   return (
-    <section className="config-umbrales">
-      <div className="config-umbrales__overline">Configuración del flujo · R2 y R4</div>
-      <h1 className="config-umbrales__title">Umbrales de aprobación por unidad</h1>
+    <section className="frame config-umbrales" aria-labelledby="umbrales-title">
+      <h1 id="umbrales-title">Umbrales de aprobación por unidad</h1>
       <p className="config-umbrales__subtitle">
-        La normativa de aprobación se gestiona aquí como datos configurables: cada unidad define sus
-        propios rangos de monto y su nivel aprobador. Actualizar estos valores no requiere modificar
-        el código ni volver a desplegar el sistema (REF-14).
+        Define los rangos de monto y el nivel de aprobación para cada unidad.
       </p>
 
       <p className="config-umbrales__status" role="status" aria-live="polite">
@@ -141,7 +138,7 @@ function ConfiguracionUmbralesPage() {
                 className="umbral-btn umbral-btn--primary"
                 onClick={() => setMostrarUnidadForm(true)}
               >
-                + Agregar unidad
+                Agregar unidad
               </button>
             )}
           </div>
@@ -162,10 +159,9 @@ function ConfiguracionUmbralesPage() {
           </div>
 
           <div className="config-umbrales__panel">
-            <h2 className="config-umbrales__panel-title">Resolución inmediata</h2>
+            <h2 className="config-umbrales__panel-title">Simular aprobación</h2>
             <p className="config-umbrales__hint">
-              Consulta qué nivel aprueba un monto con la configuración vigente. El resultado cambia
-              al instante cuando editas un umbral, sin recargar la página.
+              Consulta qué nivel de aprobación corresponde a un monto con los umbrales actuales.
             </p>
             <div className="simulador">
               <div className="umbral-form__group">
@@ -202,12 +198,6 @@ function ConfiguracionUmbralesPage() {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="config-umbrales__note">
-        <b>Regla R4 (normativa cambiante):</b> los umbrales se almacenan como configuración. Cuando
-        la normativa cambie, el encargado administrativo actualiza los valores en esta pantalla y el
-        sistema los aplica a las licitaciones pendientes sin cambios de código ni nueva versión.
       </div>
     </section>
   )
