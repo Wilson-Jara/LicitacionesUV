@@ -1,60 +1,51 @@
-import { Link } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import ThemeToggle from './ThemeToggle'
 import './Navbar.css'
 
-/**
- * Barra de navegación institucional, presente en todas las páginas públicas.
- * Muestra la marca, los enlaces a Licitaciones, Favoritos, Estadísticas y
- * Administración (configuración de umbrales) y el botón de tema. Con sesión
- * iniciada muestra el usuario y "Cerrar sesión"; sin sesión, un botón que abre
- * el modal de acceso.
- *
- * @returns {JSX.Element}
- */
 function Navbar() {
   const { user, logout, openAuthModal } = useAuth()
+  const { pathname, search } = useLocation()
+  const isLoginPage = pathname === '/login'
+  const carryFilters = pathname === '/licitaciones' || pathname === '/estadisticas'
 
   return (
-    <>
-      <header className="navbar">
-        <Link to="/" className="navbar__brand">
-          <span className="navbar__brand-shield" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.54-3.13 8.78-7 9.88-3.87-1.1-7-5.34-7-9.88V6.3l7-3.12zM11 7h2v6h-2V7zm0 8h2v2h-2v-2z" />
-            </svg>
-          </span>
-          <div className="navbar__brand-text">
-            <span className="navbar__brand-name">
-              Licitaciones<span className="brand-uv-accent">UV</span>
-            </span>
-            <span className="navbar__brand-sub">Universidad de Valparaíso</span>
-          </div>
+    <header className="navbar">
+      <div className="frame navbar__inner">
+        <Link to="/licitaciones" className="navbar__brand">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="currentColor" />
+            <path d="M9 10h14M9 16h14M9 22h8" stroke="var(--primary-contrast)" strokeWidth="2" />
+          </svg>
+          Licitaciones UV
         </Link>
-        <nav className="navbar__links">
-          <Link to="/licitaciones">Licitaciones</Link>
-          <Link to="/favoritos">Favoritos</Link>
-          <Link to="/estadisticas">Estadísticas</Link>
-          <Link to="/configuracion/umbrales">Administración</Link>
+        <nav className="navbar__links" aria-label="Navegación principal">
+          <NavLink to={{ pathname: '/licitaciones', search: carryFilters ? search : '' }}>
+            Explorar
+          </NavLink>
+          <NavLink to="/favoritos">Favoritos</NavLink>
+          <NavLink to={{ pathname: '/estadisticas', search: carryFilters ? search : '' }}>
+            Estadísticas
+          </NavLink>
+          <NavLink to="/configuracion/umbrales">Umbrales</NavLink>
+        </nav>
+        <div className="navbar__actions">
           <ThemeToggle />
           {user ? (
-            <div className="navbar__user">
-              <img src={user.photoUrl} alt="User Avatar" className="navbar__avatar" />
-              <div className="navbar__user-info">
-                <span className="navbar__user-name">{user.name}</span>
-              </div>
-              <button onClick={logout} className="navbar__btn-logout">
-                Cerrar sesión
-              </button>
-            </div>
-          ) : (
-            <button onClick={openAuthModal} className="navbar__btn-login">
-              Iniciar sesión
+            <button type="button" className="text-button" onClick={logout}>
+              Cerrar sesión
             </button>
+          ) : (
+            !isLoginPage && (
+              <button type="button" className="text-button" onClick={openAuthModal}>
+                Iniciar sesión
+              </button>
+            )
           )}
-        </nav>
-      </header>
-    </>
+        </div>
+        {user && <span className="navbar__user">{user.name}</span>}
+      </div>
+    </header>
   )
 }
 

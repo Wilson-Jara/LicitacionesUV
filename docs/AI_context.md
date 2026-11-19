@@ -9,7 +9,7 @@
 - **Tipo:** aplicación web cliente.
 - **Idioma de negocio/documentación:** español.
 - **Propósito declarado:** crear, centralizar y gestionar licitaciones universitarias, además de comparar ofertas y ayudar a seleccionar la mejor propuesta de proveedores.
-- **Estado real actual:** aplicación web en React con enrutamiento (`react-router-dom`), interfaz y módulo de acceso basados en el wireframe oficial de Figma de la Universidad de Valparaíso, explorador de licitaciones con filtros y orden sincronizados en URL y gestión de favoritos.
+- **Estado real actual:** aplicación web en React con enrutamiento (`react-router-dom`). Usa la identidad pública «Licitaciones UV», un catálogo de demostración con filtros y orden en URL, acceso simulado y gestión de favoritos.
 
 ## 2. Estado verificado
 
@@ -32,24 +32,19 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 ## 3. Funcionalidad existente
 
-- **Módulo de Autenticación Institucional (Figma Wireframes):**
-  - Modal de autenticación (`AuthModal`) y página dedicada de acceso (`LoginPage` en `/login`).
-  - Diseño _split-screen_: panel izquierdo con identidad institucional de la Universidad de Valparaíso / República de Chile, escudo, métricas en línea y colores oficiales (Azul Marino `#0E1B38` y Dorado `#C59B27`); los paneles de marca permanecen navy en ambos temas.
-  - Panel derecho con formulario de acceso ("Módulo de Acceso"), campos de correo institucional y contraseña con botón para alternar visibilidad, aviso de soporte institucional, enlaces a términos e indicador de estado operativo.
-  - Alternancia entre inicio de sesión y registro de cuenta.
-  - Accesos sociales simulados con Google y GitHub.
-  - Validación de campos con mensajes de error.
+- **Acceso simulado:**
+  - `AuthModal` y `LoginPage` (`/login`) comparten `AuthForm` y el panel ilustrado `AuthIntro`. Ambos identifican la sesión como simulada y permiten rellenar datos ficticios de ejemplo.
+  - Se conserva el inicio de sesión, el registro, la visibilidad de contraseña, la validación de campos y el acceso simulado con Google y GitHub.
+  - El modal usa el elemento nativo `dialog`, mantiene el foco durante la navegación por tabulador y restaura el foco al control de apertura al cerrar. Si ese control desaparece, enfoca el contenido principal.
 - **Explorador de Licitaciones:**
-  - Header Hero institucional con sobretítulo dorado, estadísticas clave del portal y tipografía institucional.
-  - Barra lateral de filtros (`FilterSidebar`) con la estética de Figma: sobretítulo dorado, buscador con limpieza rápida, búsqueda por título, selectores estilizados, botones _pills_ de tipo, chips interactivos de filtros activos con eliminación individual, aviso informativo institucional y estado sincronizado con URL.
+  - Cabecera con búsqueda por título, atajos de ejemplo y aviso explícito de catálogo ficticio. El término, la región, el tipo y el orden siguen en la URL.
+  - Barra lateral (`FilterSidebar`) con selección de región, radios de tipo y filtros aplicados que se pueden quitar individualmente.
   - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
-  - Tarjetas de licitación (`LicitacionCard`) con iconos vectoriales, indicador de estado por puntos (verde para Pública, ámbar para Privada), etiqueta de región, botón de acción y botón Guardar/Quitar favorito.
-  - Enlace a la vista de detalle (`/licitaciones/:id`) desde el título y la acción de cada tarjeta.
-  - Lista de licitaciones (`LicitacionList`) con estado vacío ilustrado y botón directo de restablecimiento de filtros.
-  - Barra de resumen de resultados y alternancia de filtros para dispositivos móviles.
+  - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
+  - Lista semántica con contador accesible, estado vacío y restablecimiento de filtros. En pantallas estrechas, los filtros se pueden desplegar.
 - **Panel de Estadísticas (`/estadisticas`):**
   - Distribuciones por región, tipo (`publica`/`privada`) y sector, calculadas como cantidad de licitaciones sobre el conjunto filtrado del explorador.
-  - Se recalcula al cambiar, combinar o limpiar filtros; al quedar sin resultados muestra un estado vacío y no conserva cifras anteriores.
+  - El enlace entre explorador y estadísticas mantiene los parámetros de la URL. El panel se recalcula con esos parámetros y muestra un estado vacío cuando no hay coincidencias.
   - El sector se deriva de la institución (Universidad, Municipalidad, Ministerio, Banco, Empresa u Otro) porque el mock no trae un campo de etiqueta propio; cada licitación cuenta en una categoría.
   - Cada distribución ofrece una alternativa textual accesible (texto para lectores de pantalla y tabla con categorías y valores) además de las barras visuales.
 - **Detalle de Licitación:**
@@ -62,19 +57,21 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
   - Botón "Guardar / Quitar" en `LicitacionCard`; sin sesión, al intentar guardar se abre el modal de autenticación (REF-02).
   - Persistencia local por usuario en `localStorage` (clave `licitacionesuv-favoritos`) con el par `idLicitacion` + `fechaGuardado`.
   - Página `/favoritos` (`MisFavoritosPage`) que lista las licitaciones guardadas con título, monto y fecha de cierre mediante `LicitacionCard`, permite quitarlas al instante y muestra estado vacío cuando no hay favoritos (o invitación a iniciar sesión si no hay sesión).
-- **Barra de Navegación (`Navbar`):**
-  - Cabecera institucional con isotipo UV, enlaces a licitaciones/favoritos y a la administración de umbrales, información de usuario logueado con avatar y botón de acceso modal.
+- **Barra de navegación (`Navbar`):**
+  - Cabecera compartida con la marca «Licitaciones UV», enlaces activos a explorador, favoritos, estadísticas y umbrales, cambio de tema y controles de sesión.
+  - El layout incluye salto al contenido, título de documento por ruta y manejo de foco al cambiar de pantalla.
 - **Temas Claro/Oscuro:**
   - Alternancia de tema mediante atributo `data-theme` en `<html>`, con variables CSS duplicadas por tema en `src/index.css`.
   - Script inline en `index.html` que aplica el tema guardado o la preferencia del sistema antes del montaje de React, evitando el flash de tema incorrecto.
   - Persistencia de la elección en `localStorage` (clave `licitacionesuv-theme`).
   - Botón de alternancia accesible (`ThemeToggle` con `aria-label` y `aria-pressed`) en la barra de navegación.
-  - Los componentes usan variables semánticas (`--card-bg`, `--surface-soft`, `--border-strong`, etc.); los hex restantes pertenecen a paneles de marca navy que permanecen oscuros en ambos temas.
+  - Los componentes usan variables semánticas para fondo, texto, bordes, foco y estados. La paleta usa violeta y amarillo en superficies adaptadas a cada tema. Los atajos respetan la preferencia de movimiento reducido.
 - **Configuración de Umbrales de Aprobación (US-10, CR-302):**
   - Página `/configuracion/umbrales` (`ConfiguracionUmbralesPage`) que permite crear, editar y eliminar umbrales por unidad mediante los formularios `UmbralForm` y `UnidadForm` y el listado editable `UmbralesTable`.
   - Los umbrales son **datos configurables**, no constantes del código (CA2, regla R4 / REF-14): el punto de partida vive en `umbralesIniciales.js` y la configuración vigente se persiste en `localStorage` (clave `licitacionesuv-umbrales`).
   - El rango de cada umbral es `[montoMinimo, montoMaximo)`: el mínimo es inclusivo, el máximo es exclusivo y `null` en el máximo significa «sin tope». La validación impide montos negativos, rangos invertidos y solapamientos dentro de una unidad.
   - Un simulador consulta el nivel aprobador que corresponde a un monto con la configuración vigente y se recalcula de inmediato al editar, sin recargar la página ni volver a desplegar (CA3).
+  - Las tablas conservan sus encabezados y se desplazan dentro de una región enfocada por teclado cuando el ancho es insuficiente.
 - **Límite con el backend independiente:**
   - La API expone salud, listado filtrado y detalle con el mismo contrato de nueve campos. Usa PostgreSQL con conexión configurada y catálogo propio en memoria sin ella.
   - Las migraciones, el seed y las pruebas de integración se administran desde la raíz de `LicitacionesUV-backend`.
@@ -86,8 +83,8 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 2. `src/main.jsx` importa `index.css` y monta `<App />`.
 3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider`, `UmbralesProvider` y `BrowserRouter`.
 4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/configuracion/umbrales`, 404).
-5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
-6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
+5. `src/app/layouts/PublicLayout.jsx` monta la barra de navegación, la ruta activa y el diálogo común de acceso.
+6. `src/index.css` define los tokens de ambos temas, la tipografía, el foco y los controles comunes.
 7. La API se inicia desde el repositorio independiente, por defecto en `http://localhost:3000`. El frontend Vite usa `http://localhost:5173` y conserva sus datos locales.
 
 ## 5. Inventario de archivos relevantes
@@ -100,10 +97,12 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales y Router.                                   |
 | `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                         |
 | `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.                      |
-| `src/index.css`                                                    | Variables globales de diseño institucional UV, reset y tipografía.                                       |
-| `src/features/auth/components/AuthModal.jsx`                       | Modal de inicio de sesión/registro con split-screen de Figma.                                            |
-| `src/features/auth/components/AuthModal.css`                       | Estilos del modal institucional.                                                                         |
-| `src/features/auth/pages/LoginPage.jsx`                            | Página completa de inicio de sesión según wireframe de Figma.                                            |
+| `src/index.css`                                                    | Tokens de tema, foco, tipografía y controles comunes.                                                    |
+| `src/features/auth/components/AuthModal.jsx`                       | Diálogo de inicio de sesión/registro con retorno de foco.                                                |
+| `src/features/auth/components/AuthModal.css`                       | Estilos compartidos de acceso y del diálogo.                                                             |
+| `src/features/auth/components/AuthForm.jsx`                        | Formulario compartido de acceso, registro y cuentas de ejemplo.                                          |
+| `src/features/auth/components/AuthIntro.jsx`                       | Panel de contexto e ilustración de acceso.                                                               |
+| `src/features/auth/pages/LoginPage.jsx`                            | Página completa de acceso simulado.                                                                      |
 | `src/features/auth/pages/LoginPage.css`                            | Estilos de la página de inicio de sesión.                                                                |
 | `src/features/auth/hooks/useAuth.js`                               | Hook de consumo del contexto de autenticación.                                                           |
 | `src/app/providers/AuthProvider.jsx`                               | Proveedor de estado de autenticación y del modal de acceso global.                                       |
@@ -111,7 +110,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | `src/features/favoritos/hooks/useFavoritos.js`                     | Hook de consumo del contexto de favoritos.                                                               |
 | `src/features/favoritos/data/favoritosStorage.js`                  | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).                              |
 | `src/app/providers/ThemeProvider.jsx`                              | Proveedor de tema claro/oscuro con persistencia en localStorage.                                         |
-| `src/shared/components/Navbar.jsx`                                 | Barra de navegación institucional con escudo y acciones de usuario.                                      |
+| `src/shared/components/Navbar.jsx`                                 | Marca pública, navegación activa, tema y controles de sesión.                                            |
 | `src/shared/components/Navbar.css`                                 | Estilos del Navbar.                                                                                      |
 | `src/shared/components/ThemeToggle.jsx`                            | Botón accesible de alternancia de tema claro/oscuro.                                                     |
 | `src/shared/components/ThemeToggle.css`                            | Estilos del botón de tema.                                                                               |
@@ -127,7 +126,8 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo, y ordenamiento por fecha de cierre o monto.                          |
 | `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros y orden con URL.                                                       |
 | `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                                |
-| `src/features/licitaciones/components/LicitacionCard.jsx`          | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                                      |
+| `src/features/licitaciones/components/LicitacionCard.jsx`          | Fila de licitación con enlace al detalle y acción de favorito.                                           |
+| `src/features/licitaciones/components/FavoritoButton.jsx`          | Acción compartida de guardar o quitar, según sesión y vigencia.                                          |
 | `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                                   |
 | `src/features/estadisticas/estadisticasUtils.js`                   | Cálculo puro de distribuciones por región, tipo y sector, y alternativa textual accesible.               |
 | `src/features/estadisticas/components/DistribucionPanel.jsx`       | Panel de una distribución con barras y alternativa textual accesible.                                    |
@@ -287,3 +287,4 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 - `docs/depuracion.md` registra la depuración sistemática del filtro por palabra clave (método, evidencia con el depurador y prueba de regresión).
 - `docs/ejercicio-2-2.md` documenta los contratos de filtrado, detalle de la API y alta de favoritos, con precondiciones, postcondiciones, invariantes, validaciones y evidencia reproducible sobre el mock. La ficha de filtrado también está disponible, sincronizada, en `docs/Ejercicio_2_2_Ficha_Operacion_1.docx` y `docs/Ejercicio_2_2_Ficha_Operacion_1.pdf`.
 - Este documento describe el estado técnico del repositorio; la guía de roles describe cómo se coordina el equipo. No deben confundirse responsabilidades de equipo con funcionalidades ya implementadas.
+- `docs/mockups/frontend-redesign/` contiene la referencia visual de Licitaciones UV y su documentación de diseño.

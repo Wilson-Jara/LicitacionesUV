@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { useAuth } from '../../auth/hooks/useAuth'
-import { useFavoritos } from '../../favoritos/hooks/useFavoritos'
+import FavoritoButton from '../components/FavoritoButton.jsx'
 import NotFoundPage from '../../../app/routes/NotFoundPage.jsx'
 import mockData from '../data/licitaciones.mock.json'
 import {
@@ -44,25 +43,10 @@ function LicitacionDetailPage() {
  * @returns {JSX.Element}
  */
 function LicitacionDetail({ licitacion }) {
-  const { user, openAuthModal } = useAuth()
-  const { isFavorito, agregarFavorito, quitarFavorito } = useFavoritos()
+  const { state } = useLocation()
   const [exportando, setExportando] = useState(false)
   const [exportError, setExportError] = useState(null)
-  const guardado = isFavorito(licitacion.id)
   const cerrada = isLicitacionCerrada(licitacion.closingDate)
-
-  const handleToggleFavorito = () => {
-    if (cerrada && !guardado) return
-    if (!user) {
-      openAuthModal()
-      return
-    }
-    if (guardado) {
-      quitarFavorito(licitacion.id)
-    } else {
-      agregarFavorito(licitacion)
-    }
-  }
 
   const handleExportarPdf = async () => {
     setExportando(true)
@@ -80,8 +64,11 @@ function LicitacionDetail({ licitacion }) {
   }
 
   return (
-    <section className="licitacion-detail">
-      <Link className="licitacion-detail-back" to="/licitaciones">
+    <section className="frame licitacion-detail">
+      <Link
+        className="licitacion-detail-back"
+        to={{ pathname: '/licitaciones', search: state?.explorerSearch ?? '' }}
+      >
         ← Volver a licitaciones
       </Link>
 
@@ -89,7 +76,7 @@ function LicitacionDetail({ licitacion }) {
         <header className="licitacion-detail-header">
           <div className="licitacion-detail-badges">
             <span className="licitacion-detail-type">{getTypeLabel(licitacion.type)}</span>
-            <span className={`licitacion-detail-status ${cerrada ? 'is-closed' : 'is-open'}`}>
+            <span className="licitacion-status" data-closed={cerrada}>
               {cerrada ? 'Cerrada' : 'Vigente'}
             </span>
           </div>
@@ -97,74 +84,65 @@ function LicitacionDetail({ licitacion }) {
           <p>{licitacion.institution}</p>
         </header>
 
-        <dl className="licitacion-detail-data">
-          <div>
-            <dt>Monto estimado</dt>
-            <dd className="licitacion-detail-amount">
-              {formatLicitacionAmount(licitacion.amount, licitacion.currency)}
-            </dd>
-          </div>
-          <div>
-            <dt>Moneda</dt>
-            <dd>{licitacion.currency}</dd>
-          </div>
-          <div>
-            <dt>Fecha de cierre</dt>
-            <dd>{formatLicitacionDate(licitacion.closingDate)}</dd>
-          </div>
-          <div>
-            <dt>Tipo</dt>
-            <dd>{getTypeLabel(licitacion.type)}</dd>
-          </div>
-          <div>
-            <dt>Región</dt>
-            <dd>{getRegionLabel(licitacion.region)}</dd>
-          </div>
-        </dl>
+        <div className="licitacion-detail-body">
+          <dl className="licitacion-detail-data">
+            <div>
+              <dt>Monto estimado</dt>
+              <dd className="licitacion-detail-amount">
+                {formatLicitacionAmount(licitacion.amount, licitacion.currency)}
+              </dd>
+            </div>
+            <div>
+              <dt>Moneda</dt>
+              <dd>{licitacion.currency}</dd>
+            </div>
+            <div>
+              <dt>Fecha de cierre</dt>
+              <dd>{formatLicitacionDate(licitacion.closingDate)}</dd>
+            </div>
+            <div>
+              <dt>Tipo</dt>
+              <dd>{getTypeLabel(licitacion.type)}</dd>
+            </div>
+            <div>
+              <dt>Región</dt>
+              <dd>{getRegionLabel(licitacion.region)}</dd>
+            </div>
+          </dl>
 
-        <div className="licitacion-detail-actions">
-          <button
-            type="button"
-            className="licitacion-detail-export"
-            onClick={handleExportarPdf}
-            disabled={exportando}
-          >
-            {exportando ? 'Generando PDF…' : 'Exportar PDF'}
-          </button>
-          <button
-            type="button"
-            className={`licitacion-detail-favorite ${guardado ? 'is-saved' : ''}`}
-            onClick={handleToggleFavorito}
-            disabled={cerrada && !guardado}
-            aria-pressed={guardado}
-          >
-            {cerrada && !guardado
-              ? 'Licitación cerrada'
-              : guardado
-                ? 'Quitar favorito'
-                : 'Guardar favorito'}
-          </button>
-          <a
-            className="licitacion-detail-source"
-            href={licitacion.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Ver fuente oficial ↗
-          </a>
+          <div className="licitacion-detail-actions">
+            <a
+              className="button button--primary"
+              href={licitacion.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Ver fuente oficial <span aria-hidden="true">↗</span>
+              <span className="sr-only"> (abre en una pestaña nueva)</span>
+            </a>
+            <button
+              type="button"
+              className="button"
+              onClick={handleExportarPdf}
+              disabled={exportando}
+            >
+              {exportando ? 'Generando PDF…' : 'Exportar PDF'}
+            </button>
+            <FavoritoButton licitacion={licitacion} />
+          </div>
+
+          {exportError && (
+            <p className="licitacion-detail-error" role="status">
+              {exportError}
+            </p>
+          )}
+
+          {cerrada && (
+            <p className="licitacion-detail-notice">
+              Esta licitación ya cerró y no puede guardarse como favorita.
+            </p>
+          )}
         </div>
-
-        {exportError && (
-          <p className="licitacion-detail-error" role="status">
-            {exportError}
-          </p>
-        )}
-
-        {cerrada && (
-          <p className="licitacion-detail-notice" role="status">
-            Esta licitación ya cerró y no puede guardarse como favorita.
-          </p>
-        )}
       </article>
     </section>
   )
