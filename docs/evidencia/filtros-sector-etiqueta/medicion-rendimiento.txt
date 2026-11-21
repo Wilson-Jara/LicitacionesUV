@@ -1,0 +1,23 @@
+HU #94 — Medición de filtros por sector y etiqueta
+
+Fecha: 2026-11-21
+Entorno: Windows x64, Node.js v26.13.1, proceso local sin navegador ni red.
+Implementación medida: filterLicitaciones (filtrado sector + etiqueta + región).
+
+Conjunto de referencia:
+- Volumen: 6 licitaciones de src/features/licitaciones/data/licitaciones.mock.json.
+- Repeticiones: 10.000.
+- Tiempo total: 24,6009 ms.
+- Promedio por interacción simulada: 0,00246 ms.
+
+Prueba de estrés adicional:
+- Volumen: 10.000 licitaciones generadas a partir del mock.
+- Repeticiones: 100.
+- Tiempo total: 133,0007 ms.
+- Promedio por filtrado: 1,3300 ms.
+
+Resultado: ambas mediciones están por debajo del objetivo de 2 segundos (REF-01).
+La medición corresponde a la función pura de filtrado; no incluye el tiempo de
+pintado del navegador. La interfaz fue verificada con la URL
+`/licitaciones?sector=tecnologia&etiqueta=software&region=valparaiso`, que mostró
+1 de 6 resultados y conservó los tres parámetros.

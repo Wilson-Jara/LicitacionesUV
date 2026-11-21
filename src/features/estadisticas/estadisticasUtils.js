@@ -1,12 +1,13 @@
 /**
  * Utilidades puras para el panel de estadísticas de licitaciones (HU #95).
  *
- * CA1: distribuciones por región, por tipo (pública/privada) y por sector/etiqueta.
- * Si una licitación tuviera múltiples etiquetas, se contaría en cada una; en este
- * mock no existen tags, así que cada licitación se asigna a una única categoría.
- * Las categorías sin registros no se inventan.
+ * CA1: distribuciones por región, por tipo (pública/privada) y por sector.
+ * El sector usa el campo explícito `sector` de la licitación; si falta, se
+ * infiere desde la institución para mantener la compatibilidad con datos
+ * anteriores. Las categorías sin registros no se inventan.
  */
 
+import { SECTORES } from '../licitaciones/categorias.js'
 import { filterLicitaciones } from '../licitaciones/licitacionFilters.js'
 
 export const VALID_REGIONES_LABEL = {
@@ -26,17 +27,21 @@ function normalizarTexto(valor) {
   return valor
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
+    .trim()
     .toLowerCase()
 }
 
 /**
- * Deriva el sector desde la institución cuando no existe un campo explícito.
- * Regla acordada para el mock actual: una categoría por licitación.
+ * Obtiene el sector de una licitación. Usa el campo explícito `sector` cuando
+ * existe; si falta o está vacío, lo deriva desde la institución.
  *
  * @param {object} licitacion
- * @returns {'universidad'|'municipalidad'|'ministerio'|'banco'|'empresa'|'otro'}
+ * @returns {string} Clave de sector explícita o inferida.
  */
 export function derivarSector(licitacion) {
+  const sector = normalizarTexto(licitacion?.sector)
+  if (sector) return sector
+
   const institucion = normalizarTexto(licitacion?.institution)
   if (!institucion) return 'otro'
 
@@ -51,6 +56,7 @@ export function derivarSector(licitacion) {
 }
 
 export const SECTOR_LABEL = {
+  ...SECTORES,
   universidad: 'Universidad',
   municipalidad: 'Municipalidad',
   ministerio: 'Ministerio',
@@ -148,7 +154,8 @@ export function calcularDistribuciones(licitaciones = []) {
  * Reutiliza la lógica existente para garantizar coherencia (CA2).
  *
  * @param {Array<object>} licitaciones
- * @param {{keyword?: string, region?: string, tipo?: string, sort?: string}} filters
+ * @param {{keyword?: string, region?: string, sector?: string, etiqueta?: string,
+ *   tipo?: string, sort?: string}} filters
  * @returns {Array<object>}
  */
 export function obtenerLicitacionesFiltradas(licitaciones, filters) {

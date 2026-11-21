@@ -16,6 +16,18 @@ const sortOptions = [
 
 const ejemplos = ['Mantenimiento', 'Software', 'Consultoría']
 
+const sectoresDisponibles = [
+  ...new Set(mockData.map((licitacion) => licitacion.sector).filter(Boolean)),
+].sort((a, b) => a.localeCompare(b, 'es'))
+
+const etiquetasDisponibles = [
+  ...new Set(
+    mockData.flatMap((licitacion) =>
+      Array.isArray(licitacion.etiquetas) ? licitacion.etiquetas : [],
+    ),
+  ),
+].sort((a, b) => a.localeCompare(b, 'es'))
+
 function LicitacionesExplorerPage() {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const [showMobileFilters, setShowMobileFilters] = useState(false)
@@ -128,7 +140,7 @@ function LicitacionesExplorerPage() {
           {activeCount > 0 && ' (' + activeCount + ')'}
         </button>
         <div id="filter-sidebar-wrapper" className={showMobileFilters ? 'filters-open' : ''}>
-          <FilterSidebar />
+          <FilterSidebar sectores={sectoresDisponibles} etiquetas={etiquetasDisponibles} />
         </div>
         <section aria-labelledby="results-title">
           <div className="results-header">

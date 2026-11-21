@@ -9,6 +9,7 @@ import {
   sanitizeFilterParams,
   sortLicitaciones,
 } from '../src/features/licitaciones/licitacionFilters.js'
+import { VALID_ETIQUETAS, VALID_SECTORES } from '../src/features/licitaciones/categorias.js'
 
 const licitaciones = [
   {
@@ -24,6 +25,45 @@ const licitaciones = [
     institution: 'Empresa de transporte',
     region: 'metropolitana',
     type: 'privada',
+  },
+]
+
+const licitacionesCategorizadas = [
+  {
+    id: 'tec-1',
+    title: 'Software de gestión',
+    institution: 'Banco Internacional',
+    region: 'metropolitana',
+    type: 'privada',
+    sector: 'tecnologia',
+    etiquetas: ['software', 'desarrollo'],
+  },
+  {
+    id: 'tec-2',
+    title: 'Equipamiento de red',
+    institution: 'Ministerio del Interior',
+    region: 'metropolitana',
+    type: 'publica',
+    sector: 'tecnologia',
+    etiquetas: ['hardware'],
+  },
+  {
+    id: 'fin-1',
+    title: 'Auditoría financiera',
+    institution: 'Corporación Privada',
+    region: 'antofagasta',
+    type: 'privada',
+    sector: 'finanzas',
+    etiquetas: ['auditoria'],
+  },
+  {
+    id: 'infra-1',
+    title: 'Mantenimiento de instalaciones',
+    institution: 'Universidad de Valparaíso',
+    region: 'valparaiso',
+    type: 'publica',
+    sector: 'infraestructura',
+    etiquetas: ['mantenimiento', 'instalaciones'],
   },
 ]
 
@@ -155,11 +195,73 @@ describe('filterLicitaciones', () => {
     const resultado = filterLicitaciones(catalogoIncompleto, { keyword: 'test' })
     assert.deepEqual(resultado, [])
   })
+
+  it('filtra por sector con coincidencia exacta', () => {
+    const resultado = filterLicitaciones(licitacionesCategorizadas, { sector: 'tecnologia' })
+
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['tec-1', 'tec-2'],
+    )
+  })
+
+  it('normaliza mayúsculas y tildes al filtrar por sector', () => {
+    const resultado = filterLicitaciones(licitacionesCategorizadas, { sector: '  Tecnología  ' })
+
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['tec-1', 'tec-2'],
+    )
+  })
+
+  it('filtra por etiqueta con coincidencia exacta', () => {
+    const resultado = filterLicitaciones(licitacionesCategorizadas, { etiqueta: 'software' })
+
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['tec-1'],
+    )
+  })
+
+  it('normaliza mayúsculas y tildes al filtrar por etiqueta', () => {
+    const resultado = filterLicitaciones(licitacionesCategorizadas, { etiqueta: 'Auditoría' })
+
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['fin-1'],
+    )
+  })
+
+  it('combina sector y etiqueta con el resto de filtros mediante AND', () => {
+    const resultado = filterLicitaciones(licitacionesCategorizadas, {
+      keyword: 'software',
+      region: 'metropolitana',
+      tipo: 'privada',
+      sector: 'tecnologia',
+      etiqueta: 'software',
+    })
+
+    assert.deepEqual(
+      resultado.map(({ id }) => id),
+      ['tec-1'],
+    )
+  })
+
+  it('excluye licitaciones sin etiquetas cuando el filtro de etiqueta está activo', () => {
+    const resultado = filterLicitaciones(
+      [{ id: 'sin-etiquetas', title: 'Sin etiquetas', sector: 'tecnologia' }],
+      { etiqueta: 'software' },
+    )
+
+    assert.deepEqual(resultado, [])
+  })
 })
 
 describe('sanitizeFilterParams', () => {
-  it('expone constantes de regiones y tipos válidos', () => {
+  it('expone constantes de regiones, sectores, etiquetas y tipos válidos', () => {
     assert.ok(VALID_REGIONES.includes('valparaiso'))
+    assert.ok(VALID_SECTORES.includes('tecnologia'))
+    assert.ok(VALID_ETIQUETAS.includes('software'))
     assert.ok(VALID_TIPOS.includes('publica'))
   })
 
@@ -167,6 +269,8 @@ describe('sanitizeFilterParams', () => {
     const sanea = sanitizeFilterParams({
       keyword: '  salud  ',
       region: 'marte',
+      sector: 'salud',
+      etiqueta: 'inventada',
       tipo: 'invalido',
       parametroDesconocido: '123',
     })
@@ -174,32 +278,42 @@ describe('sanitizeFilterParams', () => {
     assert.deepEqual(sanea, {
       keyword: '  salud  ',
       region: '',
+      sector: '',
+      etiqueta: '',
       tipo: '',
       sort: '',
     })
   })
 
-  it('normaliza región y tipo válidos sin importar mayúsculas ni espacios', () => {
+  it('normaliza región, sector, etiqueta y tipo válidos sin importar mayúsculas ni espacios', () => {
     const sanea = sanitizeFilterParams({
       region: '  Valparaiso  ',
+      sector: '  Tecnología  ',
+      etiqueta: '  Auditoría  ',
       tipo: '  PUBLICA  ',
     })
 
     assert.deepEqual(sanea, {
       keyword: '',
       region: 'valparaiso',
+      sector: 'tecnologia',
+      etiqueta: 'auditoria',
       tipo: 'publica',
       sort: '',
     })
   })
 
   it('sanea parámetros desde una instancia de URLSearchParams', () => {
-    const params = new URLSearchParams('keyword=transporte&region=biobio&tipo=privada&extra=xyz')
+    const params = new URLSearchParams(
+      'keyword=transporte&region=biobio&sector=tecnologia&etiqueta=software&tipo=privada&extra=xyz',
+    )
     const sanea = sanitizeFilterParams(params)
 
     assert.deepEqual(sanea, {
       keyword: 'transporte',
       region: 'biobio',
+      sector: 'tecnologia',
+      etiqueta: 'software',
       tipo: 'privada',
       sort: '',
     })
@@ -209,21 +323,30 @@ describe('sanitizeFilterParams', () => {
     assert.deepEqual(sanitizeFilterParams(null), {
       keyword: '',
       region: '',
+      sector: '',
+      etiqueta: '',
       tipo: '',
       sort: '',
     })
     assert.deepEqual(sanitizeFilterParams(undefined), {
       keyword: '',
       region: '',
+      sector: '',
+      etiqueta: '',
       tipo: '',
       sort: '',
     })
-    assert.deepEqual(sanitizeFilterParams({ keyword: 123, region: {}, tipo: [] }), {
-      keyword: '',
-      region: '',
-      tipo: '',
-      sort: '',
-    })
+    assert.deepEqual(
+      sanitizeFilterParams({ keyword: 123, region: {}, sector: [], etiqueta: {}, tipo: [] }),
+      {
+        keyword: '',
+        region: '',
+        sector: '',
+        etiqueta: '',
+        tipo: '',
+        sort: '',
+      },
+    )
   })
 })
 
@@ -266,6 +389,33 @@ describe('sanitizeFilterParams - parámetros repetidos', () => {
     const sanea = sanitizeFilterParams(params)
     assert.equal(sanea.tipo, '')
   })
+
+  it('resuelve el último sector válido y normaliza tildes', () => {
+    const params = new URLSearchParams('sector=finanzas&sector=Tecnolog%C3%ADa')
+    const sanea = sanitizeFilterParams(params)
+    assert.equal(sanea.sector, 'tecnologia')
+  })
+
+  it('conserva el sector anterior si el último valor repetido es inválido', () => {
+    const params = new URLSearchParams('sector=tecnologia&sector=salud')
+    const sanea = sanitizeFilterParams(params)
+    assert.equal(sanea.sector, 'tecnologia')
+  })
+
+  it('resuelve la última etiqueta válida y descarta valores fuera del catálogo', () => {
+    const params = new URLSearchParams('etiqueta=software&etiqueta=hardware&etiqueta=inventada')
+    const sanea = sanitizeFilterParams(params)
+    assert.equal(sanea.etiqueta, 'hardware')
+  })
+
+  it('acepta arreglos de sector y etiqueta en objetos planos', () => {
+    const sanea = sanitizeFilterParams({
+      sector: ['finanzas', 'tecnologia'],
+      etiqueta: ['auditoria', 'software'],
+    })
+    assert.equal(sanea.sector, 'tecnologia')
+    assert.equal(sanea.etiqueta, 'software')
+  })
 })
 
 describe('sanitizeFilterParams - orden', () => {
@@ -291,6 +441,8 @@ describe('sanitizeFilterParams - orden', () => {
     assert.deepEqual(sanea, {
       keyword: 'aseo',
       region: 'biobio',
+      sector: '',
+      etiqueta: '',
       tipo: '',
       sort: 'fecha-asc',
     })
@@ -439,6 +591,16 @@ describe('countActiveFilters', () => {
     assert.equal(countActiveFilters({ keyword: 'salud', region: '', tipo: '' }), 1)
     assert.equal(countActiveFilters({ keyword: 'salud', region: 'valparaiso', tipo: '' }), 2)
     assert.equal(countActiveFilters({ keyword: 'salud', region: 'valparaiso', tipo: 'publica' }), 3)
+    assert.equal(
+      countActiveFilters({
+        keyword: 'salud',
+        region: 'valparaiso',
+        sector: 'tecnologia',
+        etiqueta: 'software',
+        tipo: 'publica',
+      }),
+      5,
+    )
   })
 
   it('no contabiliza keyword si solo tiene espacios en blanco', () => {
