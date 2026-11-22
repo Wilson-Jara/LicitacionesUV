@@ -28,6 +28,7 @@ function Navbar() {
             Estadísticas
           </NavLink>
           <NavLink to="/configuracion/umbrales">Umbrales</NavLink>
+          {user && <NavLink to="/perfil">Perfil</NavLink>}
         </nav>
         <div className="navbar__actions">
           <ThemeToggle />

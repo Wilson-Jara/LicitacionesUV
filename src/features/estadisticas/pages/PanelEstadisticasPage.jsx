@@ -64,7 +64,9 @@ function PanelEstadisticasPage() {
         </div>
       )}
 
-      <p className="estadisticas__nota">El sector se infiere del organismo de cada licitación.</p>
+      <p className="estadisticas__nota">
+        El sector usa el campo explícito de cada licitación; si falta, se infiere del organismo.
+      </p>
     </section>
   )
 }

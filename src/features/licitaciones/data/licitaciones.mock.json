@@ -8,6 +8,8 @@
     "closingDate": "2026-09-30",
     "type": "publica",
     "region": "valparaiso",
+    "sector": "infraestructura",
+    "etiquetas": ["mantenimiento", "instalaciones"],
     "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
@@ -19,6 +21,8 @@
     "closingDate": "2026-10-15",
     "type": "privada",
     "region": "metropolitana",
+    "sector": "tecnologia",
+    "etiquetas": ["equipamiento", "hardware"],
     "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
@@ -30,6 +34,8 @@
     "closingDate": "2026-11-01",
     "type": "publica",
     "region": "metropolitana",
+    "sector": "tecnologia",
+    "etiquetas": ["consultoria", "seguridad-informatica"],
     "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
@@ -41,6 +47,8 @@
     "closingDate": "2026-12-20",
     "type": "privada",
     "region": "biobio",
+    "sector": "tecnologia",
+    "etiquetas": ["software", "desarrollo"],
     "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
@@ -52,6 +60,8 @@
     "closingDate": "2026-09-15",
     "type": "publica",
     "region": "valparaiso",
+    "sector": "tecnologia",
+    "etiquetas": ["software", "licencias"],
     "sourceUrl": "https://www.mercadopublico.cl/"
   },
   {
@@ -63,6 +73,8 @@
     "closingDate": "2026-10-05",
     "type": "privada",
     "region": "antofagasta",
+    "sector": "finanzas",
+    "etiquetas": ["auditoria", "finanzas"],
     "sourceUrl": "https://www.mercadopublico.cl/"
   }
 ]
