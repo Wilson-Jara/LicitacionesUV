@@ -28,6 +28,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 - Router con navegación interna (`react-router-dom` v7).
 - Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
 - La API vive en el repositorio independiente `LicitacionesUV-backend`: PostgreSQL mediante `pg`, catálogo ficticio propio, migraciones, pruebas y CI propios. El cliente no importa ni lee sus archivos.
+- Despliegue del frontend como sitio estático en Vercel mediante la CLI; `vercel.json` fija Vite, `npm run build`, la salida `dist` y la reescritura de todas las rutas a `index.html` para React Router. El vínculo local `.vercel/` está excluido de Git.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
@@ -93,6 +94,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
 | `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción). |
 | `index.html`                                                       | Punto de entrada HTML.                                                                                   |
+| `vercel.json`                                                      | Configuración de despliegue en Vercel (Vite, `dist` y reescritura de rutas a `index.html`).              |
 | `src/main.jsx`                                                     | Punto de montaje de React.                                                                               |
 | `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales y Router.                                   |
 | `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                         |

@@ -28,6 +28,9 @@ dist-ssr
 .cache/
 *.local
 
+# Vercel CLI (vínculo local del proyecto)
+.vercel
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -305,6 +305,26 @@ cp .env.example .env
 - Cada variable está documentada con su **nombre**, **formato** y **obligatoriedad** dentro de `.env.example`.
 - Los archivos `.env` reales nunca se suben al repositorio (excluidos por `.gitignore`), igual que certificados y llaves privadas (`*.pem`, `*.key`, `*.p12`, `*.pfx`).
 
+### Despliegue del frontend (Vercel)
+
+**URL pública:** <https://licitacionesuv.vercel.app>
+
+El frontend se publica como sitio estático en Vercel. `vercel.json` fija el
+framework (Vite), el comando `npm run build`, la carpeta `dist` y una reescritura
+de todas las rutas a `index.html`, para que al recargar o abrir directamente
+`/licitaciones/:id`, `/favoritos` u otra ruta de React Router no se responda 404.
+
+```bash
+npx vercel login       # una vez, con la cuenta de quien despliega
+npx vercel             # despliegue de vista previa (pide vincular el proyecto la primera vez)
+npx vercel --prod      # despliegue de producción
+```
+
+La CLI guarda el vínculo local en `.vercel/`, que está excluido de Git. Cuando el
+frontend consuma la API, `VITE_API_BASE_URL` se define en las variables de entorno
+del proyecto en Vercel (se incrusta al compilar, por lo que cambiarla exige volver
+a desplegar) y el backend debe incluir la URL del frontend en `CORS_ORIGIN`.
+
 ---
 
 ## Formateo de código
