@@ -49,7 +49,7 @@ package "Repositorio LicitacionesUV\n(frontend)" as FrontRepo {
   JsPdf - IJsPdf
   PdfExport ..> IJsPdf : importa
   LocalStorage - IStorage
-  RStorage ..> IStorage : tema, favoritos y umbrales
+  RStorage ..> IStorage : tema, perfil, favoritos y umbrales
 
   note bottom of RHttpFuture
     Enchufe requerido no ensamblado.
