@@ -75,7 +75,7 @@ export function buildLicitacionPdf(licitacion) {
     `${formatLicitacionAmount(amount, currency)} (${currency})`,
   )
   y = addDataRow(doc, y, 'Tipo', getTypeLabel(type))
-  addDataRow(doc, y, 'Región', getRegionLabel(region))
+  y = addDataRow(doc, y, 'Región', getRegionLabel(region))
   addDataRow(doc, y, 'Bases oficiales', sourceUrl)
 
   doc.setFont('helvetica', 'italic')
