@@ -68,6 +68,28 @@ export function leerJson(storage, clave) {
 }
 
 /**
+ * Ejecuta una tarea con un bloqueo exclusivo compartido por todas las pestañas
+ * del mismo origen (Web Locks API, `navigator.locks`).
+ *
+ * `localStorage` no tiene transacciones: si dos pestañas leen la misma
+ * configuración antes de que alguna escriba, la segunda escritura borra la
+ * primera. Con el bloqueo, el ciclo leer → aplicar → escribir de una pestaña
+ * termina antes de que empiece el de otra.
+ *
+ * @template T
+ * @param {string} nombre - Nombre del bloqueo (uno por recurso compartido).
+ * @param {() => T} tarea - Trabajo síncrono que se ejecuta con el bloqueo tomado.
+ * @param {{ request: Function }|undefined} [locks=globalThis.navigator?.locks] -
+ *   Administrador de bloqueos; se puede inyectar en las pruebas.
+ * @returns {Promise<T>} El resultado de `tarea`. Si el navegador no ofrece Web Locks
+ *   (o no hay `navigator`, como en Node), la tarea se ejecuta igual, sin bloqueo.
+ */
+export function conBloqueoEntrePestanas(nombre, tarea, locks = globalThis.navigator?.locks) {
+  if (!locks || typeof locks.request !== 'function') return Promise.resolve().then(tarea)
+  return locks.request(nombre, () => tarea())
+}
+
+/**
  * Guarda un valor como JSON en una clave.
  *
  * @param {Pick<Storage, 'setItem'>|null} storage - Almacenamiento de destino (puede ser `null`).

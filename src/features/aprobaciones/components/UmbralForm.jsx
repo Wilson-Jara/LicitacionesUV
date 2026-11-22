@@ -10,7 +10,7 @@ import {
 } from '../umbralesUtils.js'
 
 const ERROR_GUARDADO =
-  'No se guardó el umbral porque la configuración cambió: la unidad o el umbral ya no existe, o el rango dejó de ser válido. Revisa los datos e inténtalo de nuevo.'
+  'No se guardó el umbral: la configuración cambió (por ejemplo, en otra pestaña) y la unidad o el umbral ya no existe, fue modificado o el rango dejó de ser válido, o el navegador no pudo guardarlo. Revisa los datos e inténtalo de nuevo.'
 
 /**
  * Formulario para crear o editar un umbral de una unidad (US-10, CA1).
@@ -31,8 +31,8 @@ const ERROR_GUARDADO =
  * @param {object} props - Propiedades del componente.
  * @param {Array<object>} props.unidades - Unidades configuradas con sus umbrales.
  * @param {object|null} [props.umbralEnEdicion=null] - Umbral que se edita, o `null` para crear.
- * @param {(cambio: { idUnidad: string, datos: object }) => boolean} props.onGuardar -
- *   Guarda el umbral y devuelve `true` solo si la operación se aplicó.
+ * @param {(cambio: { idUnidad: string, datos: object }) => boolean|Promise<boolean>} props.onGuardar -
+ *   Guarda el umbral y devuelve (o resuelve) `true` solo si la operación se aplicó.
  * @param {() => void} props.onCancelar - Cancela la edición.
  * @returns {import('react').JSX.Element} Formulario de umbral.
  */
@@ -48,6 +48,7 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
   const [nivelAprobador, setNivelAprobador] = useState(umbralEnEdicion?.nivelAprobador ?? '')
   const [errores, setErrores] = useState({})
   const [errorGuardado, setErrorGuardado] = useState('')
+  const [guardando, setGuardando] = useState(false)
   const [unidadesPrevias, setUnidadesPrevias] = useState(unidades)
   const [unidadEliminada, setUnidadEliminada] = useState(false)
 
@@ -66,8 +67,9 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
   const sinUnidades = unidades.length === 0
   const idSeleccionado = idUnidadVigente(unidades, idUnidad)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
+    if (guardando) return
     setErrorGuardado('')
 
     const datos = {
@@ -90,14 +92,20 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
     if (!esValido(nuevosErrores)) return
 
     // Solo se confirma una operación aplicada: si no se guardó, se informa y se
-    // conservan los datos escritos para corregirlos.
-    if (!onGuardar({ idUnidad: idSeleccionado, datos })) {
-      setErrorGuardado(ERROR_GUARDADO)
-      return
-    }
-    if (!editando) {
-      setMontoMinimo('')
-      setMontoMaximo('')
+    // conservan los datos escritos para corregirlos. Mientras se guarda, el envío
+    // queda bloqueado para que un doble clic no repita la operación.
+    setGuardando(true)
+    try {
+      if (!(await onGuardar({ idUnidad: idSeleccionado, datos }))) {
+        setErrorGuardado(ERROR_GUARDADO)
+        return
+      }
+      if (!editando) {
+        setMontoMinimo('')
+        setMontoMaximo('')
+      }
+    } finally {
+      setGuardando(false)
     }
   }
 
@@ -214,7 +222,12 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
           )}
 
           <div className="umbral-form__actions">
-            <button type="submit" className="umbral-btn umbral-btn--primary">
+            <button
+              type="submit"
+              className="umbral-btn umbral-btn--primary"
+              disabled={guardando}
+              aria-busy={guardando}
+            >
               {editando ? 'Guardar cambios' : 'Agregar umbral'}
             </button>
             {editando && (

@@ -1,6 +1,7 @@
 import { afterEach, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  conBloqueoEntrePestanas,
   escribirJson,
   leerJson,
   obtenerAlmacenamientoLocal,
@@ -66,6 +67,48 @@ describe('persistenciaLocal · leerJson', () => {
       ok: false,
       motivo: 'ilegible',
     })
+  })
+})
+
+describe('persistenciaLocal · conBloqueoEntrePestanas (#124)', () => {
+  // Administrador de bloqueos mínimo: atiende las solicitudes de un mismo nombre en orden.
+  function crearLocks() {
+    const colas = new Map()
+    const pedidos = []
+    return {
+      pedidos,
+      request(nombre, callback) {
+        pedidos.push(nombre)
+        const anterior = colas.get(nombre) ?? Promise.resolve()
+        const actual = anterior.then(() => callback())
+        colas.set(
+          nombre,
+          actual.catch(() => {}),
+        )
+        return actual
+      },
+    }
+  }
+
+  it('ejecuta la tarea con el bloqueo pedido y devuelve su resultado', async () => {
+    const locks = crearLocks()
+    assert.equal(await conBloqueoEntrePestanas('umbrales', () => 42, locks), 42)
+    assert.deepEqual(locks.pedidos, ['umbrales'])
+  })
+
+  it('atiende en orden las tareas que piden el mismo bloqueo', async () => {
+    const locks = crearLocks()
+    const orden = []
+    await Promise.all([
+      conBloqueoEntrePestanas('umbrales', () => orden.push('a'), locks),
+      conBloqueoEntrePestanas('umbrales', () => orden.push('b'), locks),
+    ])
+    assert.deepEqual(orden, ['a', 'b'])
+  })
+
+  it('ejecuta la tarea sin bloqueo si el navegador no ofrece Web Locks', async () => {
+    assert.equal(await conBloqueoEntrePestanas('umbrales', () => 'ok', undefined), 'ok')
+    assert.equal(await conBloqueoEntrePestanas('umbrales', () => 'ok', {}), 'ok')
   })
 })
 

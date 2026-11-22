@@ -23,17 +23,19 @@ Cambiar cualquiera de esas reglas (por ejemplo, registrar cuándo el navegador b
 
 ## Contrato
 
-| Operación                             | Entrada                                                                         | Salida                                                                         | Errores o respaldo                                                                                                                                                                                                |
-| ------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `obtenerAlmacenamientoLocal()`        | —                                                                               | `Storage` o `null`                                                             | `null` si no hay `window` (Node, prerenderizado) o si leer `window.localStorage` lanza `SecurityError`. Nunca lanza.                                                                                              |
-| `leerJson(storage, clave)`            | `storage`: objeto con `getItem` o `null`; `clave`: texto                        | `{ ok: true, valor }` con el JSON guardado tal cual, o `{ ok: false, motivo }` | `motivo` es `'no-disponible'` (sin almacenamiento o `getItem` lanzó), `'ausente'` (nada guardado o cadena vacía) o `'ilegible'` (no es JSON). No valida la forma del valor: eso lo hace quien llama. Nunca lanza. |
-| `escribirJson(storage, clave, valor)` | `storage`: objeto con `setItem` o `null`; `clave`: texto; `valor`: serializable | `true` si se guardó, `false` si no                                             | `false` sin almacenamiento, si está bloqueado, sin cuota (`QuotaExceededError`) o si el valor no se puede serializar (por ejemplo, una referencia circular). Nunca lanza.                                         |
+| Operación                                | Entrada                                                                         | Salida                                                                         | Errores o respaldo                                                                                                                                                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `obtenerAlmacenamientoLocal()`           | —                                                                               | `Storage` o `null`                                                             | `null` si no hay `window` (Node, prerenderizado) o si leer `window.localStorage` lanza `SecurityError`. Nunca lanza.                                                                                                            |
+| `leerJson(storage, clave)`               | `storage`: objeto con `getItem` o `null`; `clave`: texto                        | `{ ok: true, valor }` con el JSON guardado tal cual, o `{ ok: false, motivo }` | `motivo` es `'no-disponible'` (sin almacenamiento o `getItem` lanzó), `'ausente'` (nada guardado o cadena vacía) o `'ilegible'` (no es JSON). No valida la forma del valor: eso lo hace quien llama. Nunca lanza.               |
+| `escribirJson(storage, clave, valor)`    | `storage`: objeto con `setItem` o `null`; `clave`: texto; `valor`: serializable | `true` si se guardó, `false` si no                                             | `false` sin almacenamiento, si está bloqueado, sin cuota (`QuotaExceededError`) o si el valor no se puede serializar (por ejemplo, una referencia circular). Nunca lanza.                                                       |
+| `conBloqueoEntrePestanas(nombre, tarea)` | `nombre`: texto del recurso; `tarea`: función síncrona                          | Promesa con el resultado de `tarea`                                            | Usa la Web Locks API (`navigator.locks`) para que la tarea no corra a la vez en dos pestañas. Si el navegador no la ofrece (o en Node), ejecuta la tarea sin bloqueo. Agregada en #124 para el ciclo leer → aplicar → escribir. |
 
 Consumidores reales (todos llaman a la misma implementación):
 
 - `src/features/aprobaciones/data/umbralesStorage.js` → `leerJson` y `escribirJson`
 - `src/features/favoritos/data/favoritosStorage.js` → `leerJson` y `escribirJson`
 - `src/app/providers/UmbralesProvider.jsx` y `src/app/providers/FavoritosProvider.jsx` → `obtenerAlmacenamientoLocal`
+- `src/app/providers/UmbralesProvider.jsx` → `conBloqueoEntrePestanas`
 
 Llamada real desde otro archivo (`umbralesStorage.js`):
 
@@ -70,3 +72,7 @@ Pendiente de verificación humana: otro integrante debe ejecutar el ejemplo de e
 
 - `ThemeProvider.jsx` también accede a `localStorage`, pero guarda texto plano (no JSON) y comparte la clave con el script en línea de `index.html`, que aplica el tema antes de montar React. Migrarlo exigiría cambiar ese script y no aporta a #124. Responsable: Vicente Saa; se revisará al cerrar el Hito 3.
 - La reconciliación de favoritos entre pestañas (el mismo problema de #124 en `FavoritosProvider`) queda coordinada con #46, que trabaja el manejo de favoritos.
+
+## Limitaciones conocidas
+
+- `conBloqueoEntrePestanas` depende de la Web Locks API (Chrome 69+, Firefox 96+, Safari 15.4+). En un navegador sin ella, la tarea corre sin bloqueo y dos pestañas que guardan exactamente al mismo tiempo, en procesos distintos, todavía podrían pisarse; el resto de las protecciones de #124 (releer antes de escribir y validar contra lo vigente) siguen activas.

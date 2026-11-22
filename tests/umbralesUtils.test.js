@@ -12,6 +12,7 @@ import {
   getNivelAprobadorLabel,
   getTipoUnidadLabel,
   idUnidadVigente,
+  mismosValoresUmbral,
   parseMontoClp,
   resolverNivelAprobador,
   tieneMontosNoEnteros,
@@ -166,6 +167,29 @@ describe('umbralesUtils · unidad seleccionada vigente (#125)', () => {
     assert.equal(idUnidadVigente(unidades, ''), '')
     assert.equal(idUnidadVigente(null, 'unidad-2'), '')
     assert.equal(idUnidadVigente(unidades, undefined), '')
+  })
+})
+
+describe('umbralesUtils · comparación de versiones de un umbral (#124)', () => {
+  it('considera iguales los mismos valores, con máximo vacío como sin tope', () => {
+    assert.equal(mismosValoresUmbral(UMBRAL_JEFE, { ...UMBRAL_JEFE, id: 'otro' }), true)
+    assert.equal(
+      mismosValoresUmbral(
+        { ...UMBRAL_SIN_TOPE, montoMaximo: undefined },
+        { ...UMBRAL_SIN_TOPE, montoMaximo: null },
+      ),
+      true,
+    )
+  })
+
+  it('detecta cambios en el mínimo, el máximo o el nivel, y entradas ausentes', () => {
+    assert.equal(mismosValoresUmbral(UMBRAL_JEFE, { ...UMBRAL_JEFE, montoMinimo: 1 }), false)
+    assert.equal(mismosValoresUmbral(UMBRAL_JEFE, { ...UMBRAL_JEFE, montoMaximo: 9 }), false)
+    assert.equal(
+      mismosValoresUmbral(UMBRAL_JEFE, { ...UMBRAL_JEFE, nivelAprobador: 'rectoria' }),
+      false,
+    )
+    assert.equal(mismosValoresUmbral(UMBRAL_JEFE, null), false)
   })
 })
 

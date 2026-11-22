@@ -162,6 +162,25 @@ export function idUnidadVigente(unidades, idUnidad) {
   return unidades.some((unidad) => unidad?.id === idUnidad) ? idUnidad : ''
 }
 
+/**
+ * Indica si dos versiones de un umbral tienen los mismos valores editables.
+ *
+ * Se usa para detectar que otra pestaña cambió un umbral mientras se editaba:
+ * se compara el umbral vigente con la versión que se abrió en el editor (#124).
+ *
+ * @param {{ montoMinimo: number, montoMaximo: number|null, nivelAprobador: string }} a
+ * @param {{ montoMinimo: number, montoMaximo: number|null, nivelAprobador: string }} b
+ * @returns {boolean} `true` si mínimo, máximo (vacío equivale a sin tope) y nivel coinciden.
+ */
+export function mismosValoresUmbral(a, b) {
+  if (!a || !b) return false
+  return (
+    a.montoMinimo === b.montoMinimo &&
+    (a.montoMaximo ?? null) === (b.montoMaximo ?? null) &&
+    a.nivelAprobador === b.nivelAprobador
+  )
+}
+
 function seSolapan(a, b) {
   const finA = a.montoMaximo === null ? Infinity : a.montoMaximo
   const finB = b.montoMaximo === null ? Infinity : b.montoMaximo
@@ -276,36 +295,45 @@ export function resolverNivelAprobador(umbrales, monto) {
   return umbral ? umbral.nivelAprobador : null
 }
 
-function siguienteNumero(ids, prefijo) {
+/**
+ * Devuelve el mayor número usado en ids con la forma `<prefijo>-<n>`.
+ *
+ * @param {Array<string>} ids - Identificadores a revisar.
+ * @param {string} prefijo - Prefijo del id (`unidad` o `umbral`).
+ * @returns {number} El mayor `n` encontrado, o 0 si no hay ninguno.
+ */
+export function mayorNumeroDeId(ids, prefijo) {
   let mayor = 0
   for (const id of ids) {
     if (typeof id !== 'string' || !id.startsWith(`${prefijo}-`)) continue
     const numero = Number.parseInt(id.slice(prefijo.length + 1), 10)
     if (Number.isInteger(numero) && numero > mayor) mayor = numero
   }
-  return mayor + 1
+  return mayor
 }
 
 /**
  * Genera un identificador único de umbral a partir de los umbrales existentes.
  *
  * @param {Array<Array<{ id: string }>>} umbralesPorUnidad - Umbrales agrupados por unidad.
+ * @param {number} [ultimo=0] - Mayor número ya usado, aunque su umbral se haya
+ *   eliminado; así un id no se reutiliza (#124).
  * @returns {string} Identificador nuevo (ej. `umbral-10`).
  */
-export function generarIdUmbral(umbralesPorUnidad = []) {
+export function generarIdUmbral(umbralesPorUnidad = [], ultimo = 0) {
   const ids = umbralesPorUnidad.flat().map((umbral) => umbral?.id)
-  return `umbral-${siguienteNumero(ids, 'umbral')}`
+  return `umbral-${Math.max(mayorNumeroDeId(ids, 'umbral'), ultimo) + 1}`
 }
 
 /**
  * Genera un identificador único de unidad a partir de las unidades existentes.
  *
  * @param {Array<{ id: string }>} [unidades=[]] - Unidades ya configuradas.
+ * @param {number} [ultimo=0] - Mayor número ya usado, aunque su unidad se haya
+ *   eliminado; así un id no se reutiliza (#124).
  * @returns {string} Identificador nuevo (ej. `unidad-4`).
  */
-export function generarIdUnidad(unidades = []) {
-  return `unidad-${siguienteNumero(
-    unidades.map((unidad) => unidad?.id),
-    'unidad',
-  )}`
+export function generarIdUnidad(unidades = [], ultimo = 0) {
+  const ids = unidades.map((unidad) => unidad?.id)
+  return `unidad-${Math.max(mayorNumeroDeId(ids, 'unidad'), ultimo) + 1}`
 }
