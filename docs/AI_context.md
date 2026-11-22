@@ -16,7 +16,7 @@
 Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
-- `npm run test` ejecuta las 121 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run test` ejecuta las 130 pruebas del cliente (incluye `tests/licitacionesApi.test.js`, que prueba el cliente HTTP con un `fetch` falso). Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
@@ -26,8 +26,8 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Configuración de umbrales de aprobación por unidad con `UmbralesProvider` y hook `useUmbrales`, persistida en `localStorage` como datos editables (REF-14).
 - Router con navegación interna (`react-router-dom` v7).
-- Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
-- La API vive en el repositorio independiente `LicitacionesUV-backend`: PostgreSQL mediante `pg`, catálogo ficticio propio, migraciones, pruebas y CI propios. El cliente no importa ni lee sus archivos.
+- Catálogo de licitaciones obtenido de la API con `LicitacionesProvider` y hook `useLicitaciones` (estados `cargando`, `listo` y `error` con reintento). `features/licitaciones/data/licitaciones.mock.json` se conserva solo como datos de las pruebas unitarias.
+- La API vive en el repositorio independiente `LicitacionesUV-backend`: PostgreSQL mediante `pg`, catálogo ficticio propio, migraciones, pruebas y CI propios. El cliente la consume por HTTP (`services/licitacionesApi.js`) y no importa ni lee sus archivos.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
@@ -78,17 +78,18 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 - **Límite con el backend independiente:**
   - La API expone salud, listado filtrado y detalle con el mismo contrato de nueve campos. Usa PostgreSQL con conexión configurada y catálogo propio en memoria sin ella.
   - Las migraciones, el seed y las pruebas de integración se administran desde la raíz de `LicitacionesUV-backend`.
-  - El frontend conserva su mock local y no consume `VITE_API_BASE_URL`. El consumo HTTP, la autenticación real y Mercado Público no se implementaron en esta separación.
+  - El frontend consume la API en `VITE_API_BASE_URL` (por defecto `http://localhost:3000/api`): `LicitacionesProvider` pide una vez `GET /api/licitaciones` y el explorador, favoritos y estadísticas filtran y ordenan en el navegador sobre ese catálogo; el detalle pide `GET /api/licitaciones/:id` y muestra la página 404 cuando la API responde 404. Si la API no responde, cada pantalla muestra el error con un botón «Reintentar» (`EstadoCatalogo`).
+  - La autenticación real, favoritos y umbrales en la API y Mercado Público siguen sin implementarse.
 
 ## 4. Arquitectura y flujo de entrada
 
 1. `index.html` define el documento HTML, favicon y contenedor `#root`.
 2. `src/main.jsx` importa `index.css` y monta `<App />`.
-3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider`, `UmbralesProvider` y `BrowserRouter`.
+3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider`, `UmbralesProvider`, `LicitacionesProvider` y `BrowserRouter`.
 4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/configuracion/umbrales`, 404).
 5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
 6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
-7. La API se inicia desde el repositorio independiente, por defecto en `http://localhost:3000`. El frontend Vite usa `http://localhost:5173` y conserva sus datos locales.
+7. La API se inicia desde el repositorio independiente, por defecto en `http://localhost:3000`. El frontend Vite usa `http://localhost:5173` y necesita la API levantada para mostrar licitaciones; en un despliegue, `VITE_API_BASE_URL` apunta a la API publicada y el backend debe permitir ese origen con `CORS_ORIGIN`.
 
 ## 5. Inventario de archivos relevantes
 
@@ -209,7 +210,7 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 ## 9. Variables de entorno y seguridad
 
 - `.env` y otros archivos de entorno están excluidos por `.gitignore`.
-- `.env.example` documenta únicamente `VITE_API_BASE_URL` para una integración posterior. Las variables PostgreSQL y del servidor se documentan en el backend independiente; no se trasladan archivos `.env` reales.
+- `.env.example` documenta únicamente `VITE_API_BASE_URL`, la URL de la API que consume el cliente. Las variables PostgreSQL y del servidor se documentan en el backend independiente; no se trasladan archivos `.env` reales.
 - Las variables con prefijo `VITE_` quedan expuestas al cliente al compilar; nunca colocar secretos allí.
 - Antes de integrar una API se debe definir el contrato, el manejo de errores, estados de carga y configuración por entorno.
 - No incluir credenciales, tokens, datos personales reales ni valores de `.env` en código, commits o documentación.

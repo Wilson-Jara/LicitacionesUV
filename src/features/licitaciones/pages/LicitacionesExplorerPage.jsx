@@ -1,14 +1,15 @@
 import { useState, useMemo } from 'react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
+import { EstadoCatalogo } from '../components/EstadoCatalogo'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
+import { useLicitaciones } from '../hooks/useLicitaciones'
 import {
   VALID_SORTS,
   countActiveFilters,
   filterLicitaciones,
   sortLicitaciones,
 } from '../licitacionFilters.js'
-import mockData from '../data/licitaciones.mock.json'
 import './LicitacionesExplorerPage.css'
 
 /**
@@ -36,17 +37,19 @@ if (![...SORT_OPTION_VALUES].every((value) => VALID_SORT_OPTION_VALUES.has(value
  * Integra la cabecera Hero con KPIs institucionales, la barra lateral de filtros,
  * selector de ordenamiento y la grilla de resultados. Gestiona la visualización
  * responsiva de filtros en dispositivos móviles y memoriza el filtrado y ordenamiento
- * del catálogo de datos mock.
+ * del catálogo que entrega la API (`useLicitaciones`). El filtrado ocurre en el navegador
+ * sobre el catálogo ya cargado, para responder al instante mientras se escribe.
  *
  * @returns {import('react').JSX.Element} Vista completa del explorador de licitaciones.
  */
 function LicitacionesExplorerPage() {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const { licitaciones, estado, recargar } = useLicitaciones()
 
   const filteredData = useMemo(() => {
-    return sortLicitaciones(filterLicitaciones(mockData, filters), filters.sort)
-  }, [filters])
+    return sortLicitaciones(filterLicitaciones(licitaciones, filters), filters.sort)
+  }, [licitaciones, filters])
 
   const activeFiltersCount = countActiveFilters(filters)
 
@@ -63,7 +66,7 @@ function LicitacionesExplorerPage() {
           </p>
           <div className="hero-kpis">
             <div className="hero-kpi-item">
-              <span className="kpi-val">{mockData.length}</span>
+              <span className="kpi-val">{licitaciones.length}</span>
               <span className="kpi-lbl">Total Procesos</span>
             </div>
             <div className="hero-kpi-divider"></div>
@@ -83,7 +86,7 @@ function LicitacionesExplorerPage() {
       {/* Barra de Resumen y Control Móvil */}
       <div className="licitaciones-results-bar">
         <div className="results-counter" role="status" aria-live="polite" aria-atomic="true">
-          Mostrando <strong>{filteredData.length}</strong> de <strong>{mockData.length}</strong>{' '}
+          Mostrando <strong>{filteredData.length}</strong> de <strong>{licitaciones.length}</strong>{' '}
           licitaciones disponibles
         </div>
 
@@ -132,7 +135,11 @@ function LicitacionesExplorerPage() {
           <FilterSidebar />
         </div>
         <div className="licitaciones-content">
-          <LicitacionList licitaciones={filteredData} onResetFilters={clearFilters} />
+          {estado === 'listo' ? (
+            <LicitacionList licitaciones={filteredData} onResetFilters={clearFilters} />
+          ) : (
+            <EstadoCatalogo estado={estado} onReintentar={recargar} />
+          )}
         </div>
       </div>
     </section>

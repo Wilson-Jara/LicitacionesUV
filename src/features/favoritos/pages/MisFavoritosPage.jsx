@@ -2,11 +2,12 @@ import { useMemo } from 'react'
 import { LicitacionCard } from '../../licitaciones/components/LicitacionCard'
 import { useFavoritos } from '../hooks/useFavoritos'
 import { useAuth } from '../../auth/hooks/useAuth'
-import mockData from '../../licitaciones/data/licitaciones.mock.json'
+import { useLicitaciones } from '../../licitaciones/hooks/useLicitaciones'
+import { EstadoCatalogo } from '../../licitaciones/components/EstadoCatalogo'
 import './MisFavoritosPage.css'
 
 /**
- * Muestra las licitaciones favoritas del usuario dentro del catálogo actual.
+ * Muestra las licitaciones favoritas del usuario dentro del catálogo que entrega la API.
  * Sin sesión invita a iniciar sesión; si los registros guardados ya no están en el catálogo,
  * muestra un estado vacío distinto al de una cuenta sin favoritos.
  *
@@ -15,10 +16,11 @@ import './MisFavoritosPage.css'
 function MisFavoritosPage() {
   const { user, openAuthModal } = useAuth()
   const { favoritos } = useFavoritos()
+  const { licitaciones: catalogo, estado, recargar } = useLicitaciones()
 
   const licitaciones = useMemo(() => {
-    return favoritos.map((f) => mockData.find((l) => l.id === f.idLicitacion)).filter(Boolean)
-  }, [favoritos])
+    return favoritos.map((f) => catalogo.find((l) => l.id === f.idLicitacion)).filter(Boolean)
+  }, [favoritos, catalogo])
 
   if (!user) {
     return (
@@ -35,6 +37,15 @@ function MisFavoritosPage() {
   }
 
   const sinFavoritos = favoritos.length === 0
+
+  if (!sinFavoritos && estado !== 'listo') {
+    return (
+      <section className="mis-favoritos">
+        <h1 className="mis-favoritos__title">Mis favoritos</h1>
+        <EstadoCatalogo estado={estado} onReintentar={recargar} />
+      </section>
+    )
+  }
 
   return (
     <section className="mis-favoritos">

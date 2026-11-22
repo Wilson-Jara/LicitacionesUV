@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useLicitacionFilters } from '../../licitaciones/hooks/useLicitacionFilters'
-import mockData from '../../licitaciones/data/licitaciones.mock.json'
+import { useLicitaciones } from '../../licitaciones/hooks/useLicitaciones'
+import { EstadoCatalogo } from '../../licitaciones/components/EstadoCatalogo'
 import { calcularDistribuciones, obtenerLicitacionesFiltradas } from '../estadisticasUtils.js'
 import { DistribucionPanel } from '../components/DistribucionPanel'
 import './PanelEstadisticasPage.css'
@@ -14,10 +15,11 @@ import './PanelEstadisticasPage.css'
  */
 function PanelEstadisticasPage() {
   const { filters } = useLicitacionFilters()
+  const { licitaciones, estado, recargar } = useLicitaciones()
 
   const licitacionesFiltradas = useMemo(
-    () => obtenerLicitacionesFiltradas(mockData, filters),
-    [filters],
+    () => obtenerLicitacionesFiltradas(licitaciones, filters),
+    [licitaciones, filters],
   )
 
   const distribuciones = useMemo(
@@ -39,11 +41,13 @@ function PanelEstadisticasPage() {
         </div>
         <div className="estadisticas__contador" role="status" aria-live="polite">
           Mostrando <strong>{licitacionesFiltradas.length}</strong> de{' '}
-          <strong>{Array.isArray(mockData) ? mockData.length : 0}</strong> licitaciones
+          <strong>{licitaciones.length}</strong> licitaciones
         </div>
       </header>
 
-      {sinResultados ? (
+      {estado !== 'listo' ? (
+        <EstadoCatalogo estado={estado} onReintentar={recargar} />
+      ) : sinResultados ? (
         <div className="estadisticas__vacio" role="status" aria-live="polite">
           <h2 className="estadisticas__vacio-titulo">Sin resultados con los filtros actuales</h2>
           <p className="estadisticas__vacio-texto">
@@ -68,7 +72,8 @@ function PanelEstadisticasPage() {
 
       <p className="estadisticas__nota">
         Las categorías sin registros no se muestran. Cuando una licitación pudiera tener múltiples
-        etiquetas, se cuenta en cada una; con el mock actual se asigna una categoría por licitación.
+        etiquetas, se cuenta en cada una; con los datos actuales se asigna una categoría por
+        licitación.
       </p>
     </section>
   )
