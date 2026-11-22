@@ -1,8 +1,11 @@
+import { AnimatePresence, motion as Motion } from 'motion/react'
+import { Moon, Sun } from 'lucide-react'
 import { useTheme } from '../hooks/useTheme'
 import './ThemeToggle.css'
 
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
+  const isDark = theme === 'dark'
 
   return (
     <button
@@ -10,18 +13,23 @@ function ThemeToggle() {
       className="button theme-toggle"
       onClick={toggleTheme}
       aria-label="Tema oscuro"
-      aria-pressed={theme === 'dark'}
+      aria-pressed={isDark}
     >
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      >
-        <path d="M20.9 13.4A9 9 0 0 1 10.6 3.1a9 9 0 1 0 10.3 10.3Z" />
-      </svg>
-      <span>Tema oscuro</span>
+      <span className="theme-toggle__icon" aria-hidden="true">
+        <AnimatePresence mode="wait" initial={false}>
+          <Motion.span
+            key={theme}
+            className="theme-toggle__glyph"
+            initial={{ opacity: 0, rotate: -35, scale: 0.75 }}
+            animate={{ opacity: 1, rotate: 0, scale: 1 }}
+            exit={{ opacity: 0, rotate: 35, scale: 0.75 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </Motion.span>
+        </AnimatePresence>
+      </span>
+      <span>{isDark ? 'Tema claro' : 'Tema oscuro'}</span>
     </button>
   )
 }

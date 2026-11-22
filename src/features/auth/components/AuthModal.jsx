@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
+import { motion as Motion } from 'motion/react'
+import { X } from 'lucide-react'
 import AuthForm from './AuthForm.jsx'
 import AuthIntro from './AuthIntro.jsx'
 import './AuthModal.css'
@@ -11,10 +13,10 @@ export default function AuthModal({ isOpen, onClose }) {
     if (!isOpen) return
     const dialog = dialogRef.current
     const opener = document.activeElement
-    dialog.showModal()
+    if (!dialog.open) dialog.showModal()
 
     return () => {
-      dialog.close()
+      if (dialog.open) dialog.close()
       const fallback = document.getElementById('contenido')
       const focusTarget =
         opener instanceof HTMLElement && opener !== document.body && opener.isConnected
@@ -53,13 +55,19 @@ export default function AuthModal({ isOpen, onClose }) {
       }}
     >
       {isOpen && (
-        <div className="auth-layout">
+        <Motion.div
+          className="auth-layout"
+          initial={{ opacity: 0, y: 14, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+        >
           <button type="button" className="button auth-close" onClick={onClose}>
-            Cerrar
+            <X size={18} aria-hidden="true" />
+            <span>Cerrar</span>
           </button>
           <AuthForm inDialog onComplete={onClose} />
           <AuthIntro />
-        </div>
+        </Motion.div>
       )}
     </dialog>
   )

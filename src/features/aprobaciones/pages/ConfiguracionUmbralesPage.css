@@ -99,13 +99,14 @@
 
 .umbrales-tabla-scroll {
   overflow-x: auto;
+  border-top: 1px solid var(--border);
 }
 
 .umbrales-tabla {
   width: 100%;
-  min-width: 29rem;
+  min-width: 34rem;
   border-collapse: collapse;
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .umbrales-tabla th,
@@ -134,20 +135,29 @@
   gap: 0.45rem;
 }
 
+.umbrales-tabla__acciones .umbral-btn {
+  white-space: nowrap;
+}
+
 .nivel-badge {
   display: inline-block;
-  padding: 0.3rem 0.55rem;
-  border-radius: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
   color: var(--hero-ink);
   background: var(--hero);
+  font-size: 1rem;
+  font-weight: 650;
 }
 
 .nivel-badge--direccion_economica {
+  border-color: var(--highlight-ink);
   color: var(--highlight-ink);
   background: var(--highlight);
 }
 
 .nivel-badge--rectoria {
+  border-color: var(--primary);
   color: var(--primary);
   background: var(--accent-bg);
 }
@@ -172,13 +182,20 @@
 .umbral-form__group select {
   width: 100%;
   min-height: 2.75rem;
-  padding: 0.55rem 0.65rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 0.45rem;
+  padding: 0.55rem 0.7rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 0.55rem;
+  font-size: 1rem;
 }
 
 .umbral-form__error {
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--danger);
+  border-radius: 0.5rem;
   color: var(--danger);
+  background: var(--danger-bg);
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .umbral-form__aviso,

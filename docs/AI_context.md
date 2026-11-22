@@ -65,7 +65,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
   - Script inline en `index.html` que aplica el tema guardado o la preferencia del sistema antes del montaje de React, evitando el flash de tema incorrecto.
   - Persistencia de la elección en `localStorage` (clave `licitacionesuv-theme`).
   - Botón de alternancia accesible (`ThemeToggle` con `aria-label` y `aria-pressed`) en la barra de navegación.
-  - Los componentes usan variables semánticas para fondo, texto, bordes, foco y estados. La paleta usa violeta y amarillo en superficies adaptadas a cada tema. Los atajos respetan la preferencia de movimiento reducido.
+  - Los componentes usan variables semánticas para fondo, texto, bordes, foco y estados. La paleta **Índigo-Morado UV y Arena** alcanza contraste WCAG 2.2 AAA (`≥ 7,47:1` en texto/enlaces/estados y `≥ 5,01:1` en bordes de controles) con referencia tipográfica mínima de `1rem` (16 px) en ambos temas. Las animaciones (`motion` envuelto en `<MotionConfig reducedMotion="user">`) y transiciones respetan la preferencia de movimiento reducido.
 - **Configuración de Umbrales de Aprobación (US-10, CR-302):**
   - Página `/configuracion/umbrales` (`ConfiguracionUmbralesPage`) que permite crear, editar y eliminar umbrales por unidad mediante los formularios `UmbralForm` y `UnidadForm` y el listado editable `UmbralesTable`.
   - Los umbrales son **datos configurables**, no constantes del código (CA2, regla R4 / REF-14): el punto de partida vive en `umbralesIniciales.js` y la configuración vigente se persiste en `localStorage` (clave `licitacionesuv-umbrales`).
@@ -169,6 +169,8 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 - React Router DOM `7.18.2`.
 - PropTypes `15.8.1`.
 - jsPDF `4.2.1` (generación de PDF en cliente).
+- Lucide React `1.77.0` (iconografía vectorial accesible).
+- Motion `14.14.0` (animaciones con `<MotionConfig reducedMotion="user">`).
 - Vite `8.2.1`.
 - ESLint `10.8.1`.
 - Prettier `3.9.6`.
