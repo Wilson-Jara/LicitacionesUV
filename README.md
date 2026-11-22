@@ -423,37 +423,33 @@ El PR debe incluir: propósito, resumen de cambios, cómo se verificó y el Issu
 Closes #[número_issue]
 ```
 
-> **Regla:** El Pull Request requiere la revisión y aprobación de al menos otro integrante del equipo antes del merge. El autor nunca aprueba su propio PR.
+> Cada PR hacia `main` o `develop` requiere dos aprobaciones antes del merge, una de QA (@StelleC) y otra de un integrante habilitado. Ambos revisores deben ser distintos del autor.
 
 ### Verificación automática y protección de ramas
 
 El repositorio aplica controles automáticos para que ningún cambio llegue a las ramas permanentes sin validación:
 
 - **Integración continua (CI):** el workflow `.github/workflows/verify.yml` ejecuta `npm run verify` en cada Pull Request hacia `main` y `develop`. Si lint, formato, pruebas o build fallan, el PR queda bloqueado.
-- **Protección de ramas:** `main` y `develop` exigen al menos **1 aprobación de un revisor distinto del autor** y el estado de CI en verde antes del merge.
-- **Asignación de revisores (CODEOWNERS):** `.github/CODEOWNERS` solicita automáticamente la revisión de los responsables del área que toca cada PR (detalle en [Asignación del revisor](#asignación-del-revisor)).
+- **Protección de ramas.** Los rulesets de `main` y `develop` deben exigir dos aprobaciones, la revisión de propietarios de código y el check `verify` antes del merge.
+- **Asignación de revisores.** `.github/CODEOWNERS` solicita automáticamente la revisión de QA. Ver [Asignación del revisor](#asignación-del-revisor).
 - **Plantilla de Pull Request:** `.github/pull_request_template.md` recuerda completar propósito, resumen, cómo se verificó y el issue que cierra.
 - **Plantillas de issues:** `.github/ISSUE_TEMPLATE/` incluye historia de usuario, tarea/chore y bug, con _Definition of Ready_ (DoR) y _Definition of Done_ (DoD).
 - **Revisor automático (IA):** el workflow `.github/workflows/ai-review.yml` publica un comentario con la revisión de DeepSeek (`.github/scripts/ai-review.mjs`) al abrir o reabrir un PR/issue y, bajo demanda, al agregar la etiqueta `ai-review`. Redacta secretos antes de enviar el contenido al modelo y responde en español. Requiere el secret `DEEPSEEK_API_KEY`; si no está configurado, la revisión se omite sin bloquear el CI.
 
-> **Regla:** no se fusiona un PR sin revisión de un par y sin que `npm run verify` pase en CI. La revisión automática de IA es una **sugerencia**: no reemplaza la revisión ni la aprobación humana.
+La revisión automática de IA aporta sugerencias. Las dos aprobaciones corresponden a revisores humanos.
 
 ### Asignación del revisor
 
 El revisor no se define como _assignee_ del issue (ese rol corresponde a quien implementa), sino que se registra en dos lugares:
 
 - **En el tablero (planificación):** el Project incluye un campo personalizado **"Revisor"** donde se indica qué integrante revisará la entrega.
-- **En el Pull Request (ejecución):** al abrir el PR, GitHub **asigna automáticamente** los revisores según [`.github/CODEOWNERS`](.github/CODEOWNERS); si hace falta, también se puede solicitar a mano en el panel **Reviewers**.
+- **En el Pull Request (ejecución).** GitHub solicita la revisión de @StelleC mediante [`.github/CODEOWNERS`](.github/CODEOWNERS). El autor solicita la segunda revisión en el panel **Reviewers**.
 
-El revisor debe ser **distinto del autor**: GitHub no permite aprobar el PR propio y la protección de rama exige al menos 1 aprobación de un par.
+Cuando @StelleC prepara un cambio, otro integrante debe abrir el PR. GitHub impide aprobar un PR propio.
 
 #### CODEOWNERS
 
-El archivo [`.github/CODEOWNERS`](.github/CODEOWNERS) mapea cada área del repositorio a sus responsables (ver [docs/roles-equipo.md](docs/roles-equipo.md)), de modo que GitHub propone al revisor adecuado según los archivos que toca cada PR, sin tener que agregarlos a mano.
-
-- **Alcance:** como los PR se abren hacia `develop`, el `CODEOWNERS` se aplica desde la **rama base** del PR; debe estar fusionado en `develop` para surtir efecto.
-- **Aplicación:** para _exigir_ la aprobación de un code owner (no solo sugerirla), hay que activar **Require review from Code Owners** en la protección de `main` y `develop`.
-- **Revisión cruzada:** cada área tiene al menos **dos responsables**, de modo que siempre exista un revisor distinto del autor.
+El archivo [`.github/CODEOWNERS`](.github/CODEOWNERS) asigna todos los archivos a @StelleC. GitHub lee el archivo de la rama base del PR. Para exigir su aprobación, integrar este archivo en ambas ramas y habilitar **Require review from Code Owners** en sus rulesets.
 
 ### ¿Cuándo se fusiona `develop` hacia `main`?
 
@@ -461,7 +457,7 @@ La integración de `develop` → `main` **no ocurre con cada feature**. Solo se 
 
 1. Verificar que `develop` está estable y que `npm run verify` pasa completo.
 2. Abrir un Pull Request `develop` → `main` con un resumen de todo lo integrado desde el último corte.
-3. Revisión de al menos otro integrante que no participó en los cambios a integrar.
+3. Obtener la aprobación de QA (@StelleC) y la de otro integrante habilitado. Ambos deben ser distintos del autor del PR.
 4. Merge a `main` y, si corresponde, crear un tag de versión (`git tag -a v0.X.0 -m "..."`).
 5. Mantener `develop` como base de trabajo para el siguiente ciclo.
 
