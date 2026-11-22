@@ -16,17 +16,22 @@
 Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
-- `npm run test` ejecuta las 121 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run test` ejecuta las 145 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
-- `npm run verify` pasa tras retirar el backend: lint, formato, 121 pruebas y build. La cobertura propia del cliente es 99,13 % líneas, 90,67 % ramas y 99,06 % funciones; la crítica pasa con 100 % en las tres métricas. Son resultados locales, no del CI remoto.
+- `npm run verify` pasa: lint, formato, 145 pruebas y build. El contrato rechaza fechas de calendario imposibles, incluidos días inválidos de febrero, y tolera `sector` ausente o nulo. La medición de filtros es reproducible con `npm run bench:filtros` (`scripts/medir-filtros.mjs`), que falla sobre el objetivo de 2 s de REF-01. La cobertura propia del cliente se debe recalcular tras esta entrega; son resultados locales, no del CI remoto.
+- `npm run test` ejecuta las 122 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
+- El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
+- Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
+- `npm run verify` pasa tras retirar el backend: lint, formato, 122 pruebas y build. La cobertura propia del cliente es 99,13 % líneas, 90,67 % ramas y 99,06 % funciones; la crítica pasa con 100 % en las tres métricas. Son resultados locales, no del CI remoto.
 
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Configuración de umbrales de aprobación por unidad con `UmbralesProvider` y hook `useUmbrales`, persistida en `localStorage` como datos editables (REF-14).
 - Router con navegación interna (`react-router-dom` v7).
-- Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
+- Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`, con `sector` opcional y `etiquetas` normalizadas.
 - La API vive en el repositorio independiente `LicitacionesUV-backend`: PostgreSQL mediante `pg`, catálogo ficticio propio, migraciones, pruebas y CI propios. El cliente no importa ni lee sus archivos.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
@@ -41,19 +46,19 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
   - `profileStorage.js` guarda el perfil por cuenta en `localStorage` (`licitacionesuv-perfil:<correo de acceso>`). El correo de acceso conserva la identidad de la cuenta y sus favoritos.
   - La sesión simulada se conserva al recargar la pestaña mediante `sessionStorage` (`licitacionesuv-sesion-demo`), con el nombre y el correo de acceso. Cerrar sesión elimina esa entrada.
 - **Explorador de Licitaciones:**
-  - Cabecera con búsqueda por título, atajos de ejemplo y aviso explícito de catálogo ficticio. El término, la región, el tipo y el orden siguen en la URL.
-  - Barra lateral (`FilterSidebar`) con selección de región, radios de tipo y filtros aplicados que se pueden quitar individualmente.
+  - Cabecera con búsqueda por título, atajos de ejemplo y aviso explícito de catálogo ficticio. El término, la región, el sector, la etiqueta, el tipo y el orden siguen en la URL.
+  - Barra lateral (`FilterSidebar`) con selección de región, sector y etiqueta, radios de tipo y filtros aplicados que se pueden quitar individualmente.
   - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
-  - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
+  - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, sector, etiquetas, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
   - Lista semántica con contador accesible, estado vacío y restablecimiento de filtros. En pantallas estrechas, los filtros se pueden desplegar.
 - **Panel de Estadísticas (`/estadisticas`):**
   - Distribuciones por región, tipo (`publica`/`privada`) y sector, calculadas como cantidad de licitaciones sobre el conjunto filtrado del explorador.
   - El enlace entre explorador y estadísticas mantiene los parámetros de la URL. El panel se recalcula con esos parámetros y muestra un estado vacío cuando no hay coincidencias.
-  - El sector se deriva de la institución (Universidad, Municipalidad, Ministerio, Banco, Empresa u Otro) porque el mock no trae un campo de etiqueta propio; cada licitación cuenta en una categoría.
+  - El sector usa el campo explícito del mock (`tecnologia`, `infraestructura` o `finanzas`); si falta, se deriva de la institución para conservar compatibilidad con datos anteriores.
   - Cada distribución ofrece una alternativa textual accesible (texto para lectores de pantalla y tabla con categorías y valores) además de las barras visuales.
 - **Detalle de Licitación:**
   - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
-  - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos.
+  - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos. Las filas de región y bases oficiales conservan posiciones verticales separadas incluso cuando el enlace se envuelve.
   - La generación del PDF ocurre en un **Web Worker** (fuera del hilo principal) con `jsPDF`; el hilo principal solo recibe el `ArrayBuffer` y dispara la descarga, por lo que la navegación no se bloquea (CA6). Si el navegador no soporta Web Workers, la exportación se rechaza y se muestra un mensaje de error visible (CA5), sin ejecutar generación síncrona en el hilo principal. La carga del módulo de exportación y del worker es diferida.
   - Las licitaciones cerradas no pueden guardarse como favoritas; las que ya estaban guardadas aún pueden quitarse.
   - El campo `sourceUrl` se mantiene en el contrato de datos mock.
@@ -160,7 +165,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                 |
 | `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                               |
 | `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                                 |
-| `.github/CODEOWNERS`                                               | Asigna automáticamente los revisores de cada PR según el área modificada.                                |
+| `.github/CODEOWNERS`                                               | Asigna a QA (@StelleC) como propietario de código de todos los archivos.                                 |
 | `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                               |
 | `docs/api/*.md`                                                    | Documentación de las APIs del Entregable 2 (#43 y #44) y su trazabilidad con los CA.                     |
 | `docs/thunder-client/*.json`                                       | Colecciones exportadas de Thunder Client con los casos de prueba de cada API.                            |
