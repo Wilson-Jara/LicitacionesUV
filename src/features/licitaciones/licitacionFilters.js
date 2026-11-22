@@ -1,3 +1,5 @@
+import { normalizarCategoria, VALID_ETIQUETAS, VALID_SECTORES } from './categorias.js'
+
 /** Claves de región aceptadas en los filtros; cualquier otro valor se descarta. */
 export const VALID_REGIONES = ['valparaiso', 'metropolitana', 'biobio', 'antofagasta']
 
@@ -36,7 +38,7 @@ function resolveLastValidParam(values, allowedValues) {
   for (let i = values.length - 1; i >= 0; i--) {
     const val = values[i]
     if (typeof val === 'string') {
-      const normalized = val.trim().toLowerCase()
+      const normalized = normalizarCategoria(val)
       if (allowedValues.includes(normalized)) {
         return normalized
       }
@@ -66,35 +68,42 @@ function resolveKeywordParam(values) {
  * evaluar la coincidencia (`filterLicitaciones`) y al contar activos (`countActiveFilters`).
  *
  * @param {URLSearchParams|Record<string, unknown>} [rawParams={}] - Parámetros en bruto.
- * @returns {{keyword: string, region: string, tipo: string, sort: string}} Filtros y
- *   criterio de orden saneados.
+ * @returns {{keyword: string, region: string, sector: string, etiqueta: string,
+ *   tipo: string, sort: string}} Filtros y criterio de orden saneados.
  */
 export function sanitizeFilterParams(rawParams = {}) {
   const keywordValues = getAllParams(rawParams, 'keyword')
   const regionValues = getAllParams(rawParams, 'region')
+  const sectorValues = getAllParams(rawParams, 'sector')
+  const etiquetaValues = getAllParams(rawParams, 'etiqueta')
   const tipoValues = getAllParams(rawParams, 'tipo')
   const sortValues = getAllParams(rawParams, 'sort')
 
   const keyword = resolveKeywordParam(keywordValues)
   const region = resolveLastValidParam(regionValues, VALID_REGIONES)
+  const sector = resolveLastValidParam(sectorValues, VALID_SECTORES)
+  const etiqueta = resolveLastValidParam(etiquetaValues, VALID_ETIQUETAS)
   const tipo = resolveLastValidParam(tipoValues, VALID_TIPOS)
   const sort = resolveLastValidParam(sortValues, VALID_SORTS)
 
-  return { keyword, region, tipo, sort }
+  return { keyword, region, sector, etiqueta, tipo, sort }
 }
 
 /**
  * Cuenta la cantidad de filtros activos. Para `keyword` se considera activa solo si
  * contiene texto después de aplicar trim.
  *
- * @param {{keyword?: string, region?: string, tipo?: string}} [filters={}] - Objeto de filtros.
- * @returns {number} Cantidad de filtros efectivamente activos (0 a 3).
+ * @param {{keyword?: string, region?: string, sector?: string, etiqueta?: string,
+ *   tipo?: string}} [filters={}] - Objeto de filtros.
+ * @returns {number} Cantidad de filtros efectivamente activos (0 a 5).
  */
 export function countActiveFilters(filters = {}) {
   const keyword = typeof filters?.keyword === 'string' ? filters.keyword.trim() : ''
   const region = typeof filters?.region === 'string' ? filters.region.trim() : ''
+  const sector = typeof filters?.sector === 'string' ? filters.sector.trim() : ''
+  const etiqueta = typeof filters?.etiqueta === 'string' ? filters.etiqueta.trim() : ''
   const tipo = typeof filters?.tipo === 'string' ? filters.tipo.trim() : ''
-  return [keyword, region, tipo].filter(Boolean).length
+  return [keyword, region, sector, etiqueta, tipo].filter(Boolean).length
 }
 
 function normalizeKeyword(keyword) {
@@ -112,6 +121,17 @@ function matchesRegion(licitacion, region) {
   return licitacion?.region === region
 }
 
+function matchesSector(licitacion, sector) {
+  if (!sector) return true
+  return normalizarCategoria(licitacion?.sector) === sector
+}
+
+function matchesEtiqueta(licitacion, etiqueta) {
+  if (!etiqueta) return true
+  if (!Array.isArray(licitacion?.etiquetas)) return false
+  return licitacion.etiquetas.some((tag) => normalizarCategoria(tag) === etiqueta)
+}
+
 function matchesTipo(licitacion, tipo) {
   if (!tipo) return true
   return licitacion?.type === tipo
@@ -121,6 +141,8 @@ function matchesAllFilters(licitacion, filters) {
   return (
     matchesKeyword(licitacion, normalizeKeyword(filters.keyword)) &&
     matchesRegion(licitacion, filters.region) &&
+    matchesSector(licitacion, filters.sector) &&
+    matchesEtiqueta(licitacion, filters.etiqueta) &&
     matchesTipo(licitacion, filters.tipo)
   )
 }
@@ -130,13 +152,17 @@ function matchesAllFilters(licitacion, filters) {
  * todos los filtros activos. Un filtro ausente o vacío se ignora y no restringe
  * el resultado.
  *
- * @param {Array<{title: string, region: string, type: string}>} [licitaciones=[]] -
+ * @param {Array<{title: string, region: string, sector?: string,
+ *   etiquetas?: Array<string>, type: string}>} [licitaciones=[]] -
  *   Catálogo de licitaciones. Cada elemento debe exponer `title` (texto de
- *   búsqueda), `region` y `type` (claves internas comparadas por igualdad).
- * @param {{keyword?: string, region?: string, tipo?: string}} [filters={}] - Filtros
- *   a aplicar: `keyword` busca de forma insensible a mayúsculas únicamente en
- *   el título (quitando espacios externos con `trim`); `region` y `tipo` exigen coincidencia
- *   exacta con la clave de la licitación y descartan valores no válidos.
+ *   búsqueda), `region` y `type` (claves internas comparadas por igualdad);
+ *   `sector` y `etiquetas` son opcionales y se comparan normalizados.
+ * @param {{keyword?: string, region?: string, sector?: string, etiqueta?: string,
+ *   tipo?: string}} [filters={}] - Filtros a aplicar: `keyword` busca de forma
+ *   insensible a mayúsculas únicamente en el título (quitando espacios externos
+ *   con `trim`); `region`, `sector`, `etiqueta` y `tipo` exigen coincidencia
+ *   exacta con la clave de la licitación, sin distinguir mayúsculas ni tildes,
+ *   y descartan valores no válidos.
  * @returns {Array} Nueva lista con las licitaciones que cumplen todos los
  *   criterios activos; vacía si ninguna coincide. No muta el arreglo de entrada.
  */

@@ -41,6 +41,14 @@ describe('estadisticasUtils · derivarSector', () => {
     assert.equal(derivarSector({ institution: 'Empresa privada de servicios' }), 'empresa')
     assert.equal(derivarSector({ institution: null }), 'otro')
   })
+
+  it('prioriza el campo explícito y lo normaliza', () => {
+    assert.equal(
+      derivarSector({ sector: 'Tecnología', institution: 'Universidad de Valparaíso' }),
+      'tecnologia',
+    )
+    assert.equal(derivarSector({ sector: '  ', institution: 'Banco Internacional' }), 'banco')
+  })
 })
 
 describe('estadisticasUtils · calcularDistribuciones', () => {
@@ -69,6 +77,19 @@ describe('estadisticasUtils · calcularDistribuciones', () => {
         { clave: 'universidad', cantidad: 1 },
       ],
     )
+  })
+
+  it('usa el sector explícito y su etiqueta legible', () => {
+    const dist = calcularDistribuciones([
+      {
+        region: 'metropolitana',
+        type: 'privada',
+        sector: 'tecnologia',
+        institution: 'Empresa privada de servicios',
+      },
+    ])
+
+    assert.deepEqual(dist.porSector, [{ clave: 'tecnologia', etiqueta: 'Tecnología', cantidad: 1 }])
   })
 
   it('devuelve distribuciones vacías cuando no hay datos', () => {
