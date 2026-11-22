@@ -1,0 +1,69 @@
+.perfil {
+  max-width: 40rem;
+  padding-block: 2rem 4rem;
+}
+
+.perfil__intro {
+  margin-top: 0.45rem;
+  color: var(--text);
+}
+
+.perfil__panel {
+  margin-top: 1.25rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card-bg);
+}
+
+.perfil__guest {
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+.perfil__form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.perfil__field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.perfil__field label {
+  font-weight: 650;
+}
+
+.perfil__field input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.5rem;
+}
+
+.perfil__field input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.perfil__hint {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.perfil__error {
+  color: var(--danger);
+}
+
+.perfil__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 1rem;
+}
+
+.perfil__status {
+  color: var(--success-text);
+  font-weight: 600;
+}
