@@ -325,6 +325,27 @@ frontend consuma la API, `VITE_API_BASE_URL` se define en las variables de entor
 del proyecto en Vercel (se incrusta al compilar, por lo que cambiarla exige volver
 a desplegar) y el backend debe incluir la URL del frontend en `CORS_ORIGIN`.
 
+#### Quién vuelve a desplegar y cuándo
+
+El proyecto `licitacionesuv` de Vercel pertenece a la cuenta de Vicente Saa
+(@Reinald-Code) y **no está conectado a GitHub**, así que el sitio no se actualiza
+solo con cada push o merge: si nadie despliega, la URL sigue mostrando la versión
+anterior.
+
+- **Responsable:** Vicente Saa (@Reinald-Code). Si no está disponible, otra persona
+  puede publicar una copia con su propia cuenta (`npx vercel --prod`), pero obtendrá
+  otra URL, que habría que actualizar aquí y en `CORS_ORIGIN` del backend.
+- **Cuándo:** después de cada merge a `main`, antes de cada demo o presentación y
+  cada vez que cambie `VITE_API_BASE_URL`.
+- **Cómo:** desde una copia limpia y actualizada de la rama que se publica:
+
+  ```bash
+  git pull
+  npm ci
+  npm run verify
+  npx vercel --prod
+  ```
+
 ---
 
 ## Formateo de código
