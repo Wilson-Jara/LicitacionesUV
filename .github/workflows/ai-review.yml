@@ -2,16 +2,13 @@ name: ai-review
 
 on:
   pull_request:
-    types: [opened, reopened, labeled]
+    types: [opened, reopened, labeled, ready_for_review]
     branches: [main, develop]
   issues:
     types: [opened, labeled]
 
 permissions:
   contents: read
-  checks: read
-  pull-requests: write
-  issues: write
 
 concurrency:
   group: ai-review-${{ github.event.pull_request.number || github.event.issue.number }}
@@ -19,19 +16,33 @@ concurrency:
 
 jobs:
   deepseek-review:
-    runs-on: ubuntu-latest
-    # Se ejecuta al abrir/reabrir, o cuando se agrega la etiqueta ai-review.
-    # En PRs desde forks no hay secretos; se omiten para no fallar.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      checks: read
+      pull-requests: write
+      issues: write
+    # Solo colaboradores del repositorio; los PR de forks y borradores se omiten.
     if: >-
-      (github.event_name == 'issues' ||
-      github.event.pull_request.head.repo.full_name == github.repository) &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        !github.event.pull_request.draft) ||
+       (github.event_name == 'issues' &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association))) &&
       (github.event.action != 'labeled' || github.event.label.name == 'ai-review')
     steps:
+      # Ejecutar solo el script ya revisado de la rama base, nunca el código del PR.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.19.0'
+          node-version: '22.22.0'
       - name: Revisar con DeepSeek
+        # El PR que introduce el revisor se omite hasta integrarlo en la rama base.
+        if: ${{ hashFiles('.github/scripts/ai-review.mjs') != '' }}
         run: node .github/scripts/ai-review.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -16,7 +16,7 @@
 Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
-- `npm run test` ejecuta las 121 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run test` ejecuta las 131 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
@@ -217,6 +217,10 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 El revisor automático `.github/scripts/ai-review.mjs` limita la lectura a 75.000
 caracteres por archivo de contexto y 120.000 caracteres para el diff completo del
 PR. Estos límites se aplican antes de enviar el contenido redactado a DeepSeek.
+El workflow ejecuta el script desde la referencia base, desactiva la persistencia
+de credenciales del checkout, omite drafts/forks y restringe los permisos de
+escritura al job que publica comentarios. La ausencia de `DEEPSEEK_API_KEY` omite
+la revisión sin fallar el workflow.
 
 ## 10. Alcance y privacidad del contexto
 
