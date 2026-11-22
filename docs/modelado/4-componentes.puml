@@ -1,0 +1,99 @@
+@startuml
+title LicitacionesUV — Diagrama de componentes (estado vigente)
+
+left to right direction
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam component {
+  BackgroundColor #F7F3FA
+  BorderColor #603489
+}
+skinparam interface {
+  BackgroundColor #FFD54F
+  BorderColor #5D4037
+}
+
+legend left
+  |= Símbolo |= Significado |
+  | ○ P | interfaz provista (bola UML) |
+  | ⊂ R | interfaz requerida (enchufe/portout UML) |
+  | <<external>> | recurso o biblioteca fuera del componente |
+  | línea discontinua | dependencia/uso implementado |
+  | sin ensamblar | integración prevista, todavía no implementada |
+endlegend
+
+package "Repositorio LicitacionesUV\n(frontend)" as FrontRepo {
+  component "SPA React\nsrc/app + src/features" as SPA {
+    portout "R: catálogo local" as RLocalCatalog
+    portout "R: Storage API" as RStorage
+    portout "R: exportar PDF" as RPdf
+    portout "R: API HTTP futura" as RHttpFuture
+  }
+
+  component "Exportación PDF\nservices/exportLicitacionPdf*\nWeb Worker + buildLicitacionPdf" as PdfExport
+  component "jsPDF 4.2.1" as JsPdf <<external>>
+  component "Web Storage del navegador\nlocalStorage" as LocalStorage <<external>>
+  artifact "Catálogo local\ndata/licitaciones.mock.json" as FrontMock
+
+  () "P: catálogo local JSON" as ILocalCatalog
+  () "P: exportación PDF asíncrona" as IPdf
+  () "P: jsPDF" as IJsPdf
+  () "P: Storage API" as IStorage
+
+  FrontMock - ILocalCatalog
+  RLocalCatalog ..> ILocalCatalog : importa JSON
+  PdfExport - IPdf
+  RPdf ..> IPdf : postMessage / Blob
+  JsPdf - IJsPdf
+  PdfExport ..> IJsPdf : importa
+  LocalStorage - IStorage
+  RStorage ..> IStorage : tema, favoritos y umbrales
+
+  note bottom of RHttpFuture
+    Enchufe requerido no ensamblado.
+    El frontend aún usa FrontMock y no
+    consume VITE_API_BASE_URL ni IHttp.
+  end note
+}
+
+package "Repositorio LicitacionesUV-backend\n(servicio independiente)" as BackRepo {
+  component "Arranque HTTP\nsrc/server.js" as Server
+  component "API HTTP\nsrc/app.js + src/routes" as Api
+  component "Repositorio en memoria\ncreateMemoryLicitacionesRepository" as MemoryRepo
+  component "Repositorio PostgreSQL\ncreatePgLicitacionesRepository" as PgRepo
+  component "Pool pg\nsrc/db/pool.js" as PgPool
+  artifact "Catálogo propio\nsrc/data/licitaciones.mock.json" as BackMock
+
+  () "P: GET /api/health\nGET /api/licitaciones\nGET /api/licitaciones/:id" as IHttp
+  () "P: LicitacionesRepository\nlist · findById" as IRepository
+  () "P: catálogo en memoria" as IMemoryCatalog
+  () "P: consultas SQL parametrizadas" as ISqlClient
+
+  Api - IHttp
+  Server ..> Api : createServer(createApp)
+  Api ..> IRepository : R: inyección
+  MemoryRepo - IRepository
+  PgRepo - IRepository
+  BackMock - IMemoryCatalog
+  MemoryRepo ..> IMemoryCatalog : R: loadMockLicitaciones
+  PgRepo ..> ISqlClient : R: db.query
+  PgPool - ISqlClient
+  Server ..> MemoryRepo : sin DATABASE_URL
+  Server ..> PgRepo : con DATABASE_URL
+
+  note bottom of IHttp
+    Interfaz provista por el backend.
+    No se dibuja conexión con la SPA
+    porque #113 dejó la integración HTTP
+    fuera del alcance de la separación.
+  end note
+}
+
+database "PostgreSQL 16\n<<external>>" as PostgreSQL
+() "P: protocolo PostgreSQL" as IPostgreSql
+PostgreSQL - IPostgreSql
+PgPool ..> IPostgreSql : R: conexión DATABASE_URL
+
+@enduml
