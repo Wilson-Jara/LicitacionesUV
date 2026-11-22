@@ -68,6 +68,13 @@ describe('contrato de datos de licitaciones (#94)', () => {
     assert.deepEqual(validarContratoLicitacion(licitacion), [])
   })
 
+  it('trata sector nulo como ausente', () => {
+    const licitacion = clonarPrimera()
+    licitacion.sector = null
+
+    assert.deepEqual(validarContratoLicitacion(licitacion), [])
+  })
+
   it('detecta campos obligatorios ausentes o vacíos', () => {
     const licitacion = clonarPrimera()
     delete licitacion.title
@@ -114,6 +121,15 @@ describe('contrato de datos de licitaciones (#94)', () => {
 
   it('detecta identificadores duplicados en el catálogo', () => {
     const duplicado = clonarPrimera()
+    const errores = validarContratoLicitaciones([mock[0], duplicado])
+
+    assert.ok(errores.some((error) => error.includes('identificador duplicado')))
+  })
+
+  it('detecta identificadores duplicados aunque difieran en espacios externos', () => {
+    const duplicado = clonarPrimera()
+    duplicado.id = `  ${mock[0].id}  `
+
     const errores = validarContratoLicitaciones([mock[0], duplicado])
 
     assert.ok(errores.some((error) => error.includes('identificador duplicado')))

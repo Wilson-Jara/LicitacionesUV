@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
@@ -17,23 +17,31 @@ const sortOptions = [
 
 const ejemplos = ['Mantenimiento', 'Software', 'Consultoría']
 
-const sectoresDisponibles = [
-  ...new Set(mockData.map((licitacion) => licitacion.sector).filter(Boolean)),
-].sort((a, b) => getSectorLabel(a).localeCompare(getSectorLabel(b), 'es'))
+function listarSectores(catalogo) {
+  return [...new Set(catalogo.map((licitacion) => licitacion.sector).filter(Boolean))].sort(
+    (a, b) => getSectorLabel(a).localeCompare(getSectorLabel(b), 'es'),
+  )
+}
 
-const etiquetasDisponibles = [
-  ...new Set(
-    mockData.flatMap((licitacion) =>
-      Array.isArray(licitacion.etiquetas) ? licitacion.etiquetas : [],
+function listarEtiquetas(catalogo) {
+  return [
+    ...new Set(
+      catalogo.flatMap((licitacion) =>
+        Array.isArray(licitacion.etiquetas) ? licitacion.etiquetas : [],
+      ),
     ),
-  ),
-].sort((a, b) => getEtiquetaLabel(a).localeCompare(getEtiquetaLabel(b), 'es'))
+  ].sort((a, b) => getEtiquetaLabel(a).localeCompare(getEtiquetaLabel(b), 'es'))
+}
 
 function LicitacionesExplorerPage() {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const searchRef = useRef(null)
   const resultsHeading = useRef(null)
+  // Las opciones se derivan de la fuente activa; al migrar a la API solo cambia
+  // `mockData`, sin tocar los desplegables.
+  const sectoresDisponibles = useMemo(() => listarSectores(mockData), [])
+  const etiquetasDisponibles = useMemo(() => listarEtiquetas(mockData), [])
   const results = sortLicitaciones(filterLicitaciones(mockData, filters), filters.sort)
   const activeCount = countActiveFilters(filters)
 

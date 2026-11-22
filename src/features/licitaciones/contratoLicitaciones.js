@@ -2,9 +2,10 @@
  * Validación del contrato de datos del catálogo de licitaciones (#94).
  *
  * El contrato exige los campos históricos del mock y agrega `sector` (texto
- * opcional, ausente si no aplica) y `etiquetas` (lista obligatoria de textos;
- * se permite una lista vacía). El mock debe guardar claves normalizadas;
- * los filtros toleran tildes y mayúsculas al recibir parámetros externos.
+ * opcional; ausente, `undefined` o `null` si no aplica) y `etiquetas` (lista
+ * obligatoria de textos; se permite una lista vacía). El mock debe guardar
+ * claves normalizadas; los filtros toleran tildes y mayúsculas al recibir
+ * parámetros externos.
  */
 
 import { VALID_ETIQUETAS, VALID_SECTORES, normalizarCategoria } from './categorias.js'
@@ -87,7 +88,7 @@ export function validarContratoLicitacion(licitacion, indice = 0) {
     errores.push(`${prefijo}.sourceUrl: debe ser una URL HTTP(S) válida.`)
   }
 
-  if (Object.prototype.hasOwnProperty.call(licitacion, 'sector')) {
+  if (licitacion.sector !== undefined && licitacion.sector !== null) {
     const sector = licitacion.sector
     if (!esTextoNoVacio(sector)) {
       errores.push(`${prefijo}.sector: si existe, debe ser texto no vacío.`)
@@ -146,12 +147,13 @@ export function validarContratoLicitaciones(licitaciones) {
     errores.push(...validarContratoLicitacion(licitacion, indice))
 
     if (esTextoNoVacio(licitacion?.id)) {
-      if (ids.has(licitacion.id)) {
+      const id = licitacion.id.trim()
+      if (ids.has(id)) {
         errores.push(
-          `licitación[${indice}].id: identificador duplicado (${licitacion.id}), ya usado en [${ids.get(licitacion.id)}].`,
+          `licitación[${indice}].id: identificador duplicado (${licitacion.id}), ya usado en [${ids.get(id)}].`,
         )
       } else {
-        ids.set(licitacion.id, indice)
+        ids.set(id, indice)
       }
     }
   })

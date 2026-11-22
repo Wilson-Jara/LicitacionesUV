@@ -290,7 +290,7 @@ describe('sanitizeFilterParams', () => {
       region: '  Valparaiso  ',
       sector: '  Tecnología  ',
       etiqueta: '  Auditoría  ',
-      tipo: '  PUBLICA  ',
+      tipo: '  PÚBLICA  ',
     })
 
     assert.deepEqual(sanea, {
