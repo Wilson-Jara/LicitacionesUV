@@ -16,7 +16,9 @@
  *   publica pasa antes por la redacción de secretos.
  * - Seguridad: omite archivos sensibles y redacta secretos antes de enviar
  *   el contenido al modelo y antes de publicar la respuesta.
- * No requiere dependencias: usa fetch nativo de Node 22.22+.
+ * No requiere dependencias: usa fetch nativo disponible desde Node 20.19,
+ * que es el mínimo declarado en `engines`. El CI fija 22.22.0 para igualar
+ * la versión de `verify.yml`, necesaria por los umbrales de cobertura.
  *
  * Usa siempre el modelo DeepSeek-V4.1-Flash (deepseek-flash) en modo
  * thinking con effort "low" para mantener el costo por revisión acotado.
@@ -93,6 +95,8 @@ const requestNote = requested
   : ''
 
 const [owner, repo] = (GITHUB_REPOSITORY ?? '').split('/')
+// Endpoint fijo a propósito: el revisor solo debe hablar con api.deepseek.com.
+// Un proxy o proveedor distinto exige editar este archivo y sus pruebas.
 const baseUrl = 'https://api.deepseek.com'
 
 const ghHeaders = {

@@ -24,6 +24,8 @@ jobs:
       pull-requests: write
       issues: write
     # Solo colaboradores del repositorio; los PR de forks y borradores se omiten.
+    # En issues, author_association limita la revisión a OWNER/MEMBER/COLLABORATOR:
+    # así una cuenta externa no consume la API ni inyecta texto en la revisión.
     if: >-
       ((github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name == github.repository &&
@@ -39,6 +41,8 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
+          # Misma versión que verify.yml: Node 22 es necesario para los
+          # umbrales de cobertura y `engines` solo exige 20.19 como mínimo.
           node-version: '22.22.0'
       - name: Revisar con DeepSeek
         # El PR que introduce el revisor se omite hasta integrarlo en la rama base.

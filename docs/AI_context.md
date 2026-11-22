@@ -16,7 +16,7 @@
 Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
-- `npm run test` ejecuta las 131 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run test` ejecuta las 132 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
@@ -220,7 +220,9 @@ PR. Estos límites se aplican antes de enviar el contenido redactado a DeepSeek.
 El workflow ejecuta el script desde la referencia base, desactiva la persistencia
 de credenciales del checkout, omite drafts/forks y restringe los permisos de
 escritura al job que publica comentarios. La ausencia de `DEEPSEEK_API_KEY` omite
-la revisión sin fallar el workflow.
+la revisión sin fallar el workflow. Las pruebas exigen que los permisos de
+escritura existan solo dentro del job y que el CI use la misma versión de Node
+que `verify.yml` (`22.22.0`), compatible con el mínimo `>=20.19.0` de `engines`.
 
 ## 10. Alcance y privacidad del contexto
 

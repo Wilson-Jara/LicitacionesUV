@@ -11,13 +11,62 @@ import { buildDiff, formatChecks, isSensitiveFile, redact } from '../.github/scr
 const exec = promisify(execFile)
 const script = fileURLToPath(new URL('../.github/scripts/ai-review.mjs', import.meta.url))
 const workflow = readFileSync(resolve(dirname(script), '../workflows/ai-review.yml'), 'utf8')
+const verifyWorkflow = readFileSync(resolve(dirname(script), '../workflows/verify.yml'), 'utf8')
+const packageJson = JSON.parse(readFileSync(resolve(dirname(script), '../../package.json'), 'utf8'))
+
+function indentedBlock(source, key, indent) {
+  const lines = source.split('\n')
+  const start = lines.findIndex(
+    (line) => line.match(/^ */)[0].length === indent && line.trimStart().startsWith(`${key}:`),
+  )
+  assert.notEqual(start, -1, `no se encontró ${key} con indentación ${indent}`)
+  const block = []
+  for (const line of lines.slice(start + 1)) {
+    if (line.trim() !== '' && line.match(/^ */)[0].length <= indent) break
+    if (line.trim() !== '') block.push(line.trim())
+  }
+  return block
+}
+
+function versionAtLeast(version, minimum) {
+  const [major, minor, patch] = version.split('.').map(Number)
+  const [minMajor, minMinor, minPatch] = minimum.split('.').map(Number)
+  if (major !== minMajor) return major > minMajor
+  if (minor !== minMinor) return minor > minMinor
+  return patch >= minPatch
+}
 
 describe('revisor IA: configuración de GitHub Actions', () => {
   it('limita los permisos de escritura al job que publica la revisión', () => {
-    assert.match(workflow, /permissions:\s+contents: read/)
-    assert.match(workflow, /jobs:[\s\S]*permissions:\s+contents: read/)
-    assert.match(workflow, /pull-requests: write/)
-    assert.match(workflow, /issues: write/)
+    assert.deepEqual(indentedBlock(workflow, 'permissions', 0), ['contents: read'])
+
+    const jobPermissions = indentedBlock(workflow, 'permissions', 4)
+    assert.deepEqual(jobPermissions, [
+      'contents: read',
+      'checks: read',
+      'pull-requests: write',
+      'issues: write',
+    ])
+
+    const writeGrants = workflow
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => /^[a-z-]+:\s+write$/.test(line))
+    assert.equal(writeGrants.length, 2)
+    for (const grant of writeGrants) {
+      assert.ok(jobPermissions.includes(grant), `${grant} debe estar dentro del job`)
+    }
+  })
+
+  it('fija en CI una versión de Node compatible con engines y con verify.yml', () => {
+    const minimum = /(\d+\.\d+\.\d+)/.exec(packageJson.engines.node)?.[1]
+    assert.ok(minimum, 'engines.node debe declarar una versión mínima')
+
+    const pinned = /node-version:\s*'([^']+)'/.exec(workflow)?.[1]
+    const verifyPinned = /node-version:\s*'([^']+)'/.exec(verifyWorkflow)?.[1]
+    assert.ok(pinned, 'ai-review.yml debe fijar node-version')
+    assert.equal(pinned, verifyPinned)
+    assert.ok(versionAtLeast(pinned, minimum), `${pinned} debe cumplir >=${minimum}`)
   })
 
   it('usa únicamente la rama base y no persiste credenciales del checkout', () => {
@@ -130,7 +179,9 @@ describe('revisor IA: ejecución sin llamadas externas', () => {
       (error) => {
         assert.equal(error.code, 1)
         assert.match(error.stderr, /Faltan datos válidos/)
-        assert.equal(error.stderr.includes('credencial-ficticia'), false)
+        const output = `${error.stdout ?? ''}\n${error.stderr ?? ''}`
+        assert.equal(output.includes('credencial-ficticia'), false)
+        assert.equal(output.includes('token-ficticio'), false)
         return true
       },
     )
