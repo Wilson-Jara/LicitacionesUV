@@ -137,7 +137,7 @@ Closes #[numero-del-issue]
 
 ### 7. Revisar y probar
 
-Una persona diferente del autor debe revisar el código. QA debe probar los criterios de aceptación y registrar cualquier problema. GitHub asigna automáticamente a los revisores según los archivos que cambia el PR, mediante `.github/CODEOWNERS`.
+QA (@StelleC) prueba los criterios de aceptación y registra los problemas. Otro integrante revisa el código. Ambos deben aprobar el PR antes de fusionarlo.
 
 ### 8. Validar y cerrar
 
@@ -146,8 +146,9 @@ El PM verifica que el resultado responda al objetivo del issue. Después de apro
 ## Reglas de revisión y validación
 
 - La persona que desarrolla no debe ser la única que valida su trabajo.
-- Todo Pull Request debe tener al menos un revisor diferente del autor.
-- Los revisores se asignan automáticamente mediante `.github/CODEOWNERS` según los archivos modificados; el autor no necesita agregarlos a mano.
+- En `main` y `develop` se requieren dos aprobaciones de personas distintas del autor, una de @StelleC y otra de un integrante habilitado.
+- GitHub solicita a @StelleC mediante `.github/CODEOWNERS`. El autor solicita la segunda revisión en el panel **Reviewers**.
+- Cuando @StelleC prepara un cambio, otro integrante debe abrir el PR. GitHub impide aprobar un PR propio.
 - Las revisiones deben buscar errores, imports sin usar, cambios innecesarios y problemas de accesibilidad.
 - QA debe comprobar el flujo principal y los casos de error.
 - Deben ejecutarse `npm run lint` y `npm run build` antes de cerrar un issue.
