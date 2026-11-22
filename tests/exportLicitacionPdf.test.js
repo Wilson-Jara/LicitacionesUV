@@ -24,6 +24,14 @@ function pdfText(licitacion) {
   return Buffer.from(doc.output('arraybuffer')).toString('latin1')
 }
 
+function rowY(doc, label) {
+  const page = doc.internal.pages[1].join('\n')
+  const escapedLabel = label.toUpperCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const match = page.match(new RegExp(`([\\d.]+) ([\\d.]+) Td\\n\\(${escapedLabel}\\) Tj`))
+  assert.ok(match, `no se encontró la fila ${label}`)
+  return Number(match[2])
+}
+
 describe('exportLicitacionPdf', () => {
   it('genera un nombre de archivo estable basado en el identificador', () => {
     assert.equal(getLicitacionPdfFilename('licitacion-001'), 'licitacion-001.pdf')
@@ -51,6 +59,20 @@ describe('exportLicitacionPdf', () => {
     assert.ok(text.includes('IDENTIFICADOR'))
     assert.ok(text.includes('ORGANISMO LICITANTE'))
     assert.ok(text.includes('BASES OFICIALES'))
+  })
+
+  it('mantiene región y bases oficiales en filas verticales distintas', () => {
+    const doc = buildLicitacionPdf({
+      ...licitacionBase,
+      region: 'metropolitana',
+      sourceUrl: 'https://www.mercadopublico.cl/bases/oficiales/licitacion-001',
+    })
+
+    const regionY = rowY(doc, 'Región')
+    const basesY = rowY(doc, 'Bases oficiales')
+
+    assert.notEqual(regionY, basesY)
+    assert.ok(Math.abs(regionY - basesY) > 20)
   })
 
   it('usa solo los datos de la licitación seleccionada', () => {
