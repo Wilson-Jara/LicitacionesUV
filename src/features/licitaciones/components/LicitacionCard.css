@@ -41,6 +41,23 @@
   color: var(--text);
 }
 
+.licitacion-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0;
+  margin: 0.45rem 0 0;
+  list-style: none;
+}
+
+.licitacion-tags li {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.8125rem;
+}
+
 .licitacion-card-data {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
