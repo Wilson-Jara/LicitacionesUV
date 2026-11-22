@@ -14,6 +14,7 @@ import {
   idUnidadVigente,
   parseMontoClp,
   resolverNivelAprobador,
+  tieneMontosNoEnteros,
   validarUmbral,
   validarUnidad,
 } from '../src/features/aprobaciones/umbralesUtils.js'
@@ -47,6 +48,18 @@ describe('umbralesUtils · formato', () => {
       `${formatUmbralMonto(0)} – ${formatUmbralMonto(10000000)}`,
     )
     assert.equal(formatRangoUmbral(UMBRAL_SIN_TOPE), '$50.000.001 o más')
+  })
+
+  it('#125: marca y describe sin rangos imposibles los umbrales con decimales ya guardados', () => {
+    const legado = { montoMinimo: 0, montoMaximo: 0.5, nivelAprobador: 'jefe_unidad' }
+    assert.equal(tieneMontosNoEnteros(legado), true)
+    assert.equal(tieneMontosNoEnteros({ montoMinimo: 0.5, montoMaximo: null }), true)
+    assert.equal(tieneMontosNoEnteros(UMBRAL_JEFE), false)
+    assert.equal(tieneMontosNoEnteros(UMBRAL_SIN_TOPE), false)
+
+    const texto = formatRangoUmbral(legado)
+    assert.equal(texto.includes('-'), false, `sin montos negativos: ${texto}`)
+    assert.match(texto, /hasta antes de \$0,5/)
   })
 
   it('formatea la marca de actualización y tolera valores ausentes o inválidos', () => {

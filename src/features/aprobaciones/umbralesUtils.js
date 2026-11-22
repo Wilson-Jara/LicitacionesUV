@@ -63,17 +63,50 @@ export function formatUmbralMonto(monto) {
   }).format(monto)
 }
 
+function formatMontoExacto(monto) {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 2,
+  }).format(monto)
+}
+
+/**
+ * Indica si un umbral guardado tiene montos que no son pesos enteros seguros.
+ *
+ * Antes de #125 la validación aceptaba decimales; esos registros se siguen
+ * leyendo para no perder configuración, pero se marcan para corregirlos.
+ *
+ * @param {{ montoMinimo: number, montoMaximo: number|null }} umbral - Umbral a revisar.
+ * @returns {boolean} `true` si el mínimo o el máximo no es un entero seguro.
+ */
+export function tieneMontosNoEnteros(umbral) {
+  const { montoMinimo, montoMaximo } = umbral ?? {}
+  const maximoValido =
+    montoMaximo === null || montoMaximo === undefined || Number.isSafeInteger(montoMaximo)
+  return !Number.isSafeInteger(montoMinimo) || !maximoValido
+}
+
 /**
  * Describe el rango de montos de un umbral en texto legible.
+ *
+ * Un umbral con decimales guardado antes de #125 se describe con sus montos
+ * exactos («desde $0 hasta antes de $0,5»), en lugar de restar un peso al máximo
+ * y mostrar un rango imposible como «$0 – $-1».
  *
  * @param {{ montoMinimo: number, montoMaximo: number|null }} umbral - Umbral a describir.
  * @returns {string} Rango legible (ej. `$0 – $10.000.000` o `$50.000.001 o más`).
  */
 export function formatRangoUmbral(umbral) {
-  const desde = formatUmbralMonto(umbral.montoMinimo)
-  if (umbral.montoMaximo === null || umbral.montoMaximo === undefined) {
-    return `${desde} o más`
+  const sinTope = umbral.montoMaximo === null || umbral.montoMaximo === undefined
+  if (tieneMontosNoEnteros(umbral)) {
+    const desde = formatMontoExacto(umbral.montoMinimo)
+    return sinTope
+      ? `${desde} o más`
+      : `desde ${desde} hasta antes de ${formatMontoExacto(umbral.montoMaximo)}`
   }
+  const desde = formatUmbralMonto(umbral.montoMinimo)
+  if (sinTope) return `${desde} o más`
   return `${desde} – ${formatUmbralMonto(umbral.montoMaximo - 1)}`
 }
 
