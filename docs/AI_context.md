@@ -16,6 +16,11 @@
 Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
+- `npm run test` ejecuta las 145 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
+- El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
+- Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
+- `npm run verify` pasa: lint, formato, 145 pruebas y build. El contrato rechaza fechas de calendario imposibles, incluidos días inválidos de febrero, y tolera `sector` ausente o nulo. La medición de filtros es reproducible con `npm run bench:filtros` (`scripts/medir-filtros.mjs`), que falla sobre el objetivo de 2 s de REF-01. La cobertura propia del cliente se debe recalcular tras esta entrega; son resultados locales, no del CI remoto.
 - `npm run test` ejecuta las 122 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
@@ -26,7 +31,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Configuración de umbrales de aprobación por unidad con `UmbralesProvider` y hook `useUmbrales`, persistida en `localStorage` como datos editables (REF-14).
 - Router con navegación interna (`react-router-dom` v7).
-- Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
+- Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`, con `sector` opcional y `etiquetas` normalizadas.
 - La API vive en el repositorio independiente `LicitacionesUV-backend`: PostgreSQL mediante `pg`, catálogo ficticio propio, migraciones, pruebas y CI propios. El cliente no importa ni lee sus archivos.
 - Despliegue del frontend como sitio estático en Vercel mediante la CLI; `vercel.json` fija Vite, `npm run build`, la salida `dist` y la reescritura de todas las rutas a `index.html` para React Router. El vínculo local `.vercel/` está excluido de Git.
 - `node_modules/` y `dist/` excluidos del control de versiones.
@@ -37,16 +42,20 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
   - `AuthModal` y `LoginPage` (`/login`) comparten `AuthForm` y el panel ilustrado `AuthIntro`. Ambos identifican la sesión como simulada y permiten rellenar datos ficticios de ejemplo.
   - Se conserva el inicio de sesión, el registro, la visibilidad de contraseña, la validación de campos y el acceso simulado con Google y GitHub.
   - El modal usa el elemento nativo `dialog`, mantiene el foco durante la navegación por tabulador y restaura el foco al control de apertura al cerrar. Si ese control desaparece, enfoca el contenido principal.
+- **Perfil de usuario (`/perfil`):**
+  - Con sesión de prueba, permite editar el nombre y el correo de contacto. El formulario anuncia los errores y confirma los cambios guardados. Sin sesión, la ruta invita a iniciar sesión mediante el modal de acceso.
+  - `profileStorage.js` guarda el perfil por cuenta en `localStorage` (`licitacionesuv-perfil:<correo de acceso>`). El correo de acceso conserva la identidad de la cuenta y sus favoritos.
+  - La sesión simulada se conserva al recargar la pestaña mediante `sessionStorage` (`licitacionesuv-sesion-demo`), con el nombre y el correo de acceso. Cerrar sesión elimina esa entrada.
 - **Explorador de Licitaciones:**
-  - Cabecera con búsqueda por título, atajos de ejemplo y aviso explícito de catálogo ficticio. El término, la región, el tipo y el orden siguen en la URL.
-  - Barra lateral (`FilterSidebar`) con selección de región, radios de tipo y filtros aplicados que se pueden quitar individualmente.
+  - Cabecera con búsqueda por título, atajos de ejemplo y aviso explícito de catálogo ficticio. El término, la región, el sector, la etiqueta, el tipo y el orden siguen en la URL.
+  - Barra lateral (`FilterSidebar`) con selección de región, sector y etiqueta, radios de tipo y filtros aplicados que se pueden quitar individualmente.
   - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
-  - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
+  - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, sector, etiquetas, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
   - Lista semántica con contador accesible, estado vacío y restablecimiento de filtros. En pantallas estrechas, los filtros se pueden desplegar.
 - **Panel de Estadísticas (`/estadisticas`):**
   - Distribuciones por región, tipo (`publica`/`privada`) y sector, calculadas como cantidad de licitaciones sobre el conjunto filtrado del explorador.
   - El enlace entre explorador y estadísticas mantiene los parámetros de la URL. El panel se recalcula con esos parámetros y muestra un estado vacío cuando no hay coincidencias.
-  - El sector se deriva de la institución (Universidad, Municipalidad, Ministerio, Banco, Empresa u Otro) porque el mock no trae un campo de etiqueta propio; cada licitación cuenta en una categoría.
+  - El sector usa el campo explícito del mock (`tecnologia`, `infraestructura` o `finanzas`); si falta, se deriva de la institución para conservar compatibilidad con datos anteriores.
   - Cada distribución ofrece una alternativa textual accesible (texto para lectores de pantalla y tabla con categorías y valores) además de las barras visuales.
 - **Detalle de Licitación:**
   - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
@@ -83,7 +92,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 1. `index.html` define el documento HTML, favicon y contenedor `#root`.
 2. `src/main.jsx` importa `index.css` y monta `<App />`.
 3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider`, `UmbralesProvider` y `BrowserRouter`.
-4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/configuracion/umbrales`, 404).
+4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/perfil`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/estadisticas`, `/configuracion/umbrales`, 404).
 5. `src/app/layouts/PublicLayout.jsx` monta la barra de navegación, la ruta activa y el diálogo común de acceso.
 6. `src/index.css` define los tokens de ambos temas, la tipografía, el foco y los controles comunes.
 7. La API se inicia desde el repositorio independiente, por defecto en `http://localhost:3000`. El frontend Vite usa `http://localhost:5173` y conserva sus datos locales.

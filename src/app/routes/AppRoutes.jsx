@@ -6,6 +6,7 @@ import MisFavoritosPage from '../../features/favoritos/pages/MisFavoritosPage.js
 import PanelEstadisticasPage from '../../features/estadisticas/pages/PanelEstadisticasPage.jsx'
 import ConfiguracionUmbralesPage from '../../features/aprobaciones/pages/ConfiguracionUmbralesPage.jsx'
 import LoginPage from '../../features/auth/pages/LoginPage.jsx'
+import PerfilPage from '../../features/auth/pages/PerfilPage.jsx'
 import NotFoundPage from './NotFoundPage.jsx'
 
 /**
@@ -18,6 +19,7 @@ function AppRoutes() {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/perfil" element={<PerfilPage />} />
         <Route path="/" element={<Navigate to="/licitaciones" replace />} />
         <Route path="/licitaciones" element={<LicitacionesExplorerPage />} />
         <Route path="/licitaciones/:id" element={<LicitacionDetailPage />} />
