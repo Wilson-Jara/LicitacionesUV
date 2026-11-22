@@ -1,3 +1,4 @@
+import { escribirJson, leerJson } from '../../../shared/lib/persistenciaLocal.js'
 import { umbralesIniciales } from './umbralesIniciales.js'
 import {
   NIVELES_APROBADOR,
@@ -76,25 +77,22 @@ export function getUmbralesIniciales() {
  * @returns {{ actualizadoEn: string|null, unidades: Array<object> }} Configuración vigente.
  */
 export function readUmbralesStore(storage) {
-  if (!storage) return getUmbralesIniciales()
-  try {
-    const raw = storage.getItem(UMBRALES_STORAGE_KEY)
-    if (!raw) return getUmbralesIniciales()
-    const parsed = JSON.parse(raw)
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return getUmbralesIniciales()
-    }
-    if (!Array.isArray(parsed.unidades)) return getUmbralesIniciales()
-    const unidades = normalizeUnidades(parsed.unidades)
-    // Una lista vacía guardada es una configuración válida («sin unidades»):
-    // solo se vuelve a la semilla si había datos pero ninguno era utilizable.
-    if (unidades.length === 0 && parsed.unidades.length > 0) return getUmbralesIniciales()
-    const actualizadoEn = typeof parsed.actualizadoEn === 'string' ? parsed.actualizadoEn : null
-    return { actualizadoEn, unidades }
-  } catch {
-    // localStorage bloqueado o corrupto: se parte de la configuración inicial
+  // Sin almacenamiento, bloqueado, sin datos o corrupto: configuración inicial.
+  const lectura = leerJson(storage, UMBRALES_STORAGE_KEY)
+  return lectura.ok ? interpretarUmbrales(lectura.valor) : getUmbralesIniciales()
+}
+
+function interpretarUmbrales(parsed) {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return getUmbralesIniciales()
   }
+  if (!Array.isArray(parsed.unidades)) return getUmbralesIniciales()
+  const unidades = normalizeUnidades(parsed.unidades)
+  // Una lista vacía guardada es una configuración válida («sin unidades»):
+  // solo se vuelve a la semilla si había datos pero ninguno era utilizable.
+  if (unidades.length === 0 && parsed.unidades.length > 0) return getUmbralesIniciales()
+  const actualizadoEn = typeof parsed.actualizadoEn === 'string' ? parsed.actualizadoEn : null
+  return { actualizadoEn, unidades }
 }
 
 /**
@@ -105,12 +103,8 @@ export function readUmbralesStore(storage) {
  * @returns {void}
  */
 export function writeUmbralesStore(storage, store) {
-  if (!storage) return
-  try {
-    storage.setItem(UMBRALES_STORAGE_KEY, JSON.stringify(store))
-  } catch {
-    // sin persistencia disponible, la configuración solo vive en memoria
-  }
+  // Sin persistencia disponible, la configuración solo vive en memoria.
+  escribirJson(storage, UMBRALES_STORAGE_KEY, store)
 }
 
 function conUnidades(store, unidades, actualizadoEn) {

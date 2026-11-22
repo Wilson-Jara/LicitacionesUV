@@ -10,20 +10,12 @@ import {
   readUmbralesStore,
   writeUmbralesStore,
 } from '../../features/aprobaciones/data/umbralesStorage'
+import { obtenerAlmacenamientoLocal as getStorage } from '../../shared/lib/persistenciaLocal'
 
 /**
  * Contexto de React para compartir la configuración de umbrales y unidades de aprobación.
  */
 export const UmbralesContext = createContext(null)
-
-function getStorage() {
-  if (typeof window === 'undefined') return null
-  try {
-    return window.localStorage
-  } catch {
-    return null
-  }
-}
 
 /**
  * Proveedor de contexto que administra el estado y persistencia de umbrales de aprobación por unidad.
