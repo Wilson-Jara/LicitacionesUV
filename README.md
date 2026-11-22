@@ -34,25 +34,25 @@ Actualmente, la información de compras y contrataciones privadas se encuentra d
 
 Todas las historias están registradas como GitHub Issues.
 
-| ID    | Nombre                                                | Issue               |
-| ----- | ----------------------------------------------------- | ------------------- |
-| US-01 | Registrarse en la plataforma                          | #16                 |
-| US-02 | Iniciar sesión                                        | #16                 |
-| US-03 | Explorar licitaciones publicadas                      | #17                 |
-| US-04 | Filtrar licitaciones por palabra clave, región y tipo | #18                 |
-| US-05 | Acceder a la fuente oficial de una licitación         | #17                 |
-| US-06 | Guardar licitaciones en favoritos                     | #42                 |
-| US-07 | Gestionar perfil de usuario                           | — (issue por crear) |
-| US-08 | Configurar alertas de nuevas licitaciones             | #48                 |
-| US-09 | Aprobar o rechazar una licitación según el monto      | #55 (CR-302)        |
-| US-10 | Configurar umbrales de aprobación por unidad          | #56 (CR-302)        |
-| US-11 | Gestionar subrogancias con vigencia                   | #57 (CR-302)        |
-| US-12 | Buscar licitaciones por palabra clave                 | #43                 |
-| US-13 | Ver el detalle de una licitación                      | #44                 |
-| US-14 | Asistente guiado de requerimientos de la licitación   | #45                 |
-| US-15 | Visualizar favoritas en vistas de calendario y lista  | #46                 |
-| US-16 | Mostrar todos los resultados de búsqueda y filtros    | #47                 |
-| US-17 | Exportar resumen y bases de licitación en PDF         | #49                 |
+| ID    | Nombre                                                | Issue        |
+| ----- | ----------------------------------------------------- | ------------ |
+| US-01 | Registrarse en la plataforma                          | #16          |
+| US-02 | Iniciar sesión                                        | #16          |
+| US-03 | Explorar licitaciones publicadas                      | #17          |
+| US-04 | Filtrar licitaciones por palabra clave, región y tipo | #18          |
+| US-05 | Acceder a la fuente oficial de una licitación         | #17          |
+| US-06 | Guardar licitaciones en favoritos                     | #42          |
+| US-07 | Gestionar perfil de usuario                           | #89          |
+| US-08 | Configurar alertas de nuevas licitaciones             | #48          |
+| US-09 | Aprobar o rechazar una licitación según el monto      | #55 (CR-302) |
+| US-10 | Configurar umbrales de aprobación por unidad          | #56 (CR-302) |
+| US-11 | Gestionar subrogancias con vigencia                   | #57 (CR-302) |
+| US-12 | Buscar licitaciones por palabra clave                 | #43          |
+| US-13 | Ver el detalle de una licitación                      | #44          |
+| US-14 | Asistente guiado de requerimientos de la licitación   | #45          |
+| US-15 | Visualizar favoritas en vistas de calendario y lista  | #46          |
+| US-16 | Mostrar todos los resultados de búsqueda y filtros    | #47          |
+| US-17 | Exportar resumen y bases de licitación en PDF         | #49          |
 
 > Cada issue mantiene el formato: `US-XX: [nombre]` + enunciado _Como [actor], quiero [acción], para [beneficio]_ + criterios de aceptación (CA1, CA2, ...).
 
