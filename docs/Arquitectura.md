@@ -1,6 +1,6 @@
 # Diseño Arquitectónico — LicitacionesUV
 
-> **Estado vigente:** este repositorio contiene el frontend React, incluidos explorador, estadísticas, favoritos y configuración local de umbrales. La API y PostgreSQL viven en `LicitacionesUV-backend`, con código, catálogo y comprobaciones propios. El frontend todavía usa su mock. Las decisiones anteriores sobre ubicación en `backend/` se conservan como antecedentes, no como rutas actuales. No hay flujo completo de aprobaciones ni subrogancias implementado.
+> **Estado vigente (revisado el 21 de noviembre de 2026):** este repositorio contiene únicamente el frontend React, incluidos explorador con filtros y ordenamiento en URL, detalle con exportación PDF en Web Worker, panel de estadísticas (`/estadisticas`), favoritos locales, tema claro/oscuro, sesión simulada y configuración local de umbrales (`/configuracion/umbrales`). La API y PostgreSQL 16 viven en [`LicitacionesUV-backend`](https://github.com/Wilson-Jara/LicitacionesUV-backend), con código, catálogo, migraciones, pruebas y CI propios (ver [`docs/separacion-backend.md`](separacion-backend.md)). El frontend todavía usa su catálogo mock (`licitaciones.mock.json`), aún no existe un despliegue público lanzado y la integración HTTP y de Mercado Público (#121) pertenecen a la Fase 2. Las decisiones anteriores sobre ubicación en `backend/` se conservan como antecedentes históricos previos a la separación (#113), no como rutas actuales. No hay flujo completo de aprobaciones ni subrogancias implementado.
 
 ## 1. Estilo Arquitectónico
 
@@ -17,7 +17,7 @@
 
 ### Explicación textual
 
-El estilo SPA con módulos Feature-Driven es adecuado porque el producto es, en esencia, un **explorador de información con búsqueda y filtrado intensivo**: el valor (velocidad de consulta, REF-01) se obtiene ejecutando el filtrado en el cliente. La organización por _features_ de dominio (`licitaciones`, `auth`, `favoritos`) mantiene **responsabilidad única y bajo acoplamiento** (REF-06), y permite incorporar la Fase 2 (scraper/API) como un nuevo módulo proveedor de datos **sin rediseñar los existentes** (REF-10), porque los módulos consumen contratos de datos y no la fuente concreta.
+El estilo SPA con módulos Feature-Driven es adecuado porque el producto es, en esencia, un **explorador de información con búsqueda y filtrado intensivo**: el valor (velocidad de consulta, REF-01) se obtiene ejecutando el filtrado en el cliente. La organización por _features_ de dominio (`licitaciones`, `auth`, `favoritos`, `estadisticas`, `aprobaciones`) mantiene **responsabilidad única y bajo acoplamiento** (REF-06), y permite incorporar la Fase 2 (conexión con `LicitacionesUV-backend` y fuentes externas como Mercado Público) como un nuevo proveedor de datos **sin rediseñar los módulos existentes** (REF-10), porque los módulos consumen contratos de datos y no la fuente concreta.
 
 Todos los REF de prioridad Alta quedan abordados: rendimiento (filtrado en cliente), seguridad de acciones privadas (módulo Auth con sesión global), protección de secretos (variables de entorno fuera del bundle) y disponibilidad (despliegue como estáticos).
 
@@ -28,18 +28,19 @@ flowchart TB
     subgraph Cliente["Navegador (SPA React + Vite)"]
         subgraph App["Módulo App (src/app)"]
             Rutas["AppRoutes / PublicLayout"]
-            Providers["AuthProvider (sesión global)"]
+            Providers["ThemeProvider / AuthProvider / FavoritosProvider / UmbralesProvider"]
         end
         subgraph Feats["Módulos de dominio (src/features)"]
-            L["Licitaciones<br/>explorador + filtros + tarjetas"]
-            A["Auth<br/>AuthModal + useAuth"]
-            F["Favoritos<br/>MisFavoritosPage"]
-            AP["Aprobaciones (CR-302, planificado)<br/>nivel según monto + aprobador efectivo"]
+            L["Licitaciones<br/>explorador + filtros + detalle + PDF Worker"]
+            A["Auth<br/>AuthModal + LoginPage + useAuth (simulado)"]
+            F["Favoritos<br/>MisFavoritosPage (localStorage)"]
+            E["Estadisticas<br/>PanelEstadisticasPage (/estadisticas)"]
+            AP["Aprobaciones<br/>umbrales locales US-10; flujo y subrogancias futuros"]
         end
-        Shared["Shared (src/shared)<br/>Navbar y UI común"]
-        Conf["Configuración de umbrales local<br/>subrogancias futuras"]
+        Shared["Shared (src/shared)<br/>Navbar y ThemeToggle"]
+        Conf["Persistencia local en navegador<br/>localStorage (favoritos, tema, umbrales)"]
     end
-    Datos["Fuente de datos<br/>licitaciones.mock.json<br/>(Fase 2: scraper/API con mismo contrato)"]
+    Datos["Fuente de datos actual<br/>licitaciones.mock.json<br/>(Fase 2: API propia / Mercado Público con mismo contrato)"]
 
     subgraph Backend["API independiente (LicitacionesUV-backend)"]
         API["API REST con http nativo<br/>GET /api/health, /api/licitaciones, /api/licitaciones/:id"]
@@ -51,17 +52,20 @@ flowchart TB
 
     Rutas --> L
     Rutas --> F
-    Rutas -.flujo futuro.-> AP
+    Rutas --> E
+    Rutas --> AP
     Providers --> A
     A --> Shared
     Shared --> L
     L --> Datos
     F --> Datos
-    AP --> L
+    E --> L
+    F --> Conf
     AP --> Conf
-    AP -.consulta sesión.-> A
+    AP -.flujo futuro: consulta monto.-> L
+    AP -.flujo futuro: consulta sesión.-> A
     F -.consulta sesión.-> A
-    L -.migración pendiente: consumirá /api/licitaciones.-> API
+    L -.Fase 2 pendiente: consumirá /api/licitaciones.-> API
 ```
 
 ## 3. Descomposición Modular
@@ -71,20 +75,20 @@ flowchart TB
 ### Módulo 1: App (composición)
 
 - **Responsabilidad:** definir el enrutamiento, el layout público y los providers globales de la aplicación.
-- **Ofrece a otros módulos:** el árbol de rutas que monta cada feature, el layout base y el contexto de sesión (`AuthProvider`).
+- **Ofrece a otros módulos:** el árbol de rutas que monta cada feature, el layout base y los contextos globales (`ThemeProvider`, `AuthProvider`, `FavoritosProvider`, `UmbralesProvider`).
 - **Depende de:** módulos de dominio (para montar sus páginas) y `shared`.
 
 ### Módulo 2: Autenticación (`features/auth`)
 
-- **Responsabilidad:** gestionar la identidad del usuario: registro, inicio de sesión (incluido social simulado) y exposición del estado de sesión.
-- **Ofrece a otros módulos:** hook `useAuth` (sesión actual, login, logout, registro) y componente `AuthModal`.
+- **Responsabilidad:** gestionar la identidad simulada del usuario en cliente: registro, inicio de sesión (incluido social simulado) y exposición del estado de sesión.
+- **Ofrece a otros módulos:** hook `useAuth` (sesión actual, login, logout, registro y control del modal), componente `AuthModal` y página `LoginPage`.
 - **Depende de:** `app` (providers) y `shared` (componentes de UI comunes).
 
 ### Módulo 3: Licitaciones (`features/licitaciones`)
 
-- **Responsabilidad:** explorar, listar y filtrar licitaciones; formatear montos y fechas; mantener el estado de filtros sincronizado con la URL.
-- **Ofrece a otros módulos:** página `LicitacionesExplorerPage`, componentes `LicitacionCard`, `LicitacionList`, `FilterSidebar` y hook `useLicitacionFilters`; el contrato de datos de una licitación (`id`, `titulo`, `institucion`, `monto`, `moneda`, `fechaCierre`, `tipo`, `region`).
-- **Depende de:** `app` (rutas/layout) y `shared` (Navbar). No depende de Auth ni Favoritos.
+- **Responsabilidad:** explorar, listar, filtrar y ordenar licitaciones; mostrar el detalle con enlace a la fuente oficial y exportación a PDF en Web Worker; formatear montos y fechas; mantener el estado de filtros y orden sincronizado con la URL.
+- **Ofrece a otros módulos:** páginas `LicitacionesExplorerPage` y `LicitacionDetailPage`, componentes `LicitacionCard`, `LicitacionList`, `FilterSidebar`, `FavoritoButton`, utilidades `licitacionUtils` / `licitacionFilters`, servicio de exportación PDF y hook `useLicitacionFilters`; el contrato de datos de nueve campos de una licitación (`id`, `title`, `institution`, `amount`, `currency`, `closingDate`, `type`, `region`, `sourceUrl`).
+- **Depende de:** `app` (rutas/layout) y `shared` (Navbar). FavoritoButton consulta Auth/Favoritos para la acción de guardado.
 
 ### Módulo 4: Favoritos (`features/favoritos`)
 
@@ -100,10 +104,17 @@ flowchart TB
 
 ### Módulo 6: Configuración de umbrales y diseño de aprobaciones (`features/aprobaciones`)
 
-- **Estado:** implementada la configuración local de unidades y umbrales y su simulador. El registro de decisiones y las subrogancias siguen como diseño futuro.
-- **Responsabilidad:** manejar el flujo de aprobación de licitaciones: según el monto y la unidad se determina el nivel que corresponde, se resuelve quién aprueba considerando las subrogancias vigentes y se guarda la decisión.
-- **Ofrece a otros módulos:** una consulta de quién aprueba una licitación y en qué nivel, y el registro de las decisiones tomadas.
-- **Depende de:** Licitaciones (el monto de la licitación), Autenticación (la identidad de quien aprueba) y los datos de configuración (umbrales y subrogancias). No tiene relación con Favoritos.
+- **Estado:** implementada la configuración local de unidades y umbrales (`ConfiguracionUmbralesPage`, `UmbralForm`, `UnidadForm`, `UmbralesTable`, `umbralesStorage.js`, `umbralesUtils.js`) y su simulador inmediato. El registro de decisiones y las subrogancias siguen como diseño futuro.
+- **Responsabilidad:** administrar rangos de monto configurables por unidad sin despliegues (US-10 / REF-14) y preparar el flujo futuro de aprobación de licitaciones y subrogancias (US-09, US-11).
+- **Ofrece a otros módulos:** hook `useUmbrales` y lógica pura de validación/resolución de umbrales; en Fase 3, consulta de aprobador efectivo y registro de decisiones.
+- **Depende de:** `app` (`UmbralesProvider`) y almacenamiento local (`localStorage`). En el diseño futuro dependerá también de Licitaciones (monto) y Autenticación (identidad del aprobador).
+
+### Módulo 7: Estadísticas (`features/estadisticas`)
+
+- **Estado:** implementado en cliente (`/estadisticas`) sobre el conjunto filtrado del explorador.
+- **Responsabilidad:** calcular distribuciones por región, tipo (`publica`/`privada`) y sector derivado de la institución, ofreciendo tanto barras visuales como alternativa textual y tabla accesible.
+- **Ofrece a otros módulos:** página `PanelEstadisticasPage`, componente `DistribucionPanel` y utilidades puras en `estadisticasUtils.js`.
+- **Depende de:** `features/licitaciones` (contrato de licitación, filtros y URL compartida desde `Navbar`).
 
 ### Backend como servicio independiente
 
@@ -115,9 +126,9 @@ flowchart TB
 
 ## 4. Decisiones de Diseño
 
-Las decisiones 8, 11 y 12 conservan su redacción de origen como antecedentes.
-La ubicación actual de API, migraciones y pruebas es el repositorio independiente.
-Las propuestas de autenticación y aprobaciones no se implementan por esta separación.
+Las decisiones 8, 9, 10, 11 y 13 conservan su redacción de origen como antecedentes previos a la separación de repositorios (noviembre de 2026, #113).
+La ubicación vigente de la API, migraciones y pruebas es el repositorio independiente [`LicitacionesUV-backend`](https://github.com/Wilson-Jara/LicitacionesUV-backend).
+Las propuestas de autenticación en servidor y flujo completo de aprobaciones no se implementaron con la separación.
 
 ### Decisión 1: SPA con datos mock y contrato estable para la Fase 2
 
@@ -142,7 +153,7 @@ Las propuestas de autenticación y aprobaciones no se implementan por esta separ
 
 ### Decisión 4: Organización Feature-Driven del código
 
-- **Decisión:** agrupar el código por dominio (`features/licitaciones`, `features/auth`, `features/favoritos`) con capas internas `pages/components/hooks/data`, dejando lo transversal en `shared` y la composición en `app`.
+- **Decisión:** agrupar el código por dominio (`features/licitaciones`, `features/auth`, `features/favoritos`, `features/estadisticas`, `features/aprobaciones`) con capas internas `pages/components/hooks/data/services`, dejando lo transversal en `shared` y la composición en `app`.
 - **Motivación:** REF-06 (responsabilidad única, bajo acoplamiento y verificación con ESLint) y REF-10 (agregar el scraper como nueva fuente de datos sin tocar los features existentes).
 - **Alternativas consideradas:** organización por tipo de archivo (carpetas globales de componentes/hooks; descartada: alto acoplamiento y difícil de escalar por dominio).
 - **Impacto:** todos los módulos; define la convención de ramas y PRs del equipo (REF-11).
@@ -175,17 +186,17 @@ Las propuestas de autenticación y aprobaciones no se implementan por esta separ
 - **Alternativas consideradas:** Express y Fastify (pospuestos: se reevaluarán cuando lleguen autenticación, PostgreSQL y middlewares de sesión; migrar en esta etapa es de bajo costo porque la capa HTTP queda aislada en `src/app.js` y `src/lib/router.js`).
 - **Impacto:** carpeta `backend/` (servidor, rutas, seed y pruebas), configuración ESLint con `globals.node` para `backend/**`, cobertura de las pruebas de la API en el `npm run verify` de la raíz y documentación (`Arquitectura.md`, `AI_context.md`).
 
-### Decisión 9: Se mantiene `node:http` para la Fase 2 completa
+### Decisión 9 (antecedente anterior a la separación): Se mantiene `node:http` para la Fase 2 completa
 
-- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Estado:** Propuesta histórica (anterior a la separación en `LicitacionesUV-backend`; hoy las rutas `backend/...` equivalen a `src/...` en el repositorio independiente).
 - **Decisión:** el backend continúa sobre `node:http` con el enrutador propio de `src/lib/router.js` al incorporar autenticación, PostgreSQL y sesiones; las piezas nuevas (lectura de cookies, middleware de sesión) se implementan como funciones pequeñas en `src/lib/`.
 - **Motivación:** cierra la reevaluación pendiente de la Decisión 8. Las necesidades de la Fase 2 (cookies, un middleware de autenticación y validación de entrada) son acotadas y se cubren con poco código propio, manteniendo el número de dependencias al mínimo (REF-07).
 - **Alternativas consideradas:** Express (descartada por ahora: aporta middlewares listos, pero agrega dependencias y no resuelve un problema que hoy exista); Fastify (descartada por ahora: mismo motivo, con una curva de aprendizaje adicional para el equipo).
 - **Impacto:** `backend/src/lib/` (cookies y middleware de sesión) y `backend/src/app.js` (aplicación del middleware a rutas privadas). Si la cantidad de middlewares crece, se reevalúa en una decisión nueva.
 
-### Decisión 10: Autenticación con sesiones en servidor y cookie `HttpOnly`
+### Decisión 10 (antecedente anterior a la separación): Autenticación con sesiones en servidor y cookie `HttpOnly`
 
-- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Estado:** Propuesta histórica pendiente de implementación en `LicitacionesUV-backend` (no implementada en la Fase 1 ni en la separación #113; la sesión actual del frontend es simulada).
 - **Decisión:** al iniciar sesión, el servidor genera un identificador aleatorio con `node:crypto`, guarda su hash en la tabla `sesiones` (usuario, expiración) y lo entrega en una cookie `HttpOnly`, `SameSite=Lax` y `Secure` fuera de desarrollo. Las contraseñas se almacenan con `scrypt` de `node:crypto` y sal por usuario. En desarrollo, `vite.config.js` define un proxy de `/api` hacia el backend para que frontend y API compartan origen.
 - **Motivación:** cumple REF-02 (acciones privadas exigen sesión) y CA3 del #78 sin dependencias nuevas. El cierre de sesión es real (se elimina la fila) y la cookie `HttpOnly` no es accesible desde JavaScript, lo que reduce el impacto de un XSS. El proxy evita configurar CORS con credenciales entre orígenes distintos.
 - **Alternativas consideradas:** JWT en `localStorage` (descartada: expuesto a XSS y el logout no invalida el token antes de su expiración); JWT en cookie (descartada: requiere `jsonwebtoken` y una lista de revocación para tener logout real, lo que equivale a mantener sesiones); bcrypt (descartada: requiere dependencia nativa, y `scrypt` cumple el mismo propósito).
@@ -205,11 +216,11 @@ Las propuestas de autenticación y aprobaciones no se implementan por esta separ
 - **Decisión:** PostgreSQL 16 se instala como servicio nativo en desarrollo. El CI del backend usa Ubuntu 24.04, instala el paquete PostgreSQL 16 y prepara su propia base de pruebas.
 - **Separación de datos:** `DATABASE_URL` apunta a desarrollo; `DATABASE_URL_TEST` debe apuntar a una base distinta cuyo nombre termine en `_test`. Las suites crean y eliminan solo sus esquemas temporales.
 - **Configuración:** los valores locales pertenecen al `.env` privado del backend. CI usa socket Unix y autenticación local, sin contraseñas incluidas en el workflow.
-- **Impacto:** README, `docs/PostgreSQL.md`, plantilla pública de variables y workflow del backend; el cliente no administra PostgreSQL.
+- **Impacto:** README, `docs/PostgreSQL.md` en `LicitacionesUV-backend`, plantilla pública de variables y workflow del backend; el cliente no administra PostgreSQL.
 
-### Decisión 13: CR-302 fuera del alcance del #78
+### Decisión 13 (antecedente anterior a la separación): CR-302 fuera del alcance del #78
 
-- **Estado:** Propuesta (pendiente de aprobación del equipo).
+- **Estado:** Propuesta histórica (las tablas de CR-302 ya existen en `migrations/postgresql/` de `LicitacionesUV-backend`; la configuración local de umbrales US-10 existe en el frontend, y el resto del flujo sigue planificado).
 - **Decisión:** el #78 crea las tablas de Aprobacion, Delegacion y UmbralAprobacion para completar el modelo de las 8 entidades, pero los endpoints y la lógica del flujo CR-302 se implementan en sus historias propias (US-09, US-10 y US-11).
 - **Motivación:** el #78 queda acotado a la infraestructura de la Fase 2 y puede cerrarse con evidencia verificable. CR-302 tiene reglas propias (Decisiones 6 y 7) que merecen criterios de aceptación y revisión independientes.
 - **Alternativas consideradas:** implementar CR-302 completo dentro del #78 (descartada: amplía un épico ya grande y retrasa su cierre); posponer también las tablas (descartada: el CA1 del #78 exige el modelo completo de entidades).

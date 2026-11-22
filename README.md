@@ -1,10 +1,12 @@
 # 🏛️ LicitacionesUV: Plataforma de Filtrado y Centralización de Licitaciones
 
-Plataforma web desarrollada en **React + Vite** diseñada para centralizar, filtrar y optimizar la búsqueda de oportunidades comerciales y licitaciones publicadas por empresas privadas, recopiladas de forma automatizada mediante técnicas de web scraping.
+Plataforma web cliente desarrollada en **React + Vite** bajo la identidad pública **«Licitaciones UV»** para centralizar, explorar, filtrar y hacer seguimiento de licitaciones.
+
+> **Estado vigente (revisado el 21 de noviembre de 2026):** este repositorio contiene únicamente el **frontend** en Fase 1. Opera con un **catálogo local de demostración** (`src/features/licitaciones/data/licitaciones.mock.json`, con licitaciones públicas y privadas de ejemplo), **sesión simulada en cliente** (sin backend de autenticación) y persistencia local en `localStorage`. La API REST y PostgreSQL 16 viven en el repositorio independiente [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend); el frontend aún no consume la API ni existe un despliegue público lanzado.
 
 > 🤖 **Para asistentes de IA:** reglas obligatorias de trabajo en [`AGENTS.md`](AGENTS.md) y contexto técnico en [`docs/AI_context.md`](docs/AI_context.md).
 
-Este repositorio contiene el frontend. La API y PostgreSQL viven en [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend). La separación y sus verificaciones están documentadas en [Separación del backend](docs/separacion-backend.md).
+La separación de repositorios, sus límites y sus verificaciones están documentadas en [Separación del backend](docs/separacion-backend.md).
 
 ---
 
@@ -12,21 +14,26 @@ Este repositorio contiene el frontend. La API y PostgreSQL viven en [Licitacione
 
 ### ¿Qué es?
 
-Es una solución web que reúne en un único punto de acceso las licitaciones y oportunidades de contratación publicadas por diversas empresas privadas. El sistema procesa y categoriza los datos para que proveedores y organizaciones encuentren oportunidades relevantes de manera rápida, accediendo directamente a la fuente oficial de cada convocatoria.
+Es una aplicación web cliente que reúne en un único punto de acceso licitaciones públicas y privadas para facilitar su búsqueda, comparación básica y seguimiento, con enlace directo a la ficha oficial de cada convocatoria.
+
+- **Alcance vigente (Fase 1):** explorador con búsqueda por título, filtros por región/tipo y ordenamiento sincronizados en la URL, vista de detalle con exportación a PDF en Web Worker, panel de estadísticas (`/estadisticas`), gestión de favoritos y configuración local de umbrales de aprobación (`/configuracion/umbrales`, US-10 / CR-302), tema claro/oscuro y acceso simulado para pruebas.
+- **Alcance futuro (Fase 2+):** conexión HTTP con `LicitacionesUV-backend`, autenticación real en servidor, importación periódica desde la API de Mercado Público (#121) y eventuales conectores o scraping hacia fuentes adicionales, además de alertas automáticas y flujo completo de aprobaciones/subrogancias.
 
 ### ¿Qué problema resuelve?
 
-Actualmente, la información de compras y contrataciones privadas se encuentra dispersa en múltiples plataformas y sitios corporativos. Esto genera:
+Actualmente, la información de licitaciones y compras se encuentra dispersa en múltiples portales y plataformas. Esto genera:
 
 - Pérdida de tiempo en revisiones manuales diarias.
 - Riesgo de omitir convocatorias estratégicas con fechas límite próximas.
-- Sobrecarga de información no relevante para el rubro específico de cada empresa.
+- Sobrecarga de información no relevante para el rubro o unidad correspondiente.
 
 ### ¿Cómo funciona?
 
-1. **Recolección:** Un scraper extrae periódicamente los datos públicos de portales autorizados (empresa convocante, fechas de apertura y cierre, rubro, ubicación, bases y enlaces oficiales).
-2. **Filtrado y Procesamiento:** La plataforma clasifica las licitaciones por sector, palabras clave, fechas y montos estimados.
-3. **Visualización y Gestión:** A través de la interfaz web, el usuario filtra, prioriza y hace seguimiento de las convocatorias que se ajustan a su perfil de negocio.
+1. **Fuente de datos:**
+   - **Hoy (Fase 1):** el frontend carga un catálogo local de demostración (`src/features/licitaciones/data/licitaciones.mock.json`) con contrato estable de nueve campos. En paralelo, [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend) expone `GET /api/health`, `GET /api/licitaciones` y `GET /api/licitaciones/:id` sobre PostgreSQL 16 (o su propio catálogo en memoria sin `DATABASE_URL`).
+   - **Fase 2 (planificada):** el frontend consumirá la API propia mediante `VITE_API_BASE_URL`, y el backend incorporará la sincronización con Mercado Público (#121) y eventuales fuentes externas o scrapers autorizados manteniendo el mismo contrato.
+2. **Filtrado y Procesamiento:** en la Fase 1 el filtrado por palabra clave, región, tipo y el ordenamiento ocurren en el cliente con sincronización en la URL (`?keyword=`, `?region=`, `?tipo=`, `?sort=`) y alimentan también el panel de estadísticas.
+3. **Visualización y Gestión:** a través de la interfaz web, el usuario explora convocatorias, consulta el detalle, exporta un resumen en PDF, abre la fuente oficial, administra favoritos (con sesión simulada) y configura umbrales locales de aprobación por unidad.
 
 ---
 
@@ -180,7 +187,7 @@ Los mockups de aprobaciones (CR-302) son prototipos HTML de baja fidelidad: se a
 
 Ver: [Arquitectura.md](docs/Arquitectura.md)
 
-La aplicación se construye como una **SPA en React** organizada bajo el enfoque **Feature-Driven** (`src/features/{licitaciones, auth, favoritos}`), con módulos compartidos en `src/shared` y configuración central de rutas en `src/app`.
+La aplicación se construye como una **SPA en React** organizada bajo el enfoque **Feature-Driven** (`src/features/{licitaciones, auth, favoritos, estadisticas, aprobaciones}`), con módulos compartidos en `src/shared` y configuración central de rutas y proveedores en `src/app`.
 
 ---
 
@@ -198,15 +205,16 @@ La aplicación se construye como una **SPA en React** organizada bajo el enfoque
 
 ## 🚀 Metas y Escalabilidad
 
-- [x] **Fase 1 (Actual):** Interfaz cliente en React + Vite para visualización y filtrado de licitaciones iniciales.
-- [ ] **Fase 2:** Integración completa de scrapers automatizados y categorización dinámica por etiquetas.
-- [ ] **Fase 3:** Sistema de alertas automáticas por correo para convocatorias de alto interés.
-- [ ] **Fase 4:** Panel de estadísticas sobre tendencias de compra por sector y región.
+- [x] **Fase 1 (Vigente):** SPA cliente en React + Vite con catálogo local de demostración, explorador con filtros y orden en URL, detalle con exportación a PDF en Web Worker, panel de estadísticas (`/estadisticas`), favoritos por usuario en `localStorage`, configuración local de umbrales de aprobación (`/configuracion/umbrales`, US-10 / CR-302), temas claro/oscuro y sesión simulada.
+- [x] **Separación de repositorios (#113):** API REST y PostgreSQL 16 trasladados a [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend) con catálogo, migraciones, pruebas y CI independientes.
+- [ ] **Fase 2 (Planificada):** conexión HTTP del frontend con `LicitacionesUV-backend` (`VITE_API_BASE_URL`), autenticación real en servidor, importación periódica desde Mercado Público (#121) y eventuales conectores o scraping de fuentes adicionales con categorización por etiquetas.
+- [ ] **Fase 3 (Planificada):** sistema de alertas automáticas por correo (US-08) y flujo completo de aprobaciones con registro de decisiones y subrogancias (US-09, US-11 / CR-302).
+- [ ] **Despliegue público (Pendiente):** publicación del frontend y de la API en entornos desplegados; a la fecha (21 de noviembre de 2026) la aplicación todavía no ha sido lanzada públicamente.
 
 ### ⚠️ Limitaciones
 
-- La plataforma depende de la disponibilidad y estructura pública de las fuentes de origen.
-- La herramienta centraliza y organiza información, pero no reemplaza la postulación formal en el portal del convocante.
+- **Datos y sesión actuales (Fase 1):** las licitaciones mostradas provienen de un catálogo local de demostración (`licitaciones.mock.json`) y la autenticación es simulada en el navegador (`localStorage`); no hay conexión activa a la API ni validación real de credenciales.
+- **Fuentes futuras (Fase 2):** cuando se integren fuentes externas, la disponibilidad de datos dependerá de los portales oficiales (p. ej. límite diario de solicitudes por ticket de ChileCompra) y la herramienta no reemplaza la postulación formal en el portal del convocante.
 
 ---
 
@@ -214,7 +222,7 @@ La aplicación se construye como una **SPA en React** organizada bajo el enfoque
 
 Para ejecutar el entorno local, necesitas:
 
-- **Runtime:** Node.js 20.19+ o 22.12+
+- **Runtime:** Node.js **20.19+** para `npm run dev`, `lint`, `format:check`, `test` y `build`; **Node.js 22.8+** (CI usa `22.22.0`) para ejecutar los umbrales de cobertura (`npm run test:coverage` y `npm run test:coverage:critico`).
 - **Gestor de paquetes:** npm 10+
 - **Stack principal:** React 19, Vite 8, ESLint 10
 - **Pruebas:** runner nativo de Node (`node --test`)
@@ -246,7 +254,7 @@ node --version
 npm --version
 ```
 
-Si tu versión de Node.js es menor a la 20.19, actualízala antes de continuar.
+Si tu versión de Node.js es menor a la 20.19, actualízala antes de continuar (para los comandos de cobertura `test:coverage` y `test:coverage:critico`, usa Node.js 22.8 o superior).
 
 ### 3. Instalar dependencias
 
@@ -304,6 +312,60 @@ cp .env.example .env
 
 - Cada variable está documentada con su **nombre**, **formato** y **obligatoriedad** dentro de `.env.example`.
 - Los archivos `.env` reales nunca se suben al repositorio (excluidos por `.gitignore`), igual que certificados y llaves privadas (`*.pem`, `*.key`, `*.p12`, `*.pfx`).
+
+---
+
+## 📚 Guía de verificación, documentación y extensión
+
+### Comandos exactos y ejemplo con resultado esperado
+
+```bash
+npm ci
+npm run verify
+npm run test:coverage
+npm run test:coverage:critico
+```
+
+Ejemplo reproducible sobre el módulo puro de filtrado (`src/features/licitaciones/licitacionFilters.js`):
+
+```bash
+node -e "import('./src/features/licitaciones/licitacionFilters.js').then(async ({ filterLicitaciones }) => { const { readFileSync } = await import('node:fs'); const data = JSON.parse(readFileSync('./src/features/licitaciones/data/licitaciones.mock.json', 'utf8')); console.log(filterLicitaciones(data, { keyword: ' software ' }).map((item) => item.id)); })"
+```
+
+Resultado esperado:
+
+```text
+[ 'licitacion-005' ]
+```
+
+Con `npm run verify` deben finalizar con código `0` las 5 etapas (`clean`, `lint`, `format:check`, `test` y `build`); los comandos de cobertura validan los umbrales de `docs/cobertura.md` (70 % / 70 % / 60 % general y 80 % / 80 % / 70 % en el módulo crítico `licitacionUtils.js`).
+
+### Problemas frecuentes
+
+- **`npm run test:coverage` falla por opciones desconocidas:** las banderas de umbrales (`--test-coverage-lines`, etc.) requieren **Node.js 22.8 o superior** (el CI usa `22.22.0`). Con Node `20.19.x` sí funcionan `npm run dev`, `npm run test` y `npm run verify`.
+- **Error al exportar PDF:** la generación corre en un Web Worker fuera del hilo principal (`exportLicitacionPdf.worker.js`). Si el entorno o navegador bloquea Web Workers, la aplicación muestra un error visible en lugar de bloquear la UI.
+- **Licitaciones marcadas como cerradas en el catálogo de prueba:** `licitaciones.mock.json` usa fechas fijas de demostración; las licitaciones cuya `closingDate` ya venció no permiten guardarse en favoritos (solo quitarse si ya estaban guardadas).
+- **Puertos locales ocupados o API sin conexión:** Vite usa `http://localhost:5173` y la API independiente usa `http://localhost:3000`. Como el frontend aún consume el mock local, no requiere que `LicitacionesUV-backend` esté corriendo para operar.
+
+### Cómo extender un flujo y probarlo
+
+1. Crea o actualiza el módulo dentro de `src/features/<dominio>/` separando la lógica pura en archivos `.js` (sin dependencias de DOM/React) de los componentes `.jsx`.
+2. Registra rutas nuevas en `src/app/routes/AppRoutes.jsx` y, si aplica, enlaces en `src/shared/components/Navbar.jsx`.
+3. Agrega pruebas unitarias en `tests/<modulo>.test.js` usando `node:test` y `node:assert/strict` para cubrir la lógica pura y casos borde.
+4. Ejecuta `npm run verify`, `npm run test:coverage` y `npm run test:coverage:critico`, y actualiza `docs/AI_context.md` y la documentación afectada antes de abrir el Pull Request hacia `develop`.
+
+### Mapa de documentación y comprobantes publicados
+
+| Área                                | Enlaces verificados en este repositorio                                                                                                                                                                                                                                                  |
+| :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arquitectura, separación y contrato | [`docs/Arquitectura.md`](docs/Arquitectura.md) · [`docs/AI_context.md`](docs/AI_context.md) · [`docs/separacion-backend.md`](docs/separacion-backend.md) · [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend)                                               |
+| Requisitos, calidad y trazabilidad  | [`docs/CriteriosAceptacion.md`](docs/CriteriosAceptacion.md) · [`docs/ReqExtrafuncionales.md`](docs/ReqExtrafuncionales.md) · [`docs/PerfilMedidasCalidad.md`](docs/PerfilMedidasCalidad.md)                                                                                             |
+| Pruebas, CI, cobertura y depuración | [`docs/cobertura.md`](docs/cobertura.md) · [`.github/workflows/verify.yml`](.github/workflows/verify.yml) · [`docs/depuracion.md`](docs/depuracion.md) · [`docs/ejercicio-2-2.md`](docs/ejercicio-2-2.md)                                                                                |
+| Contratos API y colecciones         | [`docs/api/README.md`](docs/api/README.md) · [`docs/api/listado-licitaciones.md`](docs/api/listado-licitaciones.md) · [`docs/api/detalle-licitacion.md`](docs/api/detalle-licitacion.md) · [`docs/thunder-client/`](docs/thunder-client/)                                                |
+| Referencia visual y rediseño        | [`docs/mockups/frontend-redesign/README.md`](docs/mockups/frontend-redesign/README.md) · [`docs/mockups/frontend-redesign/implementacion.md`](docs/mockups/frontend-redesign/implementacion.md) · [`docs/mockups/frontend-redesign/DESIGN.md`](docs/mockups/frontend-redesign/DESIGN.md) |
+| Flujo, roles y versión publicada    | [`docs/roles-equipo.md`](docs/roles-equipo.md) · [`.github/CODEOWNERS`](.github/CODEOWNERS) · [Release `v1.0.0`](https://github.com/Wilson-Jara/LicitacionesUV/releases/tag/v1.0.0)                                                                                                      |
+
+> **Estado de artefactos en curso (al 21 de noviembre de 2026):** el despliegue público aún no está lanzado y los diagramas UML de `docs/modelado/` (junto con su índice `docs/modelado/README.md`) se desarrollan en tareas dedicadas pendientes de integración en `develop` (por ejemplo, el PR `#123`). Los enlaces a esos artefactos se añadirán cuando estén fusionados en la rama de entrega.
 
 ---
 
@@ -409,7 +471,7 @@ Closes #[número_issue]
 
 El repositorio aplica controles automáticos para que ningún cambio llegue a las ramas permanentes sin validación:
 
-- **Integración continua (CI):** el workflow `.github/workflows/verify.yml` ejecuta `npm run verify` en cada Pull Request hacia `main` y `develop`. Si lint, formato, pruebas o build fallan, el PR queda bloqueado.
+- **Integración continua (CI):** el workflow [`.github/workflows/verify.yml`](.github/workflows/verify.yml) ejecuta `npm run verify`, `npm run test:coverage` y `npm run test:coverage:critico` en cada Pull Request y push hacia `main` y `develop`. Si lint, formato, pruebas, cobertura o build fallan, el PR queda bloqueado.
 - **Protección de ramas:** `main` y `develop` exigen al menos **1 aprobación de un revisor distinto del autor** y el estado de CI en verde antes del merge.
 - **Asignación de revisores (CODEOWNERS):** `.github/CODEOWNERS` solicita automáticamente la revisión de los responsables del área que toca cada PR (detalle en [Asignación del revisor](#asignación-del-revisor)).
 - **Plantilla de Pull Request:** `.github/pull_request_template.md` recuerda completar propósito, resumen, cómo se verificó y el issue que cierra.

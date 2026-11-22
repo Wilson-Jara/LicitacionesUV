@@ -71,7 +71,7 @@ Responsabilidades:
 - Probar los criterios de aceptación.
 - Buscar errores y regresiones.
 - Verificar que la aplicación inicie correctamente.
-- Ejecutar `npm run lint` y `npm run build`.
+- Ejecutar `npm run verify` (y los comandos de cobertura cuando corresponda).
 - Registrar evidencias y problemas encontrados.
 - Apoyar la automatización y los despliegues.
 
@@ -150,7 +150,7 @@ El PM verifica que el resultado responda al objetivo del issue. Después de apro
 - Los revisores se asignan automáticamente mediante `.github/CODEOWNERS` según los archivos modificados; el autor no necesita agregarlos a mano.
 - Las revisiones deben buscar errores, imports sin usar, cambios innecesarios y problemas de accesibilidad.
 - QA debe comprobar el flujo principal y los casos de error.
-- Deben ejecutarse `npm run lint` y `npm run build` antes de cerrar un issue.
+- Debe ejecutarse `npm run verify` (lint, formato, pruebas y build) antes de cerrar un issue.
 - Los criterios de aceptación deben estar cumplidos antes de hacer merge.
 - Los problemas encontrados deben registrarse en el issue o Pull Request.
 - No se deben ocultar errores ni modificar el alcance sin acuerdo del equipo.
@@ -164,7 +164,6 @@ El PM verifica que el resultado responda al objetivo del issue. Después de apro
 - [ ] Se revisó el Pull Request.
 - [ ] Se probó el flujo principal.
 - [ ] Se probaron los casos de error relevantes.
-- [ ] `npm run lint` finaliza sin errores.
-- [ ] `npm run build` finaliza correctamente.
+- [ ] `npm run verify` finaliza sin errores (lint, formato, pruebas y build).
 - [ ] Se documentaron las decisiones importantes.
 - [ ] El PM validó el resultado.
