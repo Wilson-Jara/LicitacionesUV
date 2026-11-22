@@ -69,7 +69,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 - **Configuración de Umbrales de Aprobación (US-10, CR-302):**
   - Página `/configuracion/umbrales` (`ConfiguracionUmbralesPage`) que permite crear, editar y eliminar umbrales por unidad mediante los formularios `UmbralForm` y `UnidadForm` y el listado editable `UmbralesTable`.
   - Los umbrales son **datos configurables**, no constantes del código (CA2, regla R4 / REF-14): el punto de partida vive en `umbralesIniciales.js` y la configuración vigente se persiste en `localStorage` (clave `licitacionesuv-umbrales`).
-  - El rango de cada umbral es `[montoMinimo, montoMaximo)`: el mínimo es inclusivo, el máximo es exclusivo y `null` en el máximo significa «sin tope». La validación impide montos negativos, rangos invertidos y solapamientos dentro de una unidad.
+  - El rango de cada umbral es `[montoMinimo, montoMaximo)`: el mínimo es inclusivo, el máximo es exclusivo y `null` en el máximo significa «sin tope». La validación impide montos negativos, rangos invertidos y solapamientos dentro de una unidad, y exige pesos enteros representables con precisión (`Number.isSafeInteger`). Los montos se escriben en campos de texto con teclado numérico y `parseMontoClp` solo acepta dígitos, para rechazar entradas como `0,5` o `1.000.000` que un campo `type="number"` reinterpreta en silencio.
   - Un simulador consulta el nivel aprobador que corresponde a un monto con la configuración vigente y se recalcula de inmediato al editar, sin recargar la página ni volver a desplegar (CA3).
   - Las tablas conservan sus encabezados y se desplazan dentro de una región enfocada por teclado cuando el ancho es insuficiente.
 - **Límite con el backend independiente:**

@@ -94,6 +94,25 @@ export function formatUmbralTimestamp(actualizadoEn) {
   }).format(fecha)
 }
 
+/**
+ * Convierte el texto de un campo de monto en pesos chilenos a número.
+ *
+ * Solo acepta dígitos (con espacios alrededor): rechaza signos, separadores de
+ * miles, decimales y notación científica, para que `1.000.000` o `0,5` no se
+ * interpreten en silencio como otro monto. La precisión la comprueba
+ * `validarUmbral`, que exige enteros seguros.
+ *
+ * @param {string} texto - Valor escrito en el campo.
+ * @returns {number|null} `null` si el campo está vacío, `NaN` si el formato no es
+ *   un entero sin signo, o el número leído en otro caso.
+ */
+export function parseMontoClp(texto) {
+  if (typeof texto !== 'string' || texto.trim() === '') return null
+  const limpio = texto.trim()
+  if (!/^\d+$/.test(limpio)) return Number.NaN
+  return Number(limpio)
+}
+
 function seSolapan(a, b) {
   const finA = a.montoMaximo === null ? Infinity : a.montoMaximo
   const finB = b.montoMaximo === null ? Infinity : b.montoMaximo
@@ -103,8 +122,9 @@ function seSolapan(a, b) {
 /**
  * Valida un umbral contra el resto de los umbrales de su unidad.
  *
- * Verifica que los montos sean coherentes (mínimo >= 0, máximo mayor que el
- * mínimo y exclusivo) y que el rango no se solape con otro umbral existente.
+ * Verifica que los montos sean pesos enteros representables con precisión
+ * (`Number.isSafeInteger`), que sean coherentes (mínimo >= 0, máximo mayor que
+ * el mínimo y exclusivo) y que el rango no se solape con otro umbral existente.
  *
  * @param {object} umbral - Candidato con `montoMinimo`, `montoMaximo` y `nivelAprobador`.
  * @param {Array<object>} [otrosUmbrales=[]] - Umbrales de la misma unidad con los
@@ -115,14 +135,16 @@ export function validarUmbral(umbral, otrosUmbrales = []) {
   const errores = {}
   const { montoMinimo, montoMaximo, nivelAprobador } = umbral ?? {}
 
-  if (!Number.isFinite(montoMinimo) || montoMinimo < 0) {
-    errores.montoMinimo = 'Ingresa un monto mínimo igual o mayor que 0.'
+  if (!Number.isSafeInteger(montoMinimo) || montoMinimo < 0) {
+    errores.montoMinimo =
+      'Ingresa un monto mínimo en pesos enteros, igual o mayor que 0 (solo dígitos, sin puntos ni decimales).'
   }
 
   if (montoMaximo !== null && montoMaximo !== undefined) {
-    if (!Number.isFinite(montoMaximo)) {
-      errores.montoMaximo = 'El monto máximo debe ser un número o quedar vacío (sin tope).'
-    } else if (Number.isFinite(montoMinimo) && montoMaximo <= montoMinimo) {
+    if (!Number.isSafeInteger(montoMaximo)) {
+      errores.montoMaximo =
+        'El monto máximo debe ser un entero en pesos (solo dígitos, sin puntos ni decimales) o quedar vacío (sin tope).'
+    } else if (Number.isSafeInteger(montoMinimo) && montoMaximo <= montoMinimo) {
       errores.montoMaximo =
         'El monto máximo debe ser mayor que el mínimo (el máximo no se incluye).'
     }

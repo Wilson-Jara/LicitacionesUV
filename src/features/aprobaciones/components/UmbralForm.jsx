@@ -1,17 +1,23 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
-import { NIVELES_APROBADOR, esValido, getTipoUnidadLabel, validarUmbral } from '../umbralesUtils.js'
-
-function parseMonto(valor) {
-  if (typeof valor !== 'string' || valor.trim() === '') return null
-  return Number(valor)
-}
+import {
+  NIVELES_APROBADOR,
+  esValido,
+  getTipoUnidadLabel,
+  parseMontoClp,
+  validarUmbral,
+} from '../umbralesUtils.js'
 
 /**
  * Formulario para crear o editar un umbral de una unidad (US-10, CA1).
  *
  * El formulario valida rango y nivel aprobador antes de delegar en `onGuardar`.
  * Al editar, la unidad queda fija para no mover el umbral de unidad por error.
+ *
+ * Los montos se escriben en campos de texto con teclado numérico y no en
+ * `type="number"`: el navegador interpreta en silencio entradas como `1.000.000`
+ * (la convierte en 1) o `0,5`, mientras que el texto permite rechazarlas con un
+ * mensaje (#125).
  */
 export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCancelar }) {
   const editando = Boolean(umbralEnEdicion)
@@ -31,8 +37,8 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
     event.preventDefault()
 
     const datos = {
-      montoMinimo: parseMonto(montoMinimo),
-      montoMaximo: parseMonto(montoMaximo),
+      montoMinimo: parseMontoClp(montoMinimo),
+      montoMaximo: parseMontoClp(montoMaximo),
       nivelAprobador,
     }
     const unidad = unidades.find((u) => u.id === idUnidad)
@@ -107,10 +113,9 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
               <label htmlFor="umbral-minimo">Monto mínimo (inclusivo)</label>
               <input
                 id="umbral-minimo"
-                type="number"
-                min="0"
-                step="1"
+                type="text"
                 inputMode="numeric"
+                autoComplete="off"
                 placeholder="0"
                 value={montoMinimo}
                 onChange={(event) => setMontoMinimo(event.target.value)}
@@ -128,10 +133,9 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
               <label htmlFor="umbral-maximo">Monto máximo (exclusivo, opcional)</label>
               <input
                 id="umbral-maximo"
-                type="number"
-                min="0"
-                step="1"
+                type="text"
                 inputMode="numeric"
+                autoComplete="off"
                 placeholder="Sin tope"
                 value={montoMaximo}
                 onChange={(event) => setMontoMaximo(event.target.value)}
