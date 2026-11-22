@@ -4,9 +4,13 @@ import {
   NIVELES_APROBADOR,
   esValido,
   getTipoUnidadLabel,
+  idUnidadVigente,
   parseMontoClp,
   validarUmbral,
 } from '../umbralesUtils.js'
+
+const ERROR_GUARDADO =
+  'No se guardó el umbral porque la configuración cambió: la unidad o el umbral ya no existe, o el rango dejó de ser válido. Revisa los datos e inténtalo de nuevo.'
 
 /**
  * Formulario para crear o editar un umbral de una unidad (US-10, CA1).
@@ -18,6 +22,19 @@ import {
  * `type="number"`: el navegador interpreta en silencio entradas como `1.000.000`
  * (la convierte en 1) o `0,5`, mientras que el texto permite rechazarlas con un
  * mensaje (#125).
+ *
+ * Si la unidad elegida desaparece de `unidades`, el selector vuelve a «Selecciona
+ * una unidad…» en lugar de cambiar en silencio a otra, y el guardado se bloquea
+ * hasta elegir una disponible. Los campos solo se limpian cuando `onGuardar`
+ * confirma que la operación se aplicó (#125).
+ *
+ * @param {object} props - Propiedades del componente.
+ * @param {Array<object>} props.unidades - Unidades configuradas con sus umbrales.
+ * @param {object|null} [props.umbralEnEdicion=null] - Umbral que se edita, o `null` para crear.
+ * @param {(cambio: { idUnidad: string, datos: object }) => boolean} props.onGuardar -
+ *   Guarda el umbral y devuelve `true` solo si la operación se aplicó.
+ * @param {() => void} props.onCancelar - Cancela la edición.
+ * @returns {import('react').JSX.Element} Formulario de umbral.
  */
 export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCancelar }) {
   const editando = Boolean(umbralEnEdicion)
@@ -30,27 +47,54 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
   )
   const [nivelAprobador, setNivelAprobador] = useState(umbralEnEdicion?.nivelAprobador ?? '')
   const [errores, setErrores] = useState({})
+  const [errorGuardado, setErrorGuardado] = useState('')
+  const [unidadesPrevias, setUnidadesPrevias] = useState(unidades)
+  const [unidadEliminada, setUnidadEliminada] = useState(false)
+
+  // #125: si la unidad elegida desaparece, la selección se invalida en el mismo
+  // render. Basta comparar ids en cada render no alcanza: los ids se generan como
+  // «mayor + 1», así que una unidad creada después podría reutilizar el id de la
+  // eliminada y quedar seleccionada sin que nadie la elija.
+  if (unidades !== unidadesPrevias) {
+    setUnidadesPrevias(unidades)
+    if (idUnidad !== '' && idUnidadVigente(unidades, idUnidad) === '') {
+      setIdUnidad('')
+      setUnidadEliminada(true)
+    }
+  }
 
   const sinUnidades = unidades.length === 0
+  const idSeleccionado = idUnidadVigente(unidades, idUnidad)
 
   const handleSubmit = (event) => {
     event.preventDefault()
+    setErrorGuardado('')
 
     const datos = {
       montoMinimo: parseMontoClp(montoMinimo),
       montoMaximo: parseMontoClp(montoMaximo),
       nivelAprobador,
     }
-    const unidad = unidades.find((u) => u.id === idUnidad)
+    const unidad = unidades.find((u) => u.id === idSeleccionado)
     const otrosUmbrales = (unidad?.umbrales ?? []).filter(
       (umbral) => umbral.id !== umbralEnEdicion?.id,
     )
     const nuevosErrores = validarUmbral(datos, otrosUmbrales)
+    if (!unidad) {
+      nuevosErrores.idUnidad = unidadEliminada
+        ? 'La unidad que habías elegido ya no existe. Selecciona una unidad disponible.'
+        : 'Selecciona la unidad a la que pertenece el umbral.'
+    }
 
     setErrores(nuevosErrores)
     if (!esValido(nuevosErrores)) return
 
-    onGuardar({ idUnidad, datos })
+    // Solo se confirma una operación aplicada: si no se guardó, se informa y se
+    // conservan los datos escritos para corregirlos.
+    if (!onGuardar({ idUnidad: idSeleccionado, datos })) {
+      setErrorGuardado(ERROR_GUARDADO)
+      return
+    }
     if (!editando) {
       setMontoMinimo('')
       setMontoMaximo('')
@@ -74,16 +118,29 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
               <label htmlFor="umbral-unidad">Unidad</label>
               <select
                 id="umbral-unidad"
-                value={idUnidad}
-                onChange={(event) => setIdUnidad(event.target.value)}
+                value={idSeleccionado}
+                onChange={(event) => {
+                  setIdUnidad(event.target.value)
+                  setUnidadEliminada(false)
+                }}
                 disabled={editando}
+                aria-invalid={Boolean(errores.idUnidad)}
+                aria-describedby={errores.idUnidad ? 'umbral-unidad-error' : undefined}
               >
+                <option value="" disabled>
+                  Selecciona una unidad…
+                </option>
                 {unidades.map((unidad) => (
                   <option key={unidad.id} value={unidad.id}>
                     {unidad.nombre} · {getTipoUnidadLabel(unidad.tipo)}
                   </option>
                 ))}
               </select>
+              {errores.idUnidad && (
+                <p className="umbral-form__error" id="umbral-unidad-error" role="alert">
+                  {errores.idUnidad}
+                </p>
+              )}
             </div>
 
             <div className="umbral-form__group">
@@ -149,6 +206,12 @@ export function UmbralForm({ unidades, umbralEnEdicion = null, onGuardar, onCanc
               )}
             </div>
           </div>
+
+          {errorGuardado && (
+            <p className="umbral-form__error" role="alert">
+              {errorGuardado}
+            </p>
+          )}
 
           <div className="umbral-form__actions">
             <button type="submit" className="umbral-btn umbral-btn--primary">

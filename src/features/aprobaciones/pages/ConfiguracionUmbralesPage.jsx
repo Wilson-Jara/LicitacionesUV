@@ -63,15 +63,24 @@ function ConfiguracionUmbralesPage() {
   const nombreDeUnidad = (idUnidad) =>
     unidades.find((u) => u.id === idUnidad)?.nombre ?? 'la unidad'
 
+  // #125: solo se confirma una operación aplicada. Si el proveedor la descarta,
+  // se devuelve `false` y el formulario muestra el error con los datos intactos.
   const handleGuardarUmbral = ({ idUnidad, datos }) => {
     if (edicion) {
-      editarUmbral(idUnidad, edicion.idUmbral, datos)
+      if (!editarUmbral(idUnidad, edicion.idUmbral, datos)) {
+        setMensaje('')
+        return false
+      }
       setEdicion(null)
       setMensaje(`Umbral actualizado en ${nombreDeUnidad(idUnidad)}: se aplica de inmediato.`)
-      return
+      return true
     }
-    crearUmbral(idUnidad, datos)
+    if (!crearUmbral(idUnidad, datos)) {
+      setMensaje('')
+      return false
+    }
     setMensaje(`Umbral agregado a ${nombreDeUnidad(idUnidad)}: se aplica de inmediato.`)
+    return true
   }
 
   const handleEditarUmbral = (idUnidad, umbral) => {

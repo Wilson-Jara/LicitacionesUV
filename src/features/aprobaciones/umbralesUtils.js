@@ -113,6 +113,22 @@ export function parseMontoClp(texto) {
   return Number(limpio)
 }
 
+/**
+ * Comprueba que la unidad elegida siga disponible en la configuración vigente.
+ *
+ * El formulario conserva la selección en su estado; si la unidad se elimina, la
+ * selección no debe apuntar a una unidad que ya no existe ni cambiar en silencio
+ * a otra, porque el umbral se guardaría en la unidad equivocada (#125).
+ *
+ * @param {Array<{ id: string }>} unidades - Unidades configuradas.
+ * @param {string} idUnidad - Unidad seleccionada.
+ * @returns {string} El mismo `idUnidad` si existe, o `''` para pedir una selección nueva.
+ */
+export function idUnidadVigente(unidades, idUnidad) {
+  if (!Array.isArray(unidades) || typeof idUnidad !== 'string') return ''
+  return unidades.some((unidad) => unidad?.id === idUnidad) ? idUnidad : ''
+}
+
 function seSolapan(a, b) {
   const finA = a.montoMaximo === null ? Infinity : a.montoMaximo
   const finB = b.montoMaximo === null ? Infinity : b.montoMaximo

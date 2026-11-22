@@ -4,15 +4,18 @@ import { UmbralesContext } from '../../../app/providers/UmbralesProvider'
 /**
  * Hook para acceder a la configuración y operaciones de umbrales de aprobación por unidad.
  *
+ * Cada operación devuelve `true` si cambió la configuración y `false` si se
+ * descartó (la unidad o el umbral ya no existe), para confirmar solo operaciones
+ * aplicadas (#125).
+ *
  * @returns {{
  *   unidades: Array<object>,
- *   ultimaActualizacion: string|null,
- *   crearUmbral: (idUnidad: string, datos: object) => void,
- *   editarUmbral: (idUnidad: string, idUmbral: string, datos: object) => void,
- *   quitarUmbral: (idUnidad: string, idUmbral: string) => void,
- *   crearUnidad: (datos: object) => void,
- *   quitarUnidad: (idUnidad: string) => void,
- *   restablecerDefecto: () => void
+ *   actualizadoEn: string|null,
+ *   crearUmbral: (idUnidad: string, datos: object) => boolean,
+ *   editarUmbral: (idUnidad: string, idUmbral: string, datos: object) => boolean,
+ *   quitarUmbral: (idUnidad: string, idUmbral: string) => boolean,
+ *   crearUnidad: (datos: object) => boolean,
+ *   quitarUnidad: (idUnidad: string) => boolean
  * }} Objeto con el catálogo de unidades/umbrales y sus métodos de gestión.
  * @throws {Error} Si se utiliza fuera del árbol de un `UmbralesProvider`.
  */

@@ -11,6 +11,7 @@ import {
   generarIdUnidad,
   getNivelAprobadorLabel,
   getTipoUnidadLabel,
+  idUnidadVigente,
   parseMontoClp,
   resolverNivelAprobador,
   validarUmbral,
@@ -133,6 +134,25 @@ describe('umbralesUtils · lectura de montos en CLP (#125)', () => {
     assert.ok(
       validarUmbral({ montoMinimo: 0, montoMaximo: leido, nivelAprobador: 'rectoria' }).montoMaximo,
     )
+  })
+})
+
+describe('umbralesUtils · unidad seleccionada vigente (#125)', () => {
+  const unidades = [{ id: 'unidad-2' }, { id: 'unidad-3' }]
+
+  it('conserva la selección mientras la unidad exista', () => {
+    assert.equal(idUnidadVigente(unidades, 'unidad-3'), 'unidad-3')
+  })
+
+  it('pide una selección nueva si la unidad elegida se eliminó, sin pasar a otra', () => {
+    assert.equal(idUnidadVigente(unidades, 'unidad-1'), '')
+    assert.equal(idUnidadVigente([], 'unidad-1'), '')
+  })
+
+  it('tolera selecciones vacías y listas inválidas', () => {
+    assert.equal(idUnidadVigente(unidades, ''), '')
+    assert.equal(idUnidadVigente(null, 'unidad-2'), '')
+    assert.equal(idUnidadVigente(unidades, undefined), '')
   })
 })
 
