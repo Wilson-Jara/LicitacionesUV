@@ -156,7 +156,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                 |
 | `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                               |
 | `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                                 |
-| `.github/CODEOWNERS`                                               | Asigna automáticamente los revisores de cada PR según el área modificada.                                |
+| `.github/CODEOWNERS`                                               | Asigna a QA (@StelleC) como propietario de código de todos los archivos.                                 |
 | `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                               |
 | `docs/api/*.md`                                                    | Documentación de las APIs del Entregable 2 (#43 y #44) y su trazabilidad con los CA.                     |
 | `docs/thunder-client/*.json`                                       | Colecciones exportadas de Thunder Client con los casos de prueba de cada API.                            |
