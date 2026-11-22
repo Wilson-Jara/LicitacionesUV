@@ -25,6 +25,30 @@ function clonarPrimera() {
 // se retiró al separar la API. El contrato se valida sobre el mock del cliente;
 // el repositorio backend mantiene su propio mock y sus propias pruebas.
 describe('contrato de datos de licitaciones (#94)', () => {
+  it('rechaza fechas imposibles y respeta años bisiestos y cambios de mes', () => {
+    for (const closingDate of [
+      '2026-02-30',
+      '2024-02-31',
+      '2023-02-29',
+      '1900-02-29',
+      '2026-04-31',
+      '2026-13-01',
+    ]) {
+      assert.ok(
+        validarContratoLicitacion({ ...clonarPrimera(), closingDate }).some((error) =>
+          error.includes('.closingDate'),
+        ),
+        closingDate,
+      )
+    }
+    for (const closingDate of ['2024-02-29', '2000-02-29', '2026-02-28', '2026-04-30']) {
+      assert.deepEqual(
+        validarContratoLicitacion({ ...clonarPrimera(), closingDate }),
+        [],
+        closingDate,
+      )
+    }
+  })
   it('el mock del cliente cumple el contrato completo', () => {
     assert.deepEqual(validarContratoLicitaciones(mock), [])
   })

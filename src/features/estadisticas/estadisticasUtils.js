@@ -7,7 +7,7 @@
  * anteriores. Las categorías sin registros no se inventan.
  */
 
-import { SECTORES } from '../licitaciones/categorias.js'
+import { SECTORES, normalizarCategoria } from '../licitaciones/categorias.js'
 import { filterLicitaciones } from '../licitaciones/licitacionFilters.js'
 
 export const VALID_REGIONES_LABEL = {
@@ -22,15 +22,6 @@ export const VALID_TIPOS_LABEL = {
   privada: 'Privada',
 }
 
-function normalizarTexto(valor) {
-  if (typeof valor !== 'string') return ''
-  return valor
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .toLowerCase()
-}
-
 /**
  * Obtiene el sector de una licitación. Usa el campo explícito `sector` cuando
  * existe; si falta o está vacío, lo deriva desde la institución.
@@ -39,10 +30,10 @@ function normalizarTexto(valor) {
  * @returns {string} Clave de sector explícita o inferida.
  */
 export function derivarSector(licitacion) {
-  const sector = normalizarTexto(licitacion?.sector)
+  const sector = normalizarCategoria(licitacion?.sector)
   if (sector) return sector
 
-  const institucion = normalizarTexto(licitacion?.institution)
+  const institucion = normalizarCategoria(licitacion?.institution)
   if (!institucion) return 'otro'
 
   if (institucion.includes('universidad')) return 'universidad'

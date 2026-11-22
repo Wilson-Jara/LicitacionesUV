@@ -4,6 +4,7 @@ import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
 import { countActiveFilters, filterLicitaciones, sortLicitaciones } from '../licitacionFilters.js'
 import mockData from '../data/licitaciones.mock.json'
+import { getSectorLabel, getEtiquetaLabel } from '../categorias.js'
 import './LicitacionesExplorerPage.css'
 
 const sortOptions = [
@@ -18,7 +19,7 @@ const ejemplos = ['Mantenimiento', 'Software', 'Consultoría']
 
 const sectoresDisponibles = [
   ...new Set(mockData.map((licitacion) => licitacion.sector).filter(Boolean)),
-].sort((a, b) => a.localeCompare(b, 'es'))
+].sort((a, b) => getSectorLabel(a).localeCompare(getSectorLabel(b), 'es'))
 
 const etiquetasDisponibles = [
   ...new Set(
@@ -26,7 +27,7 @@ const etiquetasDisponibles = [
       Array.isArray(licitacion.etiquetas) ? licitacion.etiquetas : [],
     ),
   ),
-].sort((a, b) => a.localeCompare(b, 'es'))
+].sort((a, b) => getEtiquetaLabel(a).localeCompare(getEtiquetaLabel(b), 'es'))
 
 function LicitacionesExplorerPage() {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()

@@ -16,11 +16,11 @@
 Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
-- `npm run test` ejecuta las 141 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run test` ejecuta las 143 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
-- `npm run verify` pasa tras retirar el backend y completar la HU #94: lint, formato, 141 pruebas y build. La cobertura propia del cliente se debe recalcular tras esta entrega; son resultados locales, no del CI remoto.
+- `npm run verify` pasa: lint, formato, 143 pruebas y build. El contrato rechaza fechas de calendario imposibles, incluidos días inválidos de febrero. La cobertura propia del cliente se debe recalcular tras esta entrega; son resultados locales, no del CI remoto.
 - `npm run test` ejecuta las 122 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.

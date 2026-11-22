@@ -2,8 +2,9 @@
  * Validación del contrato de datos del catálogo de licitaciones (#94).
  *
  * El contrato exige los campos históricos del mock y agrega `sector` (texto
- * opcional) y `etiquetas` (lista de textos). Los valores de sector y etiqueta
- * se comparan normalizados para evitar mayúsculas o tildes inconsistentes.
+ * opcional, ausente si no aplica) y `etiquetas` (lista obligatoria de textos;
+ * se permite una lista vacía). El mock debe guardar claves normalizadas;
+ * los filtros toleran tildes y mayúsculas al recibir parámetros externos.
  */
 
 import { VALID_ETIQUETAS, VALID_SECTORES, normalizarCategoria } from './categorias.js'
@@ -27,7 +28,8 @@ function esTextoNoVacio(value) {
 
 function validarFechaIso(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
-  return !Number.isNaN(Date.parse(`${value}T00:00:00Z`))
+  const date = new Date(`${value}T00:00:00Z`)
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
 }
 
 function validarUrl(value) {
