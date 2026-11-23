@@ -7,7 +7,10 @@
   display: inline-flex;
   min-height: 2.75rem;
   align-items: center;
+  gap: 0.45rem;
   margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .licitacion-detail-card {
@@ -17,7 +20,8 @@
 }
 
 .licitacion-detail-header {
-  padding: clamp(1.15rem, 3.5vw, 2.5rem);
+  padding: clamp(1.15rem, 3.5vw, 2.25rem);
+  border-bottom: 1px solid var(--border);
   border-radius: 0.9rem 0.9rem 0 0;
   color: var(--hero-ink);
   background: var(--hero);
@@ -27,12 +31,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
 }
 
 .licitacion-detail-type {
   color: var(--primary);
-  font-weight: 650;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .licitacion-detail-header h1 {
@@ -42,10 +47,11 @@
 
 .licitacion-detail-header p {
   color: var(--hero-muted);
+  font-size: 1rem;
 }
 
 .licitacion-detail-body {
-  padding: clamp(1.15rem, 3.5vw, 2.5rem);
+  padding: clamp(1.15rem, 3.5vw, 2.25rem);
 }
 
 .licitacion-detail-data {
@@ -58,10 +64,12 @@
 
 .licitacion-detail-data dt {
   color: var(--text);
+  font-size: 1rem;
 }
 
 .licitacion-detail-data dd {
   margin-top: 0.25rem;
+  font-size: 1rem;
   font-variant-numeric: tabular-nums;
   font-weight: 650;
 }
@@ -73,23 +81,42 @@
   margin-top: 1.4rem;
 }
 
-.licitacion-detail-actions .button {
-  column-gap: 0.3rem;
-}
-
 .licitacion-detail-error,
 .licitacion-detail-notice {
+  display: flex;
+  align-items: start;
+  gap: 0.55rem;
   margin-top: 1rem;
-  padding: 0.65rem 0.85rem;
-  border-radius: 0.5rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 0.625rem;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .licitacion-detail-error {
+  border: 1.5px solid var(--danger);
   color: var(--danger);
   background: var(--danger-bg);
 }
 
 .licitacion-detail-notice {
+  border: 1px solid var(--border-strong);
   color: var(--hero-ink);
   background: var(--hero);
+}
+
+.icon-spin {
+  animation: icon-spin 700ms linear infinite;
+}
+
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-spin {
+    animation: none;
+  }
 }

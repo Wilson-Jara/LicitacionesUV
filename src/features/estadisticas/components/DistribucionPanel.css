@@ -41,9 +41,10 @@
 }
 
 .dist-panel__barra-contenedor {
-  height: 0.65rem;
+  height: 0.75rem;
   overflow: hidden;
   margin-top: 0.35rem;
+  border: 1px solid var(--border-strong);
   border-radius: 1rem;
   background: var(--hero);
 }
