@@ -181,6 +181,13 @@
   color: var(--danger);
 }
 
+.umbrales-tabla__aviso {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.85em;
+  color: var(--danger);
+}
+
 .umbral-form__aviso,
 .simulador__resultado {
   padding: 0.75rem;
