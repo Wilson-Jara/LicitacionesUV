@@ -88,14 +88,14 @@ Ver: [ReqExtrafuncionales.md](docs/ReqExtrafuncionales.md)
 - Una **Licitación** recibe muchas **Aprobaciones** (1:N).
 - Una **Delegación** referencia a dos **Usuarios** (titular y subrogante).
 - Un **UmbralAprobación** pertenece a una **Unidad** y define el nivel según rangos de monto.
-- Una **Licitación** pertenece a una **Unidad** (N:1).
+- Una **Licitación** puede pertenecer a una **Unidad** (0..1): `unidad_id` admite nulo porque el catálogo actual no trae unidad.
 
 ```mermaid
 erDiagram
     USUARIO ||--o{ FAVORITO : guarda
     LICITACION ||--o{ FAVORITO : "es guardada en"
     REGION ||--o{ LICITACION : agrupa
-    UNIDAD ||--o{ LICITACION : agrupa
+    UNIDAD |o--o{ LICITACION : agrupa
     UNIDAD ||--o{ UMBRAL_APROBACION : define
     USUARIO ||--o{ APROBACION : aprueba
     LICITACION ||--o{ APROBACION : recibe
