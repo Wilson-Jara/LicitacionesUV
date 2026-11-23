@@ -1,31 +1,92 @@
 .filter-sidebar {
   display: grid;
   min-width: 0;
-  gap: 0.9rem;
-  padding: 1rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: var(--card-bg);
+  gap: 1.25rem;
+  padding: 1.5rem 1.35rem;
+  color: var(--hero-ink);
+  --border-focus: var(--hero-focus);
+}
+
+.filter-sidebar__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .filter-sidebar h2 {
-  font-size: 1.125rem;
+  color: var(--hero-ink);
+  font-size: 1.25rem;
 }
 
+.filter-sidebar__hint {
+  margin-top: 0.15rem;
+  color: var(--hero-muted);
+  font-size: 1rem;
+}
+
+.filter-count-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.7rem;
+  border: 1.5px solid var(--primary);
+  border-radius: 999px;
+  color: var(--primary);
+  background: var(--accent-bg);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.filter-search label,
 .filter-group label,
+.filter-group__label,
 .filter-type legend {
   display: block;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.45rem;
+  color: var(--hero-ink);
+  font-size: 1rem;
   font-weight: 650;
 }
 
-.filter-group select,
-.sort-control select {
+.filter-search__box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.85rem;
+  padding: 0.2rem 0.75rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 0.65rem;
+  color: var(--primary);
+  background: var(--card-bg);
+}
+
+.filter-search__box:focus-within {
+  border-color: var(--border-focus);
+  outline: 2.5px solid var(--border-focus);
+  outline-offset: 3px;
+}
+
+.filter-search__icon {
+  flex: 0 0 auto;
+}
+
+.filter-search__box input {
   width: 100%;
-  min-height: 2.75rem;
-  padding: 0.55rem 0.65rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 0.45rem;
+  min-height: 2.35rem;
+  border: 0;
+  outline: none;
+  font-size: 1rem;
+}
+
+.filter-group select {
+  width: 100%;
+  min-height: 2.85rem;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 0.65rem;
+  font-size: 1rem;
 }
 
 .filter-type {
@@ -39,25 +100,53 @@
   padding: 0;
 }
 
-.filter-type label {
+.filter-chips {
   display: flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.55rem;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 
-.filter-type input {
-  width: 1rem;
-  height: 1rem;
-  flex: 0 0 1rem;
-  margin: 0;
-  accent-color: var(--primary);
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.35rem;
+  padding: 0.25rem 0.8rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-h);
+  background: var(--card-bg);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-chip:hover {
+  border-color: var(--primary);
+  background: var(--accent-bg);
+}
+
+.filter-chip:active {
+  transform: scale(0.97);
+}
+
+.filter-chip[aria-pressed='true'] {
+  border-color: var(--highlight-ink);
+  color: var(--highlight-ink);
+  background: var(--highlight);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
 
 .filter-applied {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.45rem;
   padding: 0;
   margin: 0;
   list-style: none;
@@ -71,17 +160,43 @@
 .filter-applied button {
   display: inline-flex;
   max-width: 100%;
-  min-height: 2rem;
+  min-height: 2.35rem;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 0.45rem;
-  color: var(--hero-ink);
-  background: var(--hero);
+  gap: 0.45rem;
+  padding: 0.25rem 0.7rem;
+  border: 1.5px solid var(--primary);
+  border-radius: 999px;
+  color: var(--primary);
+  background: var(--accent-bg);
+  font-size: 1rem;
+  font-weight: 650;
   text-align: start;
 }
 
-.filter-sidebar .text-button {
-  justify-self: start;
+.filter-reset-btn {
+  width: 100%;
+}
+
+.filter-demo-note {
+  display: flex;
+  align-items: start;
+  gap: 0.6rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.75rem;
+  color: var(--hero-ink);
+  background: var(--accent-bg);
+  font-size: 1rem;
+}
+
+.filter-demo-note__icon {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-chip:active {
+    transform: none;
+  }
 }

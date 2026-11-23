@@ -13,14 +13,15 @@
 
 ## 2. Estado verificado
 
-Revisión local del 8 de noviembre de 2026 tras separar la API:
+Estado verificado localmente el 22 de noviembre de 2026:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
 - `npm run test` ejecuta las 209 pruebas del cliente (incluye `tests/licitacionesApi.test.js`, que prueba el cliente HTTP con un `fetch` falso). Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
-- `npm run verify` pasa: lint, formato, 209 pruebas y build. El contrato rechaza fechas imposibles, la medición de filtros es reproducible y las pruebas del PDF derivan la separación de `PDF_LAYOUT_MM` y cubren enlaces envueltos. La cobertura se debe recalcular tras estas entregas; son resultados locales, no del CI remoto.
+- `npm run verify` pasa: lint, formato, 209 pruebas y build. La cobertura local alcanza 98,42 % de líneas, 91,70 % de ramas y 97,95 % de funciones. `licitacionUtils.js` mantiene 100 % en las tres métricas.
+- El contrato rechaza fechas imposibles, la medición de filtros es reproducible y las pruebas del PDF derivan la separación de `PDF_LAYOUT_MM` y cubren enlaces envueltos.
 
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
@@ -42,8 +43,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
   - `profileStorage.js` guarda el perfil por cuenta en `localStorage` (`licitacionesuv-perfil:<correo de acceso>`). El correo de acceso conserva la identidad de la cuenta y sus favoritos.
   - La sesión simulada se conserva al recargar la pestaña mediante `sessionStorage` (`licitacionesuv-sesion-demo`), con el nombre y el correo de acceso. Cerrar sesión elimina esa entrada.
 - **Explorador de Licitaciones:**
-  - Cabecera con búsqueda por título, atajos de ejemplo y aviso explícito de catálogo ficticio. El término, la región, el sector, la etiqueta, el tipo y el orden siguen en la URL.
-  - Barra lateral (`FilterSidebar`) con selección de región, sector y etiqueta, radios de tipo y filtros aplicados que se pueden quitar individualmente.
+  - Barra lateral (`FilterSidebar`) con búsqueda por título, atajos de ejemplo, selección de región, sector y etiqueta, botones de modalidad y aviso de catálogo ficticio. Los filtros aplicados se pueden quitar individualmente y, junto con el orden, se conservan en la URL.
   - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
   - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, sector, etiquetas, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
   - Lista semántica con contador accesible, estado vacío y restablecimiento de filtros. En pantallas estrechas, los filtros se pueden desplegar.
@@ -70,7 +70,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
   - Script inline en `index.html` que aplica el tema guardado o la preferencia del sistema antes del montaje de React, evitando el flash de tema incorrecto.
   - Persistencia de la elección en `localStorage` (clave `licitacionesuv-theme`).
   - Botón de alternancia accesible (`ThemeToggle` con `aria-label` y `aria-pressed`) en la barra de navegación.
-  - Los componentes usan variables semánticas para fondo, texto, bordes, foco y estados. La paleta usa violeta y amarillo en superficies adaptadas a cada tema. Los atajos respetan la preferencia de movimiento reducido.
+  - Los componentes usan variables semánticas para fondo, texto, bordes, foco y estados. La paleta **Índigo-Morado UV y Arena** alcanza contraste WCAG 2.2 AAA (`≥ 7,47:1` en texto/enlaces/estados y `≥ 5,01:1` en bordes de controles) con referencia tipográfica mínima de `1rem` (16 px) en ambos temas. Las animaciones (`motion` envuelto en `<MotionConfig reducedMotion="user">`) y transiciones respetan la preferencia de movimiento reducido.
 - **Configuración de Umbrales de Aprobación (US-10, CR-302):**
   - Página `/configuracion/umbrales` (`ConfiguracionUmbralesPage`) que permite crear, editar y eliminar umbrales por unidad mediante los formularios `UmbralForm` y `UnidadForm` y el listado editable `UmbralesTable`.
   - Los umbrales son **datos configurables**, no constantes del código (CA2, regla R4 / REF-14): el punto de partida vive en `umbralesIniciales.js` y la configuración vigente se persiste en `localStorage` (clave `licitacionesuv-umbrales`).
@@ -181,6 +181,8 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 - React Router DOM `7.18.2`.
 - PropTypes `15.8.1`.
 - jsPDF `4.2.1` (generación de PDF en cliente).
+- Lucide React `1.77.0` (iconografía vectorial accesible).
+- Motion `14.14.0` (animaciones con `<MotionConfig reducedMotion="user">`).
 - Vite `8.2.1`.
 - ESLint `10.8.1`.
 - Prettier `3.9.6`.
