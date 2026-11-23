@@ -97,84 +97,6 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 ## 5. Inventario de archivos relevantes
 
-| Archivo                                                            | Responsabilidad actual                                                                                   |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción). |
-| `index.html`                                                       | Punto de entrada HTML.                                                                                   |
-| `src/main.jsx`                                                     | Punto de montaje de React.                                                                               |
-| `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales y Router.                                   |
-| `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                         |
-| `src/app/routes/NotFoundPage.jsx`                                  | Página 404 para rutas inexistentes.                                                                      |
-| `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.                      |
-| `src/index.css`                                                    | Tokens de tema, foco, tipografía y controles comunes.                                                    |
-| `src/features/auth/components/AuthModal.jsx`                       | Diálogo de inicio de sesión/registro con retorno de foco.                                                |
-| `src/features/auth/components/AuthModal.css`                       | Estilos compartidos de acceso y del diálogo.                                                             |
-| `src/features/auth/components/AuthForm.jsx`                        | Formulario compartido de acceso, registro y cuentas de ejemplo.                                          |
-| `src/features/auth/components/AuthIntro.jsx`                       | Panel de contexto e ilustración de acceso.                                                               |
-| `src/features/auth/pages/LoginPage.jsx`                            | Página completa de acceso simulado.                                                                      |
-| `src/features/auth/pages/LoginPage.css`                            | Estilos de la página de inicio de sesión.                                                                |
-| `src/features/auth/hooks/useAuth.js`                               | Hook de consumo del contexto de autenticación.                                                           |
-| `src/app/providers/AuthProvider.jsx`                               | Proveedor de estado de autenticación y del modal de acceso global.                                       |
-| `src/app/providers/FavoritosProvider.jsx`                          | Proveedor de favoritos con persistencia en localStorage por usuario.                                     |
-| `src/features/favoritos/hooks/useFavoritos.js`                     | Hook de consumo del contexto de favoritos.                                                               |
-| `src/features/favoritos/data/favoritosStorage.js`                  | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).                              |
-| `src/app/providers/ThemeProvider.jsx`                              | Proveedor de tema claro/oscuro con persistencia en localStorage.                                         |
-| `src/shared/components/Navbar.jsx`                                 | Marca pública, navegación activa, tema y controles de sesión.                                            |
-| `src/shared/components/Navbar.css`                                 | Estilos del Navbar.                                                                                      |
-| `src/shared/components/ThemeToggle.jsx`                            | Botón accesible de alternancia de tema claro/oscuro.                                                     |
-| `src/shared/components/ThemeToggle.css`                            | Estilos del botón de tema.                                                                               |
-| `src/shared/hooks/useTheme.js`                                     | Hook de consumo del contexto de tema.                                                                    |
-| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones con selector de orden.                                   |
-| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`         | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación.                |
-| `src/features/licitaciones/services/exportLicitacionPdf.js`        | Punto de entrada del navegador: crea el Web Worker y delega en la orquestación.                          |
-| `src/features/licitaciones/services/exportLicitacionPdfCore.js`    | Orquestación pura: crea el worker, recibe el PDF y dispara la descarga (testeable).                      |
-| `src/features/licitaciones/services/exportLicitacionPdf.worker.js` | Web Worker que genera el PDF con `jsPDF` fuera del hilo principal.                                       |
-| `src/features/licitaciones/services/buildLicitacionPdf.js`         | Lógica pura de generación del PDF de resumen (formato chileno y español).                                |
-| `src/features/licitaciones/services/licitacionPdfFilename.js`      | Nombre de archivo estable `licitacion-<id>.pdf` sin dependencias.                                        |
-| `src/features/licitaciones/licitacionUtils.js`                     | Formateo compartido y regla para determinar si una licitación está cerrada.                              |
-| `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo, y ordenamiento por fecha de cierre o monto.                          |
-| `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros y orden con URL.                                                       |
-| `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                                |
-| `src/features/licitaciones/components/LicitacionCard.jsx`          | Fila de licitación con enlace al detalle y acción de favorito.                                           |
-| `src/features/licitaciones/components/FavoritoButton.jsx`          | Acción compartida de guardar o quitar, según sesión y vigencia.                                          |
-| `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                                   |
-| `src/features/estadisticas/estadisticasUtils.js`                   | Cálculo puro de distribuciones por región, tipo y sector, y alternativa textual accesible.               |
-| `src/features/estadisticas/components/DistribucionPanel.jsx`       | Panel de una distribución con barras y alternativa textual accesible.                                    |
-| `src/features/estadisticas/pages/PanelEstadisticasPage.jsx`        | Página `/estadisticas` que muestra las distribuciones del conjunto filtrado.                             |
-| `src/features/favoritos/pages/MisFavoritosPage.jsx`                | Página de favoritos: listado, estado vacío y quitar licitaciones.                                        |
-| `src/features/favoritos/pages/MisFavoritosPage.css`                | Estilos de la página de favoritos.                                                                       |
-| `src/app/providers/UmbralesProvider.jsx`                           | Proveedor de umbrales de aprobación con persistencia en localStorage.                                    |
-| `src/features/aprobaciones/hooks/useUmbrales.js`                   | Hook de consumo del contexto de umbrales.                                                                |
-| `src/features/aprobaciones/data/umbralesIniciales.js`              | Datos iniciales editables de umbrales por unidad (semilla de configuración).                             |
-| `src/features/aprobaciones/data/umbralesStorage.js`                | Persistencia y normalización de umbrales en localStorage con CRUD por unidad.                            |
-| `src/features/aprobaciones/umbralesUtils.js`                       | Lógica pura de etiquetas, validación, formato y resolución de umbrales.                                  |
-| `src/features/aprobaciones/components/UmbralForm.jsx`              | Formulario para crear o editar un umbral con validación de rango y nivel.                                |
-| `src/features/aprobaciones/components/UnidadForm.jsx`              | Formulario para agregar una unidad con umbrales propios.                                                 |
-| `src/features/aprobaciones/components/UmbralesTable.jsx`           | Listado editable de umbrales por unidad con acciones de editar y eliminar.                               |
-| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.jsx`    | Panel de configuración de umbrales con simulador de resolución inmediata.                                |
-| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.css`    | Estilos del panel de configuración de umbrales.                                                          |
-| `tests/smoke.test.js`                                              | Pruebas automatizadas de línea base reproducible.                                                        |
-| `tests/favoritosStorage.test.js`                                   | Pruebas de la persistencia de favoritos.                                                                 |
-| `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                                     |
-| `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).                 |
-| `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                          |
-| `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda, combinación de filtros y ordenamiento.                                              |
-| `tests/estadisticasUtils.test.js`                                  | Pruebas de distribuciones, derivación de sector, filtros y accesibilidad.                                |
-| `tests/umbralesStorage.test.js`                                    | Pruebas de persistencia y CRUD de unidades y umbrales en `localStorage`.                                 |
-| `tests/umbralesUtils.test.js`                                      | Pruebas de validación, formato y resolución de umbrales de aprobación.                                   |
-| `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                                      |
-| `docs/Arquitectura.md`                                             | Diseño arquitectónico, diagrama, módulos y decisiones de diseño.                                         |
-| `docs/ReqExtrafuncionales.md`                                      | Requisitos extrafuncionales (REF) priorizados según ISO/IEC 25010.                                       |
-| `docs/PerfilMedidasCalidad.md`                                     | Perfil de medidas de calidad (ISO/IEC 25023) y trazabilidad con REF.                                     |
-| `docs/cobertura.md`                                                | Configuración de cobertura nativa de Node, exclusiones y módulo crítico.                                 |
-| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify`, `test:coverage` y `test:coverage:critico` en PR y push.     |
-| `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                 |
-| `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                               |
-| `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                                 |
-| `.github/CODEOWNERS`                                               | Asigna a QA (@StelleC) como propietario de código de todos los archivos.                                 |
-| `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                               |
-| `docs/api/*.md`                                                    | Documentación de las APIs del Entregable 2 (#43 y #44) y su trazabilidad con los CA.                     |
-| `docs/thunder-client/*.json`                                       | Colecciones exportadas de Thunder Client con los casos de prueba de cada API.                            |
 | Archivo                                                            | Responsabilidad actual                                                                                           |
 | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción).         |
@@ -182,6 +104,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | `src/main.jsx`                                                     | Punto de montaje de React.                                                                                       |
 | `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales y Router.                                           |
 | `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                                 |
+| `src/app/routes/NotFoundPage.jsx`                                  | Página 404 para rutas inexistentes.                                                                              |
 | `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.                              |
 | `src/index.css`                                                    | Tokens de tema, foco, tipografía y controles comunes.                                                            |
 | `src/features/auth/components/AuthModal.jsx`                       | Diálogo de inicio de sesión/registro con retorno de foco.                                                        |
@@ -240,8 +163,14 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                                  |
 | `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda, combinación de filtros y ordenamiento.                                                      |
 | `tests/estadisticasUtils.test.js`                                  | Pruebas de distribuciones, derivación de sector, filtros y accesibilidad.                                        |
+| `tests/umbralesStorage.test.js`                                    | Pruebas de persistencia y CRUD de unidades y umbrales en `localStorage`.                                         |
+| `tests/umbralesUtils.test.js`                                      | Pruebas de validación, formato y resolución de umbrales de aprobación.                                           |
 | `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                                              |
-| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.                                   |
+| `docs/Arquitectura.md`                                             | Diseño arquitectónico, diagrama, módulos y decisiones de diseño.                                                 |
+| `docs/ReqExtrafuncionales.md`                                      | Requisitos extrafuncionales (REF) priorizados según ISO/IEC 25010.                                               |
+| `docs/PerfilMedidasCalidad.md`                                     | Perfil de medidas de calidad (ISO/IEC 25023) y trazabilidad con REF.                                             |
+| `docs/cobertura.md`                                                | Configuración de cobertura nativa de Node, exclusiones y módulo crítico.                                         |
+| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify`, `test:coverage` y `test:coverage:critico` en PR y push.             |
 | `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                         |
 | `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                                       |
 | `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                                         |
