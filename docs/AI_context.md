@@ -16,16 +16,11 @@
 Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
-- `npm run test` ejecuta las 145 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run test` ejecuta las 149 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
-- `npm run verify` pasa: lint, formato, 145 pruebas y build. El contrato rechaza fechas de calendario imposibles, incluidos días inválidos de febrero, y tolera `sector` ausente o nulo. La medición de filtros es reproducible con `npm run bench:filtros` (`scripts/medir-filtros.mjs`), que falla sobre el objetivo de 2 s de REF-01. La cobertura propia del cliente se debe recalcular tras esta entrega; son resultados locales, no del CI remoto.
-- `npm run test` ejecuta las 122 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
-- `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
-- El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
-- Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
-- `npm run verify` pasa tras retirar el backend: lint, formato, 122 pruebas y build. La cobertura propia del cliente es 99,13 % líneas, 90,67 % ramas y 99,06 % funciones; la crítica pasa con 100 % en las tres métricas. Son resultados locales, no del CI remoto.
+- `npm run verify` pasa: lint, formato, 149 pruebas y build. El contrato rechaza fechas imposibles, la medición de filtros es reproducible y las pruebas del PDF derivan la separación de `PDF_LAYOUT_MM` y cubren enlaces envueltos. La cobertura se debe recalcular tras estas entregas; son resultados locales, no del CI remoto.
 
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
