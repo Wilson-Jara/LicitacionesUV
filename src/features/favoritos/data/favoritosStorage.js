@@ -1,3 +1,5 @@
+import { escribirJson, leerJson } from '../../../shared/lib/persistenciaLocal.js'
+
 /** Clave que separa los favoritos persistidos de otros datos de `localStorage`. */
 export const FAVORITOS_STORAGE_KEY = 'licitacionesuv-favoritos'
 
@@ -43,21 +45,17 @@ function normalizeFavoritos(lista) {
  * @returns {Record<string, Array<object>>} Favoritos normalizados, agrupados por usuario.
  */
 export function readFavoritosStore(storage) {
-  if (!storage) return {}
-  try {
-    const raw = storage.getItem(FAVORITOS_STORAGE_KEY)
-    const parsed = raw ? JSON.parse(raw) : {}
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
-    const store = {}
-    for (const [userId, lista] of Object.entries(parsed)) {
-      if (!userId) continue
-      store[userId] = normalizeFavoritos(lista)
-    }
-    return store
-  } catch {
-    // localStorage bloqueado o corrupto: se parte sin favoritos
-    return {}
+  // Sin almacenamiento, bloqueado, sin datos o corrupto: se parte sin favoritos.
+  const lectura = leerJson(storage, FAVORITOS_STORAGE_KEY)
+  if (!lectura.ok) return {}
+  const parsed = lectura.valor
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+  const store = {}
+  for (const [userId, lista] of Object.entries(parsed)) {
+    if (!userId) continue
+    store[userId] = normalizeFavoritos(lista)
   }
+  return store
 }
 
 /**
@@ -69,12 +67,8 @@ export function readFavoritosStore(storage) {
  * @returns {void}
  */
 export function writeFavoritosStore(storage, store) {
-  if (!storage) return
-  try {
-    storage.setItem(FAVORITOS_STORAGE_KEY, JSON.stringify(store))
-  } catch {
-    // sin persistencia disponible, los favoritos solo viven en memoria
-  }
+  // Sin persistencia disponible, los favoritos solo viven en memoria.
+  escribirJson(storage, FAVORITOS_STORAGE_KEY, store)
 }
 
 /**

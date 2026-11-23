@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import { AnimatePresence, motion as Motion } from 'motion/react'
 import { Check, Info, Search, X } from 'lucide-react'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
+import { getEtiquetaLabel, getSectorLabel } from '../categorias.js'
 import { getRegionLabel } from '../licitacionUtils.js'
 import { countActiveFilters, VALID_REGIONES } from '../licitacionFilters.js'
 import './FilterSidebar.css'
@@ -15,11 +16,14 @@ const tipos = [
 const ejemplos = ['Mantenimiento', 'Software', 'Consultoría']
 
 export function FilterSidebar({ searchRef, onSearchSubmit }) {
+export function FilterSidebar({ sectores = [], etiquetas = [] }) {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const activeCount = countActiveFilters(filters)
   const activos = [
     ['keyword', filters.keyword.trim(), 'palabra clave'],
     ['region', filters.region && getRegionLabel(filters.region), 'región'],
+    ['sector', filters.sector && getSectorLabel(filters.sector), 'sector'],
+    ['etiqueta', filters.etiqueta && getEtiquetaLabel(filters.etiqueta), 'etiqueta'],
     ['tipo', filters.tipo && tipos.find(([key]) => key === filters.tipo)?.[1], 'tipo'],
   ].filter(([, value]) => value)
 
@@ -98,6 +102,36 @@ export function FilterSidebar({ searchRef, onSearchSubmit }) {
         </select>
       </div>
 
+      <div className="filter-group">
+        <label htmlFor="sector">Sector</label>
+        <select
+          id="sector"
+          value={filters.sector}
+          onChange={(event) => setFilter('sector', event.target.value)}
+        >
+          <option value="">Todos los sectores</option>
+          {sectores.map((sector) => (
+            <option key={sector} value={sector}>
+              {getSectorLabel(sector)}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="filter-group">
+        <label htmlFor="etiqueta">Etiqueta</label>
+        <select
+          id="etiqueta"
+          value={filters.etiqueta}
+          onChange={(event) => setFilter('etiqueta', event.target.value)}
+        >
+          <option value="">Todas las etiquetas</option>
+          {etiquetas.map((etiqueta) => (
+            <option key={etiqueta} value={etiqueta}>
+              {getEtiquetaLabel(etiqueta)}
+            </option>
+          ))}
+        </select>
+      </div>
       <fieldset className="filter-type">
         <legend>Modalidad</legend>
         <div className="filter-chips" role="group" aria-label="Modalidad de licitación">
@@ -110,6 +144,14 @@ export function FilterSidebar({ searchRef, onSearchSubmit }) {
                 className="filter-chip"
                 aria-pressed={selected}
                 onClick={() => setFilter('tipo', value)}
+                aria-label={'Quitar filtro de ' + label + ': ' + value}
+                onClick={() => {
+                  setFilter(key, '')
+                  const target = ['keyword', 'region', 'sector', 'etiqueta'].includes(key)
+                    ? key
+                    : 'filter-reset'
+                  document.getElementById(target)?.focus()
+                }}
               >
                 {selected && <Check size={15} aria-hidden="true" />}
                 <span>{label}</span>
@@ -182,4 +224,6 @@ export function FilterSidebar({ searchRef, onSearchSubmit }) {
 FilterSidebar.propTypes = {
   searchRef: PropTypes.shape({ current: PropTypes.any }),
   onSearchSubmit: PropTypes.func,
+  sectores: PropTypes.arrayOf(PropTypes.string),
+  etiquetas: PropTypes.arrayOf(PropTypes.string),
 }

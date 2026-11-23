@@ -10,18 +10,10 @@ import {
   removeFavorito,
   writeFavoritosStore,
 } from '../../features/favoritos/data/favoritosStorage'
+import { obtenerAlmacenamientoLocal as getStorage } from '../../shared/lib/persistenciaLocal'
 
 /** Contexto de favoritos del usuario actual; se consume mediante `useFavoritos`. */
 export const FavoritosContext = createContext(null)
-
-function getStorage() {
-  if (typeof window === 'undefined') return null
-  try {
-    return window.localStorage
-  } catch {
-    return null
-  }
-}
 
 /**
  * Provee los favoritos del usuario autenticado y las acciones para guardarlos o quitarlos.

@@ -123,7 +123,8 @@ describe('umbralesStorage · lectura', () => {
 
 describe('umbralesStorage · operaciones sobre umbrales', () => {
   it('agrega un umbral generando su id y la marca de actualización', () => {
-    const inicial = getUmbralesIniciales()
+    // Se libera el tramo sin tope de unidad-1 para que el umbral nuevo no se solape.
+    const inicial = eliminarUmbral(getUmbralesIniciales(), 'unidad-1', 'umbral-3', 'x')
     const nuevo = agregarUmbral(
       inicial,
       'unidad-1',
@@ -132,8 +133,8 @@ describe('umbralesStorage · operaciones sobre umbrales', () => {
     )
 
     const umbrales = umbralesDe(nuevo, 'unidad-1')
-    assert.equal(umbrales.length, 4)
-    assert.deepEqual(umbrales[3], {
+    assert.equal(umbrales.length, 3)
+    assert.deepEqual(umbrales[2], {
       id: 'umbral-10',
       idUnidad: 'unidad-1',
       montoMinimo: 100000000,
@@ -141,7 +142,24 @@ describe('umbralesStorage · operaciones sobre umbrales', () => {
       nivelAprobador: 'rectoria',
     })
     assert.equal(nuevo.actualizadoEn, '2026-10-18T10:00:00.000Z')
-    assert.equal(umbralesDe(inicial, 'unidad-1').length, 3, 'no muta el store original')
+    assert.equal(umbralesDe(inicial, 'unidad-1').length, 2, 'no muta el store original')
+  })
+
+  it('#124: descarta un alta inválida o que se solapa con la configuración vigente', () => {
+    const store = getUmbralesIniciales()
+    const solapado = { montoMinimo: 100000000, montoMaximo: null, nivelAprobador: 'rectoria' }
+    assert.equal(agregarUmbral(store, 'unidad-1', solapado, 'x'), store)
+    const fraccion = { montoMinimo: 0, montoMaximo: 0.5, nivelAprobador: 'rectoria' }
+    const sinTramos = eliminarUnidad(store, 'unidad-1', 'x')
+    const conUnidad = agregarUnidad(sinTramos, { nombre: 'Prueba', tipo: 'facultad' }, 'x')
+    const idPrueba = conUnidad.unidades.at(-1).id
+    assert.equal(
+      agregarUmbral(conUnidad, idPrueba, fraccion, 'x'),
+      conUnidad,
+      'monto con decimales',
+    )
+    const valido = { montoMinimo: 0, montoMaximo: 1, nivelAprobador: 'rectoria' }
+    assert.notEqual(agregarUmbral(conUnidad, idPrueba, valido, 'x'), conUnidad, 'control válido')
   })
 
   it('ignora el alta cuando la unidad no existe', () => {
@@ -156,7 +174,7 @@ describe('umbralesStorage · operaciones sobre umbrales', () => {
       store,
       'unidad-1',
       'umbral-1',
-      { montoMinimo: 0, montoMaximo: 20000001, nivelAprobador: 'direccion_economica' },
+      { montoMinimo: 0, montoMaximo: 10000001, nivelAprobador: 'direccion_economica' },
       '2026-10-18T11:00:00.000Z',
     )
 
@@ -164,12 +182,28 @@ describe('umbralesStorage · operaciones sobre umbrales', () => {
       id: 'umbral-1',
       idUnidad: 'unidad-1',
       montoMinimo: 0,
-      montoMaximo: 20000001,
+      montoMaximo: 10000001,
       nivelAprobador: 'direccion_economica',
     })
     assert.equal(umbralesDe(actualizado, 'unidad-1')[1].id, 'umbral-2')
     assert.equal(umbralesDe(actualizado, 'unidad-1').length, 3)
     assert.equal(actualizado.actualizadoEn, '2026-10-18T11:00:00.000Z')
+  })
+
+  it('#124: descarta una actualización que se solapa con otro umbral de la unidad', () => {
+    const store = getUmbralesIniciales()
+    const solapado = { montoMinimo: 0, montoMaximo: 20000001, nivelAprobador: 'rectoria' }
+    assert.equal(actualizarUmbral(store, 'unidad-1', 'umbral-1', solapado, 'x'), store)
+  })
+
+  it('#124: descarta la actualización si el umbral cambió desde que se abrió el editor', () => {
+    const store = getUmbralesIniciales()
+    const datos = { montoMinimo: 0, montoMaximo: 10000001, nivelAprobador: 'rectoria' }
+    const abierto = { montoMinimo: 0, montoMaximo: 10000001, nivelAprobador: 'jefe_unidad' }
+    const desactualizado = { ...abierto, montoMaximo: 9000000 }
+
+    assert.equal(actualizarUmbral(store, 'unidad-1', 'umbral-1', datos, 'x', desactualizado), store)
+    assert.notEqual(actualizarUmbral(store, 'unidad-1', 'umbral-1', datos, 'x', abierto), store)
   })
 
   it('ignora la actualización cuando el umbral no existe', () => {
@@ -213,6 +247,44 @@ describe('umbralesStorage · operaciones sobre unidades', () => {
       tipo: 'facultad',
       umbrales: [],
     })
+  })
+
+  it('#124: descarta una unidad con nombre repetido o tipo inválido', () => {
+    const store = getUmbralesIniciales()
+    const nombreRepetido = store.unidades[0].nombre.toUpperCase()
+    assert.equal(agregarUnidad(store, { nombre: nombreRepetido, tipo: 'facultad' }, 'x'), store)
+    assert.equal(agregarUnidad(store, { nombre: 'Nueva', tipo: 'otro' }, 'x'), store)
+  })
+
+  it('#124: no reutiliza el id de la última unidad ni del último umbral eliminados', () => {
+    const sinUltimaUnidad = eliminarUnidad(getUmbralesIniciales(), 'unidad-3', 'x')
+    const conNueva = agregarUnidad(sinUltimaUnidad, { nombre: 'Nueva', tipo: 'facultad' }, 'x')
+    assert.equal(conNueva.unidades.at(-1).id, 'unidad-4')
+
+    // Al eliminar unidad-3 desaparecen umbral-7 a umbral-9; luego se elimina
+    // umbral-6, que pasa a ser el mayor existente. Sin el registro de ids usados,
+    // el siguiente sería umbral-6; con él, umbral-10.
+    const sinUmbral6 = eliminarUmbral(conNueva, 'unidad-2', 'umbral-6', 'x')
+    // Se libera el tramo sin tope de unidad-1 para agregar uno nuevo sin solaparse
+    const conHueco = eliminarUmbral(sinUmbral6, 'unidad-1', 'umbral-3', 'x')
+    const tramo = { montoMinimo: 50000001, montoMaximo: null, nivelAprobador: 'rectoria' }
+    const conUmbral = agregarUmbral(conHueco, 'unidad-1', tramo, 'x')
+    assert.equal(umbralesDe(conUmbral, 'unidad-1').at(-1).id, 'umbral-10')
+  })
+
+  it('#124: conserva el registro de ids usados al guardar y recargar', () => {
+    const storage = createMemoryStorage()
+    const store = eliminarUnidad(getUmbralesIniciales(), 'unidad-3', 'x')
+    writeUmbralesStore(storage, store)
+    const releido = readUmbralesStore(storage)
+    assert.deepEqual(releido.ultimosIds, { unidad: 3, umbral: 9 })
+    const conNueva = agregarUnidad(releido, { nombre: 'Nueva', tipo: 'facultad' }, 'x')
+    assert.equal(conNueva.unidades.at(-1).id, 'unidad-4')
+
+    const invalido = createMemoryStorage({
+      [UMBRALES_STORAGE_KEY]: JSON.stringify({ ...store, ultimosIds: { unidad: -1, umbral: 'x' } }),
+    })
+    assert.equal(readUmbralesStore(invalido).ultimosIds, undefined)
   })
 
   it('elimina una unidad junto con sus umbrales', () => {

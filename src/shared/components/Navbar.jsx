@@ -85,6 +85,15 @@ function Navbar() {
               </span>
             </NavLink>
           ))}
+          <NavLink to={{ pathname: '/licitaciones', search: carryFilters ? search : '' }}>
+            Explorar
+          </NavLink>
+          <NavLink to="/favoritos">Favoritos</NavLink>
+          <NavLink to={{ pathname: '/estadisticas', search: carryFilters ? search : '' }}>
+            Estadísticas
+          </NavLink>
+          <NavLink to="/configuracion/umbrales">Umbrales</NavLink>
+          {user && <NavLink to="/perfil">Perfil</NavLink>}
         </nav>
         <div className="navbar__actions">
           <ThemeToggle />

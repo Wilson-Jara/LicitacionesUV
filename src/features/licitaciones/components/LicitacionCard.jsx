@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import { Link, useLocation } from 'react-router-dom'
 import { Archive, ArrowRight, Building2, CheckCircle2, MapPin } from 'lucide-react'
 import FavoritoButton from './FavoritoButton.jsx'
+import { getEtiquetaLabel, getSectorLabel } from '../categorias.js'
 import {
   formatLicitacionAmount,
   formatLicitacionDate,
@@ -12,7 +13,8 @@ import {
 import './LicitacionCard.css'
 
 export function LicitacionCard({ licitacion, onRemove }) {
-  const { id, title, amount, currency, institution, closingDate, type, region } = licitacion
+  const { id, title, amount, currency, institution, closingDate, type, region, sector } = licitacion
+  const etiquetas = Array.isArray(licitacion.etiquetas) ? licitacion.etiquetas : []
   const { pathname, search } = useLocation()
   const cerrada = isLicitacionCerrada(closingDate)
   const detailState = { explorerSearch: pathname === '/licitaciones' ? search : '' }
@@ -64,6 +66,12 @@ export function LicitacionCard({ licitacion, onRemove }) {
       <footer className="licitacion-card__footer">
         <p className="licitacion-card__closing">
           Cierra: <time dateTime={closingDate}>{formatLicitacionDate(closingDate)}</time>
+    <article className="licitacion-card">
+      <div className="licitacion-card-heading">
+        <p className="licitacion-card-meta">
+          <strong>{getTypeLabel(type)}</strong>
+          <span>{getRegionLabel(region)}</span>
+          {sector && <span>{getSectorLabel(sector)}</span>}
         </p>
         <div className="licitacion-card-actions">
           <FavoritoButton licitacion={licitacion} compact onRemove={onRemove} />
@@ -75,6 +83,22 @@ export function LicitacionCard({ licitacion, onRemove }) {
             <span>Ver detalle</span>
             <ArrowRight size={17} aria-hidden="true" />
           </Link>
+        </h3>
+        <p className="licitacion-institution">{institution}</p>
+        {etiquetas.length > 0 && (
+          <ul className="licitacion-tags" aria-label="Etiquetas">
+            {etiquetas.map((etiqueta) => (
+              <li key={etiqueta}>{getEtiquetaLabel(etiqueta)}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <dl className="licitacion-card-data">
+        <div>
+          <dt>Cierre</dt>
+          <dd>
+            <time dateTime={closingDate}>{formatLicitacionDate(closingDate)}</time>
+          </dd>
         </div>
       </footer>
     </article>
@@ -91,6 +115,8 @@ LicitacionCard.propTypes = {
     closingDate: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
     region: PropTypes.string,
+    sector: PropTypes.string,
+    etiquetas: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
   onRemove: PropTypes.func,
 }

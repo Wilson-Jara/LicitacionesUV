@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react'
 import { Calendar, CheckCircle2, ChevronDown, SlidersHorizontal, Wallet } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
 import { countActiveFilters, filterLicitaciones, sortLicitaciones } from '../licitacionFilters.js'
 import { formatLicitacionAmount, isLicitacionCerrada } from '../licitacionUtils.js'
 import mockData from '../data/licitaciones.mock.json'
+import { getSectorLabel, getEtiquetaLabel } from '../categorias.js'
 import './LicitacionesExplorerPage.css'
 
 const sortOptions = [
@@ -37,11 +39,31 @@ function getNextClosingLabel(licitaciones) {
   return formatShortDate(latest[0].closingDate)
 }
 
+function listarSectores(catalogo) {
+  return [...new Set(catalogo.map((licitacion) => licitacion.sector).filter(Boolean))].sort(
+    (a, b) => getSectorLabel(a).localeCompare(getSectorLabel(b), 'es'),
+  )
+}
+
+function listarEtiquetas(catalogo) {
+  return [
+    ...new Set(
+      catalogo.flatMap((licitacion) =>
+        Array.isArray(licitacion.etiquetas) ? licitacion.etiquetas : [],
+      ),
+    ),
+  ].sort((a, b) => getEtiquetaLabel(a).localeCompare(getEtiquetaLabel(b), 'es'))
+}
+
 function LicitacionesExplorerPage() {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const searchRef = useRef(null)
   const resultsHeading = useRef(null)
+  // Las opciones se derivan de la fuente activa; al migrar a la API solo cambia
+  // `mockData`, sin tocar los desplegables.
+  const sectoresDisponibles = useMemo(() => listarSectores(mockData), [])
+  const etiquetasDisponibles = useMemo(() => listarEtiquetas(mockData), [])
   const results = sortLicitaciones(filterLicitaciones(mockData, filters), filters.sort)
   const activeCount = countActiveFilters(filters)
   const vigentesCount = results.filter((item) => !isLicitacionCerrada(item.closingDate)).length
@@ -90,6 +112,8 @@ function LicitacionesExplorerPage() {
             searchRef={searchRef}
             onSearchSubmit={() => resultsHeading.current?.focus()}
           />
+        <div id="filter-sidebar-wrapper" className={showMobileFilters ? 'filters-open' : ''}>
+          <FilterSidebar sectores={sectoresDisponibles} etiquetas={etiquetasDisponibles} />
         </div>
 
         <div className="explorer-main">

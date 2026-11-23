@@ -13,6 +13,17 @@ const PAGE_WIDTH_MM = 210
 const MARGIN_MM = 20
 const CONTENT_WIDTH_MM = PAGE_WIDTH_MM - MARGIN_MM * 2
 
+/**
+ * Separaciones verticales del resumen, en milímetros. Se exportan para que las
+ * pruebas deriven la separación mínima entre filas en vez de usar un número
+ * mágico.
+ */
+export const PDF_LAYOUT_MM = {
+  valueOffset: 6,
+  lineHeight: 5.5,
+  rowGap: 6,
+}
+
 function addDataRow(doc, y, label, value) {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(9)
@@ -27,10 +38,19 @@ function addDataRow(doc, y, label, value) {
   doc.setFontSize(11)
   doc.setTextColor(30, 30, 30)
   for (let i = 0; i < valueLines; i += 1) {
-    doc.text(wrappedValue[i], MARGIN_MM, y + 6 + i * 5.5)
+    doc.text(
+      wrappedValue[i],
+      MARGIN_MM,
+      y + PDF_LAYOUT_MM.valueOffset + i * PDF_LAYOUT_MM.lineHeight,
+    )
   }
 
-  return y + 12 + (valueLines - 1) * 5.5
+  return (
+    y +
+    PDF_LAYOUT_MM.valueOffset +
+    (valueLines - 1) * PDF_LAYOUT_MM.lineHeight +
+    PDF_LAYOUT_MM.rowGap
+  )
 }
 
 /**
@@ -75,8 +95,13 @@ export function buildLicitacionPdf(licitacion) {
     `${formatLicitacionAmount(amount, currency)} (${currency})`,
   )
   y = addDataRow(doc, y, 'Tipo', getTypeLabel(type))
-  addDataRow(doc, y, 'Región', getRegionLabel(region))
-  addDataRow(doc, y, 'Bases oficiales', sourceUrl)
+  y = addDataRow(doc, y, 'Región', getRegionLabel(region))
+  y = addDataRow(doc, y, 'Bases oficiales', sourceUrl)
+
+  // El pie conserva su posición habitual, pero baja si el contenido crece
+  // (por ejemplo, un enlace envuelto en muchas líneas) para no superponerse.
+  const pageHeight = doc.internal.pageSize.getHeight()
+  const footerY = Math.min(Math.max(y + PDF_LAYOUT_MM.rowGap, pageHeight - 15), pageHeight - 10)
 
   doc.setFont('helvetica', 'italic')
   doc.setFontSize(8)
@@ -84,7 +109,7 @@ export function buildLicitacionPdf(licitacion) {
   doc.text(
     'Resumen generado por Licitaciones UV. Consulte las bases oficiales para mayor detalle.',
     MARGIN_MM,
-    doc.internal.pageSize.getHeight() - 15,
+    footerY,
   )
 
   return doc

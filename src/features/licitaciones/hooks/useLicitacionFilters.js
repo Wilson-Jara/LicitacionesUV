@@ -7,8 +7,9 @@ import { sanitizeFilterParams } from '../licitacionFilters.js'
  * inválidos o desconocidos provenientes de la URL y elimina los valores vacíos del
  * query string para mantener URLs limpias.
  *
- * @returns {{filters: {keyword: string, region: string, tipo: string, sort: string},
- *   setFilter: Function, clearFilters: Function}} Estado de filtros y orden, y sus
+ * @returns {{filters: {keyword: string, region: string, sector: string,
+ *   etiqueta: string, tipo: string, sort: string}, setFilter: Function,
+ *   clearFilters: Function}} Estado de filtros y orden, y sus
  *   operaciones: `filters` traduce y sanea el query string (`''` si ausente o inválido),
  *   `setFilter(key, value)` actualiza un filtro u orden individual (eliminándolo de la
  *   URL cuando `value` es vacío) y `clearFilters()` restablece todos los parámetros.
