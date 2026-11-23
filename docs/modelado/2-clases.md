@@ -102,7 +102,14 @@ classDiagram
 
 ## Nota de lectura
 
-La decisión central es separar **qué depende de qué** según si una cosa puede existir sola. Un umbral de aprobación solo tiene sentido dentro de su unidad: por eso `Unidad ◆— UmbralAprobacion` es **composición** (en la base, `ON DELETE CASCADE`; en el frontend, cada unidad guarda su arreglo `umbrales`). Lo mismo ocurre con `Licitacion ◆— Aprobacion`: una aprobación sin su licitación no significa nada. En cambio, `Region` y `Licitacion` son **asociación simple**: una región existe aunque no tenga licitaciones y no se borra con ellas. `Favorito` es una **clase de asociación** entre `Usuario` y `Licitacion`, con su propia fecha de guardado; no es composición porque tiene **dos** dueños (su clave es usuario + licitación) y una parte compuesta solo puede pertenecer a un todo. `Delegacion` conecta dos veces a `Usuario` (titular y subrogante) porque la regla R3 del CR-302 decide el aprobador efectivo comparando ambos roles por fecha. La `unidad` de una licitación es `0..1` (`unidad_id` admite nulo) porque el catálogo actual no trae unidad: las licitaciones de ejemplo, y a futuro las de Mercado Público, no siempre pertenecen a una unidad de la universidad.
+1. La decisión central es separar **qué depende de qué** según si una clase puede existir sola.
+2. `Unidad ◆— UmbralAprobacion` es **composición**: un umbral solo tiene sentido dentro de su unidad (en la base, `ON DELETE CASCADE`).
+3. `Licitacion ◆— Aprobacion` también es composición: una aprobación sin su licitación no significa nada.
+4. `Region — Licitacion` es **asociación simple**: una región existe aunque no tenga licitaciones y no se borra con ellas.
+5. `Unidad — Licitacion` es `0..1`: `unidad_id` admite nulo porque el catálogo actual no trae unidad.
+6. `Favorito` es una **clase de asociación** entre `Usuario` y `Licitacion`, con su fecha de guardado; no es composición porque tiene **dos** dueños.
+7. `Delegacion` conecta dos veces a `Usuario` (titular y subrogante) porque la regla R3 del CR-302 compara ambos roles por fecha.
+8. **Estado actual:** favoritos y umbrales se guardan en el `localStorage` del navegador; sus tablas existen en PostgreSQL, pero todavía no tienen un flujo activo por la API.
 
 ## Correspondencia con el código
 
