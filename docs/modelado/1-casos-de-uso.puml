@@ -1,0 +1,107 @@
+@startuml 1-casos-de-uso
+title Licitaciones UV · Casos de uso de la SPA
+
+left to right direction
+skinparam shadowing false
+skinparam nodesep 16
+skinparam ranksep 34
+skinparam linetype polyline
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam defaultFontColor #191627
+skinparam ArrowColor #5F5878
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #5F5878
+}
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #9189B0
+}
+skinparam usecase {
+  BackgroundColor #F6F6FA
+  BorderColor #4E2A84
+}
+
+actor "Persona usuaria\nde la SPA" as Persona
+actor "Visitante" as Visitante
+actor "Usuario con\nsesión simulada" as Usuario
+
+rectangle "Licitaciones UV · Frontend (SPA)" {
+  package "Catálogo y detalle" {
+    usecase "Explorar catálogo" as Explorar
+    usecase "Buscar licitaciones" as Buscar
+    usecase "Filtrar y ordenar licitaciones" as Filtrar
+    usecase "Consultar detalle" as Detalle
+    usecase "Abrir fuente oficial" as AbrirFuente
+    usecase "Exportar resumen PDF" as ExportarPDF
+  }
+  package "Herramientas" {
+    usecase "Consultar estadísticas" as Estadisticas
+    usecase "Cambiar tema" as Tema
+    usecase "Configurar unidades\ny umbrales" as Umbrales
+    usecase "Simular nivel\nde aprobación" as Simular
+  }
+  package "Sesión y cuenta" {
+    usecase "Iniciar sesión o registrarse\n(acceso simulado)" as IniciarSesion
+    usecase "Gestionar perfil" as Perfil
+    usecase "Gestionar favoritos" as Favoritos
+    usecase "Cerrar sesión" as CerrarSesion
+  }
+}
+
+actor "API de licitaciones" as API
+actor "Portal de la\nfuente oficial" as Portal
+
+Visitante -up-|> Persona
+Usuario -up-|> Persona
+
+Persona -- Explorar
+Persona -- Buscar
+Persona -- Filtrar
+Persona -- Detalle
+Persona -- Estadisticas
+Persona -- Tema
+Persona -- Umbrales
+Persona -- Simular
+Visitante -- IniciarSesion
+Usuario -- Perfil
+Usuario -- Favoritos
+Usuario -- CerrarSesion
+
+Explorar -- API
+Detalle -- API
+AbrirFuente -- Portal
+AbrirFuente .> Detalle : <<extend>>
+ExportarPDF .> Detalle : <<extend>>
+@enduml
+
+@startuml 1-casos-de-uso-api
+title LicitacionesUV-backend · Consumo directo
+
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam defaultFontColor #191627
+skinparam ArrowColor #5F5878
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #5F5878
+}
+skinparam usecase {
+  BackgroundColor #F6F6FA
+  BorderColor #4E2A84
+}
+
+actor "Cliente HTTP\ndirecto" as Cliente
+rectangle "LicitacionesUV-backend · API HTTP" {
+  usecase "Listar licitaciones\nGET /api/licitaciones" as Listar
+  usecase "Consultar licitación por ID\nGET /api/licitaciones/:id" as PorID
+}
+
+Cliente -- Listar
+Cliente -- PorID
+@enduml
