@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useLicitacionFilters } from '../../licitaciones/hooks/useLicitacionFilters'
 import mockData from '../../licitaciones/data/licitaciones.mock.json'
 import { calcularDistribuciones, obtenerLicitacionesFiltradas } from '../estadisticasUtils.js'
@@ -14,6 +15,7 @@ import './PanelEstadisticasPage.css'
  */
 function PanelEstadisticasPage() {
   const { filters } = useLicitacionFilters()
+  const { search } = useLocation()
 
   const licitacionesFiltradas = useMemo(
     () => obtenerLicitacionesFiltradas(mockData, filters),
@@ -28,27 +30,23 @@ function PanelEstadisticasPage() {
   const sinResultados = licitacionesFiltradas.length === 0
 
   return (
-    <section className="estadisticas">
+    <section className="frame estadisticas" aria-labelledby="estadisticas-title">
       <header className="estadisticas__header">
-        <div>
-          <span className="estadisticas__overline">Análisis · Tendencias</span>
-          <h1 className="estadisticas__titulo">Panel de estadísticas y tendencias</h1>
-          <p className="estadisticas__subtitulo">
-            Distribución de las licitaciones vigentes según el conjunto filtrado en el explorador.
-          </p>
-        </div>
-        <div className="estadisticas__contador" role="status" aria-live="polite">
+        <h1 id="estadisticas-title">Estadísticas</h1>
+        <p className="estadisticas__subtitulo">
+          Distribución por región, tipo y sector en el catálogo de demostración.
+        </p>
+        <p className="estadisticas__contador" role="status">
           Mostrando <strong>{licitacionesFiltradas.length}</strong> de{' '}
           <strong>{Array.isArray(mockData) ? mockData.length : 0}</strong> licitaciones
-        </div>
+        </p>
+        <Link to={{ pathname: '/licitaciones', search }}>Ajustar filtros en el explorador</Link>
       </header>
 
       {sinResultados ? (
         <div className="estadisticas__vacio" role="status" aria-live="polite">
-          <h2 className="estadisticas__vacio-titulo">Sin resultados con los filtros actuales</h2>
-          <p className="estadisticas__vacio-texto">
-            Ajusta o limpia los filtros del explorador para ver las distribuciones.
-          </p>
+          <h2>Sin resultados con los filtros actuales</h2>
+          <p>Ajusta o limpia los filtros del explorador para ver las distribuciones.</p>
         </div>
       ) : (
         <div className="estadisticas__grid">
@@ -67,8 +65,7 @@ function PanelEstadisticasPage() {
       )}
 
       <p className="estadisticas__nota">
-        Las categorías sin registros no se muestran. Cuando una licitación pudiera tener múltiples
-        etiquetas, se cuenta en cada una; con el mock actual se asigna una categoría por licitación.
+        El sector usa el campo explícito de cada licitación; si falta, se infiere del organismo.
       </p>
     </section>
   )

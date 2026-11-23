@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es-CL" data-theme="claro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Explorar licitaciones · Licitaciones UV</title>
+    <link rel="stylesheet" href="estilos.css" />
+    <script src="demo.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="site-header">
+      <div class="frame header-inner">
+        <a class="brand" href="index.html" aria-label="Licitaciones UV, inicio">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="currentColor" />
+            <path d="M9 10h14M9 16h14M9 22h8" stroke="var(--mark-ink)" stroke-width="2" />
+          </svg>
+          Licitaciones UV
+        </a>
+        <nav class="main-nav" aria-label="Navegación principal">
+          <a href="index.html" aria-current="page">Explorar</a>
+          <a href="acceso.html">Iniciar sesión</a>
+        </nav>
+        <button class="theme-button" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.9 13.4A9 9 0 0 1 10.6 3.1a9 9 0 1 0 10.3 10.3Z" />
+          </svg>
+          <span>Tema oscuro</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="contenido" tabindex="-1">
+      <section class="explore-hero" aria-labelledby="explore-title">
+        <div class="frame hero-inner">
+          <div>
+            <h1 id="explore-title">Explorar licitaciones<span>.</span></h1>
+            <p class="hero-description">Consulta oportunidades de compra y compara sus plazos y montos.</p>
+            <form class="search-form" id="search-form" role="search" aria-label="Buscar licitaciones">
+              <label for="query">Buscar por título</label>
+              <div class="search-field">
+                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                  <circle cx="10.8" cy="10.8" r="5.8" />
+                  <path d="m15 15 4 4" />
+                </svg>
+                <input id="query" name="q" type="search" placeholder="Ej. mantenimiento" />
+                <button class="button button-search" type="submit">Buscar</button>
+              </div>
+              <div class="query-examples" role="group" aria-label="Búsquedas de ejemplo">
+                <span aria-hidden="true">Prueba con</span>
+                <button class="query-chip" type="button" data-query="mantenimiento" aria-pressed="false">Mantenimiento</button>
+                <button class="query-chip" type="button" data-query="software" aria-pressed="false">Software</button>
+                <button class="query-chip" type="button" data-query="consultoría" aria-pressed="false">Consultoría</button>
+              </div>
+            </form>
+          </div>
+          <div class="hero-side">
+            <div class="file-mark" aria-hidden="true"><span></span></div>
+            <aside class="demo-note" aria-labelledby="demo-title">
+              <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 11v5m0-8v.1" />
+              </svg>
+              <div>
+                <h2 id="demo-title">Catálogo de demostración</h2>
+                <p>Las convocatorias, fechas y montos son ejemplos ficticios.</p>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <div class="frame catalog">
+        <details id="filters-panel" class="filters" open>
+          <summary>Filtros</summary>
+          <div class="filters-content">
+            <div class="field">
+              <label for="region">Región</label>
+              <select id="region" name="region">
+                <option value="">Todas las regiones</option>
+                <option value="antofagasta">Antofagasta</option>
+                <option value="biobio">Biobío</option>
+                <option value="metropolitana">Metropolitana</option>
+                <option value="valparaiso">Valparaíso</option>
+              </select>
+            </div>
+            <fieldset>
+              <legend>Tipo de licitación</legend>
+              <label class="radio"><input type="radio" name="type" value="" checked /> Todos los tipos</label>
+              <label class="radio"><input type="radio" name="type" value="publica" /> Pública</label>
+              <label class="radio"><input type="radio" name="type" value="privada" /> Privada</label>
+            </fieldset>
+            <button class="text-button" type="button" data-reset>Limpiar filtros</button>
+          </div>
+        </details>
+
+        <section class="results" aria-labelledby="results-title">
+          <div class="results-header">
+            <div>
+              <h2 id="results-title">Resultados</h2>
+              <p id="result-count" role="status"></p>
+            </div>
+            <div class="field sort-field">
+              <label for="sort">Ordenar por</label>
+              <select id="sort" name="sort">
+                <option value="">Orden del catálogo</option>
+                <option value="fecha-asc">Cierre más próximo</option>
+                <option value="fecha-desc">Cierre más lejano</option>
+                <option value="monto-asc">Monto de menor a mayor</option>
+                <option value="monto-desc">Monto de mayor a menor</option>
+              </select>
+            </div>
+          </div>
+          <ol class="tender-list" id="tender-list"></ol>
+          <div class="empty" id="empty" hidden>
+            <h3>No encontramos licitaciones</h3>
+            <p>Prueba con «software» o limpia los filtros para volver a explorar el catálogo.</p>
+            <button class="button button-primary" type="button" data-reset>Limpiar filtros</button>
+          </div>
+          <noscript><p>Activa JavaScript para consultar el catálogo de este prototipo.</p></noscript>
+        </section>
+      </div>
+    </main>
+
+    <dialog id="tender-dialog" aria-labelledby="detail-title">
+      <form method="dialog" class="dialog-actions">
+        <button class="text-button" autofocus>Cerrar detalle</button>
+      </form>
+      <h2 id="detail-title"></h2>
+      <p id="detail-institution"></p>
+      <dl class="detail-fields" id="detail-fields"></dl>
+      <p class="detail-note">Convocatoria ficticia del catálogo de demostración.</p>
+    </dialog>
+
+    <template id="tender-template">
+      <li class="tender">
+        <article class="tender-row">
+          <div class="tender-description">
+            <p class="tender-meta"><span class="tender-type"></span><span class="tender-region"></span></p>
+            <h3><button class="tender-title" type="button"></button></h3>
+            <p class="tender-institution"></p>
+          </div>
+          <dl class="tender-data">
+            <div>
+              <dt>Cierre</dt>
+              <dd><time></time></dd>
+            </div>
+            <div>
+              <dt>Monto estimado</dt>
+              <dd class="tender-amount"></dd>
+            </div>
+          </dl>
+          <span class="tender-status"></span>
+        </article>
+      </li>
+    </template>
+  </body>
+</html>

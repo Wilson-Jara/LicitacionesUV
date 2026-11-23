@@ -1,230 +1,129 @@
 .licitacion-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 6px -1px rgba(14, 27, 56, 0.06);
-  text-align: left;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.licitacion-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px -4px rgba(14, 27, 56, 0.12);
-  border-color: var(--border-strong);
-}
-
-.licitacion-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3.5px;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
-  opacity: 0.85;
-  transition: opacity 0.3s ease;
-}
-
-.licitacion-card:hover::before {
-  opacity: 1;
-}
-
-.licitacion-card-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.licitacion-badges-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.licitacion-badge {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.licitacion-badge .badge-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.licitacion-badge.publica {
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--success-text);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-}
-
-.licitacion-badge.publica .badge-dot {
-  background-color: var(--success);
-}
-
-.licitacion-badge.privada {
-  background: rgba(245, 158, 11, 0.12);
-  color: var(--warning-text);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-}
-
-.licitacion-badge.privada .badge-dot {
-  background-color: var(--warning-dot);
-}
-
-.licitacion-region-badge {
-  background: var(--surface-soft);
-  color: var(--text);
-  border: 1px solid var(--border);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 9999px;
-}
-
-.licitacion-title {
-  margin: 0;
-  font-size: 18.5px;
-  font-family: var(--heading);
-  font-weight: 700;
-  color: var(--primary);
-  line-height: 1.35;
-  letter-spacing: -0.2px;
-}
-
-.licitacion-title-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-.licitacion-title-link:hover {
-  color: var(--accent-hover);
-}
-
-.licitacion-details {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-top: auto;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-soft);
-}
-
-.licitacion-detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.licitacion-detail-label {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: flex;
+  grid-template-columns: minmax(0, 1fr) minmax(11rem, 35%) max-content;
   align-items: center;
-  gap: 5px;
+  gap: 1rem;
+  padding: 1.15rem 0.15rem;
+  border-top: 1px solid var(--border);
 }
 
-.licitacion-detail-label svg {
-  color: var(--text-muted);
-}
-
-.licitacion-detail-value {
-  font-size: 14.5px;
-  color: var(--text-h);
-  font-weight: 500;
-}
-
-.licitacion-detail-value.amount {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.licitacion-card-footer {
-  margin-top: 4px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-soft);
+.licitacion-card-meta {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.65rem;
+  color: var(--text);
+  font-size: 0.9375rem;
 }
 
-.btn-card-action {
-  background: var(--card-bg);
-  border: 1px solid var(--border-strong);
+.licitacion-card-meta strong {
   color: var(--primary);
-  padding: 7px 14px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  text-decoration: none;
 }
 
-.btn-card-action:hover {
-  background: var(--primary);
-  color: var(--primary-contrast);
-  border-color: var(--primary);
-  box-shadow: 0 2px 6px rgba(14, 27, 56, 0.2);
+.licitacion-card h3 {
+  margin-block: 0.3rem;
+  font-size: 1.125rem;
+  line-height: 1.35;
+}
+
+.licitacion-card h3 a {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  color: var(--text-h);
+}
+
+.licitacion-card h3 a:hover {
+  color: var(--primary);
+}
+
+.licitacion-institution,
+.licitacion-card-data dt {
+  color: var(--text);
+}
+
+.licitacion-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0;
+  margin: 0.45rem 0 0;
+  list-style: none;
+}
+
+.licitacion-tags li {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.8125rem;
+}
+
+.licitacion-card-data {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.licitacion-card-data dt {
+  font-size: 0.9375rem;
+}
+
+.licitacion-card-data dd {
+  margin-top: 0.15rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
 }
 
 .licitacion-card-actions {
   display: flex;
-  align-items: center;
-  gap: 8px;
   flex-wrap: wrap;
-}
-
-.btn-card-favorite {
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
-  color: var(--primary);
-  padding: 7px 14px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  justify-content: end;
+  gap: 0.4rem;
 }
 
-.btn-card-favorite:hover {
-  background: var(--card-bg);
-  border-color: var(--accent);
+.licitacion-card-actions .button {
+  padding-inline: 0.55rem;
 }
 
-.btn-card-favorite.is-saved {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--primary-dark);
+.licitacion-status {
+  display: inline-block;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.35rem;
+  color: var(--success-text);
+  background: var(--success-bg);
+  font-size: 0.875rem;
+  font-weight: 650;
 }
 
-.btn-card-favorite:disabled {
-  cursor: not-allowed;
-  opacity: 0.62;
+.licitacion-status[data-closed='true'] {
+  color: var(--closed-text);
+  background: var(--closed-bg);
+}
+
+@container (max-width: 43rem) {
+  .licitacion-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+  }
+
+  .licitacion-card-data {
+    grid-column: 1 / -1;
+  }
+
+  .licitacion-card-actions {
+    grid-row: 1;
+    grid-column: 2;
+  }
+}
+
+@container (max-width: 28rem) {
+  .licitacion-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .licitacion-card-actions {
+    grid-area: auto;
+    justify-content: start;
+  }
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { UmbralForm } from '../components/UmbralForm'
 import { UnidadForm } from '../components/UnidadForm'
 import { UmbralesTable } from '../components/UmbralesTable'
@@ -8,6 +8,7 @@ import {
   formatRangoUmbral,
   formatUmbralTimestamp,
   getNivelAprobadorLabel,
+  mismosValoresUmbral,
 } from '../umbralesUtils.js'
 import './ConfiguracionUmbralesPage.css'
 
@@ -37,6 +38,8 @@ function ConfiguracionUmbralesPage() {
   const {
     unidades,
     actualizadoEn,
+    cambiosDeOtraPestana,
+    problemaAlmacenamiento,
     crearUmbral,
     editarUmbral,
     quitarUmbral,
@@ -45,6 +48,9 @@ function ConfiguracionUmbralesPage() {
   } = useUmbrales()
 
   const [edicion, setEdicion] = useState(null)
+  // Cada vez que se pulsa «Editar» el formulario se vuelve a montar con los valores
+  // vigentes, aunque sea el mismo umbral (#124).
+  const aperturasEdicion = useRef(0)
   const [mostrarUnidadForm, setMostrarUnidadForm] = useState(false)
   const [mensaje, setMensaje] = useState('')
   const [simulacionUnidad, setSimulacionUnidad] = useState(unidades[0]?.id ?? '')
@@ -55,6 +61,15 @@ function ConfiguracionUmbralesPage() {
     const unidad = unidades.find((u) => u.id === edicion.idUnidad)
     return unidad?.umbrales.find((umbral) => umbral.id === edicion.idUmbral) ?? null
   }, [edicion, unidades])
+  // #124: si otra pestaña eliminó el umbral que se estaba editando, se sale del
+  // modo edición en el mismo render (en lugar de guardar sobre un umbral que ya
+  // no existe) y el aviso reemplaza al mensaje «Editando…», que dejó de ser cierto.
+  if (edicion && !umbralEnEdicion) {
+    setEdicion(null)
+    setMensaje(
+      'El umbral que editabas se eliminó en otra pestaña. Puedes crear uno nuevo con el formulario.',
+    )
+  }
 
   const unidadSimulada =
     unidades.find((unidad) => unidad.id === simulacionUnidad) ?? unidades[0] ?? null
@@ -63,58 +78,114 @@ function ConfiguracionUmbralesPage() {
   const nombreDeUnidad = (idUnidad) =>
     unidades.find((u) => u.id === idUnidad)?.nombre ?? 'la unidad'
 
-  const handleGuardarUmbral = ({ idUnidad, datos }) => {
+  // #124: otra pestaña cambió el umbral desde que se abrió el editor; guardar
+  // se rechazará para no pisar ese cambio, así que se avisa antes.
+  const edicionDesactualizada =
+    Boolean(edicion && umbralEnEdicion) && !mismosValoresUmbral(umbralEnEdicion, edicion.original)
+
+  // #125: solo se confirma una operación aplicada. Si el proveedor la descarta,
+  // se devuelve `false` y el formulario muestra el error con los datos intactos.
+  const handleGuardarUmbral = async ({ idUnidad, datos }) => {
     if (edicion) {
-      editarUmbral(idUnidad, edicion.idUmbral, datos)
+      // #124: se envía la versión que se abrió para editar; si otra pestaña la
+      // cambió, la actualización se descarta en vez de pisar ese cambio.
+      if (!(await editarUmbral(idUnidad, edicion.idUmbral, datos, edicion.original))) {
+        setMensaje('')
+        return false
+      }
       setEdicion(null)
       setMensaje(`Umbral actualizado en ${nombreDeUnidad(idUnidad)}: se aplica de inmediato.`)
-      return
+      return true
     }
-    crearUmbral(idUnidad, datos)
+    if (!(await crearUmbral(idUnidad, datos))) {
+      setMensaje('')
+      return false
+    }
     setMensaje(`Umbral agregado a ${nombreDeUnidad(idUnidad)}: se aplica de inmediato.`)
+    return true
   }
 
   const handleEditarUmbral = (idUnidad, umbral) => {
-    setEdicion({ idUnidad, idUmbral: umbral.id })
+    const { montoMinimo, montoMaximo, nivelAprobador } = umbral
+    aperturasEdicion.current += 1
+    // `original` y los campos del formulario parten de la misma versión: si se
+    // vuelve a pulsar «Editar» tras un cambio de otra pestaña, el formulario se
+    // reinicia con esos valores en lugar de conservar los viejos.
+    setEdicion({
+      idUnidad,
+      idUmbral: umbral.id,
+      apertura: aperturasEdicion.current,
+      original: { montoMinimo, montoMaximo, nivelAprobador },
+    })
     setMensaje(`Editando el umbral ${formatRangoUmbral(umbral)} de ${nombreDeUnidad(idUnidad)}.`)
   }
 
-  const handleEliminarUmbral = (idUnidad, umbral) => {
-    quitarUmbral(idUnidad, umbral.id)
-    if (edicion?.idUmbral === umbral.id) setEdicion(null)
-    setMensaje(`Umbral ${formatRangoUmbral(umbral)} eliminado de ${nombreDeUnidad(idUnidad)}.`)
+  const handleEliminarUmbral = async (idUnidad, umbral) => {
+    const rango = formatRangoUmbral(umbral)
+    const aplicado = await quitarUmbral(idUnidad, umbral.id)
+    // Si la eliminación se rechazó, el umbral sigue existiendo: se conserva el borrador.
+    if (aplicado && edicion?.idUmbral === umbral.id) setEdicion(null)
+    setMensaje(
+      aplicado
+        ? `Umbral ${rango} eliminado de ${nombreDeUnidad(idUnidad)}.`
+        : `No se eliminó el umbral ${rango}: ya no existía (pudo eliminarse en otra pestaña) o el navegador no pudo guardar el cambio. Se muestra la configuración vigente.`,
+    )
   }
 
-  const handleEliminarUnidad = (unidad) => {
+  const handleEliminarUnidad = async (unidad) => {
     const total = unidad.umbrales.length
     const confirmado =
       typeof window === 'undefined' ||
       window.confirm(`¿Eliminar ${unidad.nombre} y sus ${total} umbrales configurados?`)
     if (!confirmado) return
-    quitarUnidad(unidad.id)
-    if (edicion?.idUnidad === unidad.id) setEdicion(null)
-    setMensaje(`Unidad ${unidad.nombre} eliminada junto con sus umbrales.`)
+    const aplicado = await quitarUnidad(unidad.id)
+    if (aplicado && edicion?.idUnidad === unidad.id) setEdicion(null)
+    setMensaje(
+      aplicado
+        ? `Unidad ${unidad.nombre} eliminada junto con sus umbrales.`
+        : `No se eliminó la unidad ${unidad.nombre}: ya no existía (pudo eliminarse en otra pestaña) o el navegador no pudo guardar el cambio. Se muestra la configuración vigente.`,
+    )
   }
 
-  const handleCrearUnidad = (datos) => {
-    crearUnidad(datos)
+  const handleCrearUnidad = async (datos) => {
+    if (!(await crearUnidad(datos))) {
+      setMensaje(
+        `No se agregó la unidad ${datos.nombre}: ya existe una unidad con ese nombre (pudo crearse en otra pestaña) o el navegador no pudo guardarla.`,
+      )
+      return false
+    }
     setMostrarUnidadForm(false)
     setMensaje(`Unidad ${datos.nombre} agregada. Ahora puedes configurar sus umbrales.`)
+    return true
   }
 
   return (
-    <section className="config-umbrales">
-      <div className="config-umbrales__overline">Configuración del flujo · R2 y R4</div>
-      <h1 className="config-umbrales__title">Umbrales de aprobación por unidad</h1>
+    <section className="frame config-umbrales" aria-labelledby="umbrales-title">
+      <h1 id="umbrales-title">Umbrales de aprobación por unidad</h1>
       <p className="config-umbrales__subtitle">
-        La normativa de aprobación se gestiona aquí como datos configurables: cada unidad define sus
-        propios rangos de monto y su nivel aprobador. Actualizar estos valores no requiere modificar
-        el código ni volver a desplegar el sistema (REF-14).
+        Define los rangos de monto y el nivel de aprobación para cada unidad.
       </p>
 
       <p className="config-umbrales__status" role="status" aria-live="polite">
         {mensaje}
       </p>
+      {cambiosDeOtraPestana && (
+        <p className="config-umbrales__status" role="status">
+          Se cargaron cambios guardados en otra pestaña: se muestra la configuración vigente.
+        </p>
+      )}
+      {problemaAlmacenamiento === 'bloqueado' && (
+        <p className="config-umbrales__status" role="alert">
+          El navegador no permite guardar en este sitio (almacenamiento bloqueado): los cambios se
+          conservan solo mientras esta pestaña siga abierta.
+        </p>
+      )}
+      {problemaAlmacenamiento === 'sin-espacio' && (
+        <p className="config-umbrales__status" role="alert">
+          No se pudo guardar porque el almacenamiento del navegador está lleno: el último cambio no
+          se aplicó.
+        </p>
+      )}
 
       <div className="config-umbrales__columns">
         <div className="config-umbrales__panel">
@@ -141,7 +212,7 @@ function ConfiguracionUmbralesPage() {
                 className="umbral-btn umbral-btn--primary"
                 onClick={() => setMostrarUnidadForm(true)}
               >
-                + Agregar unidad
+                Agregar unidad
               </button>
             )}
           </div>
@@ -152,8 +223,14 @@ function ConfiguracionUmbralesPage() {
             <h2 className="config-umbrales__panel-title">
               {edicion ? 'Editar umbral' : 'Nuevo umbral'}
             </h2>
+            {edicionDesactualizada && (
+              <p className="umbral-form__aviso" role="status">
+                Otra pestaña cambió este umbral mientras lo editabas, así que guardar no lo
+                sobrescribirá. Cancela y vuelve a editarlo para partir de los valores vigentes.
+              </p>
+            )}
             <UmbralForm
-              key={edicion?.idUmbral ?? 'nuevo'}
+              key={edicion ? `${edicion.idUmbral}-${edicion.apertura}` : 'nuevo'}
               unidades={unidades}
               umbralEnEdicion={umbralEnEdicion}
               onGuardar={handleGuardarUmbral}
@@ -162,10 +239,9 @@ function ConfiguracionUmbralesPage() {
           </div>
 
           <div className="config-umbrales__panel">
-            <h2 className="config-umbrales__panel-title">Resolución inmediata</h2>
+            <h2 className="config-umbrales__panel-title">Simular aprobación</h2>
             <p className="config-umbrales__hint">
-              Consulta qué nivel aprueba un monto con la configuración vigente. El resultado cambia
-              al instante cuando editas un umbral, sin recargar la página.
+              Consulta qué nivel de aprobación corresponde a un monto con los umbrales actuales.
             </p>
             <div className="simulador">
               <div className="umbral-form__group">
@@ -202,12 +278,6 @@ function ConfiguracionUmbralesPage() {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="config-umbrales__note">
-        <b>Regla R4 (normativa cambiante):</b> los umbrales se almacenan como configuración. Cuando
-        la normativa cambie, el encargado administrativo actualiza los valores en esta pantalla y el
-        sistema los aplica a las licitaciones pendientes sin cambios de código ni nueva versión.
       </div>
     </section>
   )

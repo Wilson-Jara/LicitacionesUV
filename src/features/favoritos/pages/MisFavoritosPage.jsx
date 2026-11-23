@@ -1,59 +1,62 @@
-import { useMemo } from 'react'
+import { useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { LicitacionCard } from '../../licitaciones/components/LicitacionCard'
 import { useFavoritos } from '../hooks/useFavoritos'
 import { useAuth } from '../../auth/hooks/useAuth'
 import mockData from '../../licitaciones/data/licitaciones.mock.json'
 import './MisFavoritosPage.css'
 
-/**
- * Muestra las licitaciones favoritas del usuario dentro del catálogo actual.
- * Sin sesión invita a iniciar sesión; si los registros guardados ya no están en el catálogo,
- * muestra un estado vacío distinto al de una cuenta sin favoritos.
- *
- * @returns {JSX.Element} Página de favoritos o invitación a iniciar sesión.
- */
 function MisFavoritosPage() {
   const { user, openAuthModal } = useAuth()
   const { favoritos } = useFavoritos()
+  const heading = useRef(null)
+  const licitaciones = favoritos
+    .map((favorito) => mockData.find((item) => item.id === favorito.idLicitacion))
+    .filter(Boolean)
 
-  const licitaciones = useMemo(() => {
-    return favoritos.map((f) => mockData.find((l) => l.id === f.idLicitacion)).filter(Boolean)
-  }, [favoritos])
-
-  if (!user) {
-    return (
-      <section className="mis-favoritos">
-        <h1 className="mis-favoritos__title">Mis favoritos</h1>
+  return (
+    <section className="frame mis-favoritos" aria-labelledby="favoritos-title">
+      <h1 id="favoritos-title" ref={heading} tabIndex={-1}>
+        Mis favoritos
+      </h1>
+      {user && (
+        <p className="mis-favoritos__count" role="status">
+          {licitaciones.length === 1
+            ? '1 licitación guardada'
+            : licitaciones.length + ' licitaciones guardadas'}
+        </p>
+      )}
+      {!user && (
         <div className="mis-favoritos__empty">
           <p>Inicia sesión para ver y guardar tus licitaciones favoritas.</p>
-          <button type="button" className="mis-favoritos__btn" onClick={openAuthModal}>
+          <button type="button" className="button button--primary" onClick={openAuthModal}>
             Iniciar sesión
           </button>
         </div>
-      </section>
-    )
-  }
-
-  const sinFavoritos = favoritos.length === 0
-
-  return (
-    <section className="mis-favoritos">
-      <h1 className="mis-favoritos__title">Mis favoritos</h1>
-      {licitaciones.length === 0 ? (
+      )}
+      {user && licitaciones.length === 0 && (
         <div className="mis-favoritos__empty">
-          <h3>{sinFavoritos ? 'Aún no tienes favoritos' : 'Licitaciones no disponibles'}</h3>
+          <h2>
+            {favoritos.length === 0 ? 'Aún no tienes favoritos' : 'Licitaciones no disponibles'}
+          </h2>
           <p>
-            {sinFavoritos
+            {favoritos.length === 0
               ? 'Guarda licitaciones desde el explorador para hacerles seguimiento.'
               : 'Las licitaciones que guardaste ya no están disponibles en el catálogo.'}
           </p>
+          <Link to="/licitaciones" className="button button--primary">
+            Explorar licitaciones
+          </Link>
         </div>
-      ) : (
-        <div className="mis-favoritos__grid">
+      )}
+      {user && licitaciones.length > 0 && (
+        <ul className="licitaciones-list" role="list">
           {licitaciones.map((licitacion) => (
-            <LicitacionCard key={licitacion.id} licitacion={licitacion} />
+            <li key={licitacion.id}>
+              <LicitacionCard licitacion={licitacion} onRemove={() => heading.current?.focus()} />
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </section>
   )

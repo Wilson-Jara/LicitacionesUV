@@ -1,139 +1,183 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
-import {
-  VALID_SORTS,
-  countActiveFilters,
-  filterLicitaciones,
-  sortLicitaciones,
-} from '../licitacionFilters.js'
+import { countActiveFilters, filterLicitaciones, sortLicitaciones } from '../licitacionFilters.js'
 import mockData from '../data/licitaciones.mock.json'
+import { getSectorLabel, getEtiquetaLabel } from '../categorias.js'
 import './LicitacionesExplorerPage.css'
 
-/**
- * Opciones de ordenamiento disponibles para la lista de licitaciones.
- * @type {Array<{value: string, label: string}>}
- */
-const SORT_OPTIONS = [
-  { value: '', label: 'Orden por defecto' },
-  { value: 'fecha-asc', label: 'Fecha de cierre: más próxima' },
-  { value: 'fecha-desc', label: 'Fecha de cierre: más lejana' },
-  { value: 'monto-asc', label: 'Monto: menor a mayor' },
-  { value: 'monto-desc', label: 'Monto: mayor a menor' },
+const sortOptions = [
+  ['', 'Orden del catálogo'],
+  ['fecha-asc', 'Cierre más próximo'],
+  ['fecha-desc', 'Cierre más lejano'],
+  ['monto-asc', 'Monto de menor a mayor'],
+  ['monto-desc', 'Monto de mayor a menor'],
 ]
 
-const SORT_OPTION_VALUES = new Set(SORT_OPTIONS.map((option) => option.value))
-const VALID_SORT_OPTION_VALUES = new Set(['', ...VALID_SORTS])
+const ejemplos = ['Mantenimiento', 'Software', 'Consultoría']
 
-if (![...SORT_OPTION_VALUES].every((value) => VALID_SORT_OPTION_VALUES.has(value))) {
-  throw new Error('SORT_OPTIONS contiene valores no válidos frente a VALID_SORTS')
+function listarSectores(catalogo) {
+  return [...new Set(catalogo.map((licitacion) => licitacion.sector).filter(Boolean))].sort(
+    (a, b) => getSectorLabel(a).localeCompare(getSectorLabel(b), 'es'),
+  )
 }
 
-/**
- * Página principal del explorador de licitaciones institucionales.
- *
- * Integra la cabecera Hero con KPIs institucionales, la barra lateral de filtros,
- * selector de ordenamiento y la grilla de resultados. Gestiona la visualización
- * responsiva de filtros en dispositivos móviles y memoriza el filtrado y ordenamiento
- * del catálogo de datos mock.
- *
- * @returns {import('react').JSX.Element} Vista completa del explorador de licitaciones.
- */
+function listarEtiquetas(catalogo) {
+  return [
+    ...new Set(
+      catalogo.flatMap((licitacion) =>
+        Array.isArray(licitacion.etiquetas) ? licitacion.etiquetas : [],
+      ),
+    ),
+  ].sort((a, b) => getEtiquetaLabel(a).localeCompare(getEtiquetaLabel(b), 'es'))
+}
+
 function LicitacionesExplorerPage() {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const searchRef = useRef(null)
+  const resultsHeading = useRef(null)
+  // Las opciones se derivan de la fuente activa; al migrar a la API solo cambia
+  // `mockData`, sin tocar los desplegables.
+  const sectoresDisponibles = useMemo(() => listarSectores(mockData), [])
+  const etiquetasDisponibles = useMemo(() => listarEtiquetas(mockData), [])
+  const results = sortLicitaciones(filterLicitaciones(mockData, filters), filters.sort)
+  const activeCount = countActiveFilters(filters)
 
-  const filteredData = useMemo(() => {
-    return sortLicitaciones(filterLicitaciones(mockData, filters), filters.sort)
-  }, [filters])
-
-  const activeFiltersCount = countActiveFilters(filters)
+  function reset() {
+    clearFilters()
+    searchRef.current?.focus()
+  }
 
   return (
-    <section className="licitaciones-explorer">
-      {/* Hero Header Institucional UV */}
-      <header className="licitaciones-hero">
-        <div className="hero-content">
-          <span className="hero-overline">PORTAL DE ADQUISICIONES INSTITUCIONALES</span>
-          <h1 className="hero-title">Explorar Licitaciones Vigentes</h1>
-          <p className="hero-description">
-            Consulta, seguimiento y postulación a procesos de compras y contrataciones de la
-            Universidad de Valparaíso y organismos del sector público y privado.
-          </p>
-          <div className="hero-kpis">
-            <div className="hero-kpi-item">
-              <span className="kpi-val">{mockData.length}</span>
-              <span className="kpi-lbl">Total Procesos</span>
+    <section aria-labelledby="explore-title">
+      <header className="explore-hero">
+        <div className="frame hero-inner">
+          <div className="hero-main">
+            <h1 id="explore-title">
+              Explorar licitaciones<span>.</span>
+            </h1>
+            <p className="hero-description">Compara fechas de cierre y montos.</p>
+            <form
+              className="search-form"
+              role="search"
+              aria-label="Buscar licitaciones"
+              onSubmit={(event) => {
+                event.preventDefault()
+                resultsHeading.current?.focus()
+              }}
+            >
+              <label htmlFor="keyword">Buscar por título</label>
+              <div className="search-field">
+                <svg
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                >
+                  <circle cx="10.8" cy="10.8" r="5.8" />
+                  <path d="m15 15 4 4" />
+                </svg>
+                <input
+                  ref={searchRef}
+                  type="search"
+                  id="keyword"
+                  placeholder="Ej. mantenimiento"
+                  value={filters.keyword}
+                  onChange={(event) => setFilter('keyword', event.target.value)}
+                />
+                <button className="button button--primary" type="submit">
+                  Buscar
+                </button>
+              </div>
+              <div className="query-examples" role="group" aria-label="Búsquedas de ejemplo">
+                <span aria-hidden="true">Prueba con</span>
+                {ejemplos.map((ejemplo) => {
+                  const value = ejemplo.toLowerCase()
+                  const selected = filters.keyword.trim().toLowerCase() === value
+                  return (
+                    <button
+                      key={ejemplo}
+                      className="query-chip"
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => setFilter('keyword', selected ? '' : value)}
+                    >
+                      {ejemplo}
+                    </button>
+                  )
+                })}
+              </div>
+            </form>
+          </div>
+          <div className="hero-side">
+            <div className="file-mark" aria-hidden="true">
+              <span />
             </div>
-            <div className="hero-kpi-divider"></div>
-            <div className="hero-kpi-item">
-              <span className="kpi-val">{filteredData.length}</span>
-              <span className="kpi-lbl">Coincidencias</span>
-            </div>
-            <div className="hero-kpi-divider"></div>
-            <div className="hero-kpi-item">
-              <span className="kpi-val">100%</span>
-              <span className="kpi-lbl">Transparencia</span>
-            </div>
+            <aside className="demo-note" aria-labelledby="demo-title">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 11v5m0-8v.1" />
+              </svg>
+              <div>
+                <h2 id="demo-title">Catálogo de demostración</h2>
+                <p>Las convocatorias, fechas y montos son ejemplos ficticios.</p>
+              </div>
+            </aside>
           </div>
         </div>
       </header>
 
-      {/* Barra de Resumen y Control Móvil */}
-      <div className="licitaciones-results-bar">
-        <div className="results-counter" role="status" aria-live="polite" aria-atomic="true">
-          Mostrando <strong>{filteredData.length}</strong> de <strong>{mockData.length}</strong>{' '}
-          licitaciones disponibles
-        </div>
-
-        <div className="results-actions">
-          <div className="sort-control">
-            <label className="sort-label" htmlFor="licitaciones-sort">
-              Ordenar por
-            </label>
-            <select
-              id="licitaciones-sort"
-              className="sort-select"
-              value={filters.sort}
-              onChange={(e) => setFilter('sort', e.target.value)}
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="button"
-            className={`mobile-filter-toggle ${showMobileFilters ? 'active' : ''}`}
-            onClick={() => setShowMobileFilters(!showMobileFilters)}
-            aria-expanded={showMobileFilters}
-            aria-controls="filter-sidebar-wrapper"
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-              <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-            </svg>
-            <span>{showMobileFilters ? 'Ocultar filtros' : 'Mostrar filtros'}</span>
-            {activeFiltersCount > 0 && (
-              <span className="mobile-filter-badge">{activeFiltersCount}</span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      <div className="licitaciones-layout">
-        <div
-          id="filter-sidebar-wrapper"
-          className={`filter-sidebar-wrapper ${showMobileFilters ? 'mobile-open' : ''}`}
+      <div className="frame catalog">
+        <button
+          type="button"
+          className="button mobile-filter-toggle"
+          onClick={() => setShowMobileFilters(!showMobileFilters)}
+          aria-expanded={showMobileFilters}
+          aria-controls="filter-sidebar-wrapper"
         >
-          <FilterSidebar />
+          {showMobileFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
+          {activeCount > 0 && ' (' + activeCount + ')'}
+        </button>
+        <div id="filter-sidebar-wrapper" className={showMobileFilters ? 'filters-open' : ''}>
+          <FilterSidebar sectores={sectoresDisponibles} etiquetas={etiquetasDisponibles} />
         </div>
-        <div className="licitaciones-content">
-          <LicitacionList licitaciones={filteredData} onResetFilters={clearFilters} />
-        </div>
+        <section aria-labelledby="results-title">
+          <div className="results-header">
+            <div>
+              <h2 id="results-title" ref={resultsHeading} tabIndex={-1}>
+                Resultados
+              </h2>
+              <p role="status">
+                {results.length} de {mockData.length} licitaciones
+              </p>
+            </div>
+            <div className="sort-control">
+              <label htmlFor="licitaciones-sort">Ordenar por</label>
+              <select
+                id="licitaciones-sort"
+                value={filters.sort}
+                onChange={(event) => setFilter('sort', event.target.value)}
+              >
+                {sortOptions.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <LicitacionList licitaciones={results} onResetFilters={reset} />
+        </section>
       </div>
     </section>
   )

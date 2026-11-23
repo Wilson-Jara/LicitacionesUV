@@ -1,114 +1,75 @@
 .config-umbrales {
-  width: 100%;
-  padding: 32px 32px 56px;
-  box-sizing: border-box;
-}
-
-.config-umbrales__overline {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.config-umbrales__title {
-  margin: 6px 0 12px;
-  font-family: var(--heading);
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--primary);
-  letter-spacing: -0.4px;
+  padding-block: 2rem 4rem;
 }
 
 .config-umbrales__subtitle {
-  margin: 0 0 16px;
-  max-width: 760px;
-  color: var(--text-muted);
-  line-height: 1.55;
+  max-width: 68ch;
+  margin-top: 0.65rem;
+  color: var(--text);
 }
 
 .config-umbrales__status {
-  min-height: 22px;
-  margin: 0 0 18px;
-  font-size: 13.5px;
-  font-weight: 600;
+  margin-block: 0.85rem;
   color: var(--success-text);
+  font-weight: 650;
 }
 
 .config-umbrales__columns {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 1.2rem;
   align-items: start;
+  margin-top: 1.25rem;
 }
 
-.config-umbrales__aside {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.config-umbrales__aside,
+.umbrales-lista {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
 }
 
 .config-umbrales__panel {
-  padding: 20px;
-  background: var(--card-bg);
+  padding: clamp(0.85rem, 2.5vw, 1.35rem);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
+  border-radius: 0.75rem;
+  background: var(--card-bg);
 }
 
-.config-umbrales__panel-title {
-  margin: 0 0 14px;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--primary);
+.config-umbrales__panel-title,
+.umbral-form__title {
+  margin-bottom: 0.8rem;
 }
 
-.config-umbrales__panel-footer {
+.config-umbrales__panel-footer,
+.umbral-form__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-soft);
+  gap: 0.65rem;
+  margin-top: 1rem;
 }
 
-.config-umbrales__timestamp {
-  font-size: 12.5px;
-  color: var(--text-muted);
+.config-umbrales__panel-footer {
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.config-umbrales__timestamp,
+.config-umbrales__hint,
+.umbrales-vacio {
+  color: var(--text);
 }
 
 .config-umbrales__hint {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-.config-umbrales__note {
-  margin-top: 20px;
-  padding: 14px 16px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--info-text);
-  background: var(--info-bg);
-  border: 1px solid var(--info-border);
-  border-radius: 10px;
-}
-
-/* Listado de umbrales */
-.umbrales-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  margin-bottom: 0.8rem;
 }
 
 .umbrales-unidad {
+  min-width: 0;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
+  border-radius: 0.65rem;
 }
 
 .umbrales-unidad__header {
@@ -116,257 +77,168 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 12px 14px;
-  background: var(--surface-alt);
-  border-bottom: 1px solid var(--border);
+  gap: 0.6rem;
+  padding: 0.8rem;
+  border-radius: 0.65rem 0.65rem 0 0;
+  color: var(--hero-ink);
+  background: var(--hero);
 }
 
 .umbrales-unidad__nombre {
-  margin: 0;
-  font-size: 14.5px;
-  font-weight: 700;
-  color: var(--text-h);
+  color: var(--hero-ink);
+  font-size: 1rem;
 }
 
 .umbrales-unidad__tipo {
-  font-size: 12px;
-  color: var(--text-muted);
+  color: var(--hero-muted);
 }
 
 .umbrales-vacio {
-  margin: 0;
-  padding: 16px 14px;
-  font-size: 13px;
-  color: var(--text-muted);
+  padding: 0.8rem;
+}
+
+.umbrales-tabla-scroll {
+  overflow-x: auto;
 }
 
 .umbrales-tabla {
   width: 100%;
+  min-width: 29rem;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: 0.9375rem;
 }
 
 .umbrales-tabla th,
 .umbrales-tabla td {
-  padding: 10px 14px;
+  padding: 0.65rem 0.8rem;
+  border-bottom: 1px solid var(--border);
   text-align: left;
-  border-bottom: 1px solid var(--border-soft);
-}
-
-.umbrales-tabla tbody tr:last-child td {
-  border-bottom: none;
 }
 
 .umbrales-tabla th {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  background: var(--surface-soft);
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.umbrales-tabla tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 .umbrales-tabla__rango {
-  font-weight: 600;
-  color: var(--text-h);
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 
 .umbrales-tabla__acciones {
   display: flex;
-  gap: 8px;
+  gap: 0.45rem;
 }
 
-/* Distintivos de nivel aprobador */
 .nivel-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid var(--border-strong);
-  background: var(--surface-alt);
-  color: var(--text);
-}
-
-.nivel-badge--jefe_unidad {
-  color: var(--info-text);
-  background: var(--info-bg);
-  border-color: var(--info-border);
+  display: inline-block;
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.35rem;
+  color: var(--hero-ink);
+  background: var(--hero);
 }
 
 .nivel-badge--direccion_economica {
-  color: var(--warning-text);
-  background: var(--warning-bg);
-  border-color: var(--warning-border);
+  color: var(--highlight-ink);
+  background: var(--highlight);
 }
 
 .nivel-badge--rectoria {
   color: var(--primary);
   background: var(--accent-bg);
-  border-color: var(--accent-border);
-}
-
-/* Formularios */
-.umbral-form__title {
-  margin: 0 0 14px;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--primary);
 }
 
 .umbral-form__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.8rem;
 }
 
 .umbral-form__group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
 }
 
 .umbral-form__group label {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-weight: 650;
 }
 
 .umbral-form__group input,
 .umbral-form__group select {
-  padding: 9px 11px;
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--text-h);
-  background: var(--card-bg);
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.65rem;
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
-}
-
-.umbral-form__group input:focus-visible,
-.umbral-form__group select:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 1px;
-}
-
-.umbral-form__group select:disabled {
-  background: var(--surface-alt);
-  color: var(--text-muted);
+  border-radius: 0.45rem;
 }
 
 .umbral-form__error {
-  margin: 0;
-  font-size: 12.5px;
-  font-weight: 600;
   color: var(--danger);
 }
 
-.umbral-form__aviso {
-  margin: 0;
-  padding: 12px 14px;
-  font-size: 13px;
-  color: var(--text-muted);
-  background: var(--surface-alt);
-  border: 1px dashed var(--border-strong);
-  border-radius: 8px;
+.umbrales-tabla__aviso {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.85em;
+  color: var(--danger);
 }
 
-.umbral-form__actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
+.umbral-form__aviso,
+.simulador__resultado {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  color: var(--hero-ink);
+  background: var(--hero);
 }
 
 .umbral-form--unidad {
   width: 100%;
 }
 
-/* Botones */
 .umbral-btn {
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.45rem;
   color: var(--primary);
   background: var(--card-bg);
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  font-weight: 650;
 }
 
 .umbral-btn:hover {
-  background: var(--hover-bg);
+  background: var(--hero);
 }
 
 .umbral-btn--primary {
+  border-color: var(--primary);
   color: var(--primary-contrast);
   background: var(--primary);
-  border-color: var(--primary);
 }
 
 .umbral-btn--primary:hover {
-  background: var(--primary-light);
+  background: var(--primary-hover);
 }
 
 .umbral-btn--danger {
   color: var(--danger);
-  border-color: var(--danger-border);
-  background: var(--danger-bg);
 }
 
 .umbral-btn--danger:hover {
-  color: var(--danger-hover);
+  background: var(--danger-bg);
 }
 
-/* Simulador de resolución */
 .simulador {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  gap: 0.75rem;
 }
 
-.simulador__resultado {
-  margin: 0;
-  padding: 12px 14px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--primary);
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
-  border-radius: 8px;
-}
-
-@media (max-width: 1024px) {
+@media (max-width: 64rem) {
   .config-umbrales__columns {
     grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .config-umbrales {
-    padding: 24px 16px 40px;
-  }
-
-  .umbrales-tabla,
-  .umbrales-tabla thead,
-  .umbrales-tabla tbody,
-  .umbrales-tabla th,
-  .umbrales-tabla td,
-  .umbrales-tabla tr {
-    display: block;
-  }
-
-  .umbrales-tabla thead {
-    display: none;
-  }
-
-  .umbrales-tabla td {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
   }
 }
