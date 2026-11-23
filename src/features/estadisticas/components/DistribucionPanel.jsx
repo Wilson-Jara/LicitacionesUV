@@ -15,9 +15,7 @@ export function DistribucionPanel({ titulo, dimension, datos = [] }) {
   return (
     <section className="dist-panel" aria-labelledby={`dist-${dimension}-titulo`}>
       <header className="dist-panel__header">
-        <h3 id={`dist-${dimension}-titulo`} className="dist-panel__titulo">
-          {titulo}
-        </h3>
+        <h2 id={`dist-${dimension}-titulo`}>{titulo}</h2>
         <span className="dist-panel__total">Total: {formatearConteo(total)}</span>
       </header>
 
@@ -27,7 +25,7 @@ export function DistribucionPanel({ titulo, dimension, datos = [] }) {
       {datos.length === 0 ? (
         <p className="dist-panel__vacio">Sin categorías con registros.</p>
       ) : (
-        <div className="dist-panel__grafico" role="img" aria-label={alternativa}>
+        <div aria-hidden="true">
           <ul className="dist-panel__lista">
             {datos.map((item) => {
               const cantidad = Number(item.cantidad) || 0

@@ -2,10 +2,13 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
 import {
+  PDF_LAYOUT_MM,
   buildLicitacionPdf,
   getLicitacionPdfFilename,
 } from '../src/features/licitaciones/services/buildLicitacionPdf.js'
 import { exportLicitacionPdfEnWorker } from '../src/features/licitaciones/services/exportLicitacionPdfCore.js'
+
+const PT_PER_MM = 72 / 25.4
 
 const licitacionBase = {
   id: 'licitacion-001',
@@ -22,6 +25,23 @@ const licitacionBase = {
 function pdfText(licitacion) {
   const doc = buildLicitacionPdf(licitacion)
   return Buffer.from(doc.output('arraybuffer')).toString('latin1')
+}
+
+// Lee las coordenadas de los textos desde los comandos internos de jsPDF.
+// Es dependiente del formato Td/Tj de jsPDF: si una actualización lo cambia,
+// este helper debe ajustarse (la prueba fallará de forma explícita).
+function pdfRows(doc) {
+  const page = doc.internal.pages[1].join('\n')
+  return [...page.matchAll(/([\d.]+) ([\d.]+) Td\n\((.*?)\) Tj/g)].map((match) => ({
+    y: Number(match[2]),
+    text: match[3],
+  }))
+}
+
+function rowY(doc, label) {
+  const row = pdfRows(doc).find(({ text }) => text === label.toUpperCase())
+  assert.ok(row, `no se encontró la fila ${label}`)
+  return row.y
 }
 
 describe('exportLicitacionPdf', () => {
@@ -51,6 +71,54 @@ describe('exportLicitacionPdf', () => {
     assert.ok(text.includes('IDENTIFICADOR'))
     assert.ok(text.includes('ORGANISMO LICITANTE'))
     assert.ok(text.includes('BASES OFICIALES'))
+  })
+
+  it('mantiene región y bases oficiales en filas verticales distintas', () => {
+    const doc = buildLicitacionPdf({
+      ...licitacionBase,
+      region: 'metropolitana',
+      sourceUrl: 'https://www.mercadopublico.cl/bases/oficiales/licitacion-001',
+    })
+
+    const regionY = rowY(doc, 'Región')
+    const basesY = rowY(doc, 'Bases oficiales')
+    const minSeparation = (PDF_LAYOUT_MM.valueOffset + PDF_LAYOUT_MM.rowGap) * PT_PER_MM
+
+    assert.ok(
+      regionY - basesY >= minSeparation - 0.5,
+      `separación ${regionY - basesY}pt menor que ${minSeparation}pt`,
+    )
+  })
+
+  it('envuelve las bases oficiales en varias líneas sin solapar filas', () => {
+    const doc = buildLicitacionPdf({
+      ...licitacionBase,
+      region: 'metropolitana',
+      sourceUrl:
+        'https://www.mercadopublico.cl/bases/oficiales/licitacion-001?documento=terminos-de-referencia-y-anexos&seccion=descarga',
+    })
+
+    const rows = pdfRows(doc)
+    const basesIndex = rows.findIndex(({ text }) => text === 'BASES OFICIALES')
+    const footerIndex = rows.findIndex(({ text }) => text.startsWith('Resumen generado'))
+    const valueRows = rows.slice(basesIndex + 1, footerIndex)
+    assert.ok(valueRows.length >= 2, 'la URL larga debe ocupar más de una línea')
+
+    const lineHeight = PDF_LAYOUT_MM.lineHeight * PT_PER_MM
+    for (let i = 1; i < valueRows.length; i += 1) {
+      assert.ok(
+        Math.abs(valueRows[i - 1].y - valueRows[i].y - lineHeight) < 0.5,
+        'las líneas envueltas deben conservar la separación vertical',
+      )
+    }
+
+    const regionY = rowY(doc, 'Región')
+    const basesY = rowY(doc, 'Bases oficiales')
+    const minSeparation = (PDF_LAYOUT_MM.valueOffset + PDF_LAYOUT_MM.rowGap) * PT_PER_MM
+    assert.ok(
+      regionY - basesY >= minSeparation - 0.5,
+      `separación ${regionY - basesY}pt menor que ${minSeparation}pt`,
+    )
   })
 
   it('usa solo los datos de la licitación seleccionada', () => {

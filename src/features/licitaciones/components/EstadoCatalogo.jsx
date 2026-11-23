@@ -14,20 +14,18 @@ export function EstadoCatalogo({ estado, onReintentar }) {
   if (estado === 'cargando') {
     return (
       <div className="licitaciones-empty" role="status" aria-live="polite">
-        <h3 className="empty-title">Cargando licitaciones…</h3>
-        <p className="empty-subtitle">Consultando la API de licitaciones.</p>
+        <h3>Cargando licitaciones…</h3>
+        <p>Consultando la API de licitaciones.</p>
       </div>
     )
   }
 
   return (
     <div className="licitaciones-empty" role="alert">
-      <h3 className="empty-title">No se pudo cargar el catálogo</h3>
-      <p className="empty-subtitle">
-        La API de licitaciones no respondió. Revisa tu conexión e inténtalo de nuevo.
-      </p>
+      <h3>No se pudo cargar el catálogo</h3>
+      <p>La API de licitaciones no respondió. Revisa tu conexión e inténtalo de nuevo.</p>
       {onReintentar && (
-        <button type="button" className="btn-empty-reset" onClick={onReintentar}>
+        <button type="button" className="button button--primary" onClick={onReintentar}>
           Reintentar
         </button>
       )}

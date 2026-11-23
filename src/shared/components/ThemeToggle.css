@@ -1,35 +1,28 @@
 .theme-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--text);
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
+  gap: 0.45rem;
+  padding-inline: 0.7rem;
+  font-weight: 500;
 }
 
-.theme-toggle:hover {
+.theme-toggle svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: 0 0 1.1rem;
+}
+
+.theme-toggle[aria-pressed='true'] {
   color: var(--primary);
-  border-color: var(--border-strong);
-  background: var(--hover-bg);
-  transform: translateY(-1px);
+  background: var(--accent-bg);
+  border-color: var(--primary);
 }
 
-.theme-toggle:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
+@media (max-width: 45rem) {
+  .theme-toggle {
+    min-width: 2.75rem;
+    padding-inline: 0.45rem;
+  }
 
-.theme-toggle__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  .theme-toggle span {
+    display: none;
+  }
 }

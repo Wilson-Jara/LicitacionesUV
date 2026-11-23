@@ -1,4 +1,5 @@
-import { Outlet } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 import Navbar from '../../shared/components/Navbar.jsx'
 import AuthModal from '../../features/auth/components/AuthModal.jsx'
 import { useAuth } from '../../features/auth/hooks/useAuth'
@@ -11,11 +12,27 @@ import { useAuth } from '../../features/auth/hooks/useAuth'
  */
 function PublicLayout() {
   const { isAuthModalOpen, closeAuthModal } = useAuth()
+  const { pathname } = useLocation()
+  const main = useRef(null)
+  const previousPath = useRef(pathname)
+
+  useEffect(() => {
+    const heading = main.current.querySelector('h1')
+    if (heading) document.title = heading.textContent + ' · Licitaciones UV'
+    if (previousPath.current !== pathname) {
+      previousPath.current = pathname
+      window.scrollTo(0, 0)
+      main.current.focus({ preventScroll: true })
+    }
+  }, [pathname])
 
   return (
     <div className="public-layout">
+      <a href="#contenido" className="skip-link">
+        Saltar al contenido
+      </a>
       <Navbar />
-      <main className="public-layout__main">
+      <main ref={main} className="public-layout__main" id="contenido" tabIndex={-1}>
         <Outlet />
       </main>
       <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />
