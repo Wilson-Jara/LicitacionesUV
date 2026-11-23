@@ -1,4 +1,5 @@
 EVIDENCIA DE CONTRATOS
+Contexto histórico: comprobación ejecutada el 27 de octubre de 2026, anterior a la separación de backend/ hacia LicitacionesUV-backend (#113).
 Fecha: 27 de octubre de 2026 (Chile, America/Santiago)
 Entorno: Node.js 24.22.1 y npm 11.19.1
 Origen: bloque PowerShell de docs/ejercicio-2-2.md, sección Reproducir la evidencia.

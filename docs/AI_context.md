@@ -8,8 +8,8 @@
 - **Repositorio remoto:** `https://github.com/Wilson-Jara/LicitacionesUV.git`.
 - **Tipo:** aplicación web cliente.
 - **Idioma de negocio/documentación:** español.
-- **Propósito declarado:** crear, centralizar y gestionar licitaciones universitarias, además de comparar ofertas y ayudar a seleccionar la mejor propuesta de proveedores.
-- **Estado real actual:** aplicación web en React con enrutamiento (`react-router-dom`). Usa la identidad pública «Licitaciones UV», un catálogo de demostración con filtros y orden en URL, acceso simulado y gestión de favoritos.
+- **Propósito declarado:** centralizar, filtrar y hacer seguimiento de licitaciones públicas y privadas (incluyendo convocatorias universitarias y de otros organismos), con enlace directo a su fuente oficial.
+- **Estado real actual (revisado el 21 de noviembre de 2026):** aplicación web cliente en React + Vite con enrutamiento (`react-router-dom`). Usa la identidad pública «Licitaciones UV», un catálogo local de demostración con filtros y orden en URL, detalle con exportación PDF en Web Worker, panel de estadísticas (`/estadisticas`), favoritos locales, configuración local de umbrales (`/configuracion/umbrales`), tema claro/oscuro y acceso simulado. Aún no existe despliegue público lanzado ni conexión activa a `LicitacionesUV-backend`.
 
 ## 2. Estado verificado
 
@@ -104,6 +104,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | `src/main.jsx`                                                     | Punto de montaje de React.                                                                                       |
 | `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales y Router.                                           |
 | `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                                 |
+| `src/app/routes/NotFoundPage.jsx`                                  | Página 404 para rutas inexistentes.                                                                              |
 | `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.                              |
 | `src/index.css`                                                    | Tokens de tema, foco, tipografía y controles comunes.                                                            |
 | `src/features/auth/components/AuthModal.jsx`                       | Diálogo de inicio de sesión/registro con retorno de foco.                                                        |
@@ -162,8 +163,14 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 | `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                                  |
 | `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda, combinación de filtros y ordenamiento.                                                      |
 | `tests/estadisticasUtils.test.js`                                  | Pruebas de distribuciones, derivación de sector, filtros y accesibilidad.                                        |
+| `tests/umbralesStorage.test.js`                                    | Pruebas de persistencia y CRUD de unidades y umbrales en `localStorage`.                                         |
+| `tests/umbralesUtils.test.js`                                      | Pruebas de validación, formato y resolución de umbrales de aprobación.                                           |
 | `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                                              |
-| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.                                   |
+| `docs/Arquitectura.md`                                             | Diseño arquitectónico, diagrama, módulos y decisiones de diseño.                                                 |
+| `docs/ReqExtrafuncionales.md`                                      | Requisitos extrafuncionales (REF) priorizados según ISO/IEC 25010.                                               |
+| `docs/PerfilMedidasCalidad.md`                                     | Perfil de medidas de calidad (ISO/IEC 25023) y trazabilidad con REF.                                             |
+| `docs/cobertura.md`                                                | Configuración de cobertura nativa de Node, exclusiones y módulo crítico.                                         |
+| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify`, `test:coverage` y `test:coverage:critico` en PR y push.             |
 | `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                         |
 | `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                                       |
 | `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                                         |
@@ -174,7 +181,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 
 ## 6. Stack y dependencias
 
-- Node.js requerido: `>=20.19.0`.
+- Node.js requerido: `>=20.19.0` (Node `>=22.8`, CI `22.22.0`, para ejecutar `npm run test:coverage` y `npm run test:coverage:critico`).
 - React `19.2.8`.
 - React DOM `19.2.8`.
 - React Router DOM `7.18.2`.
@@ -292,6 +299,9 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 ## 13. Documentación relacionada
 
 - `docs/separacion-backend.md` describe los límites de ambos repositorios y las verificaciones de separación. La API independiente usa PostgreSQL; el principal contiene solo el cliente y no lo consume todavía.
+- `docs/Arquitectura.md` documenta el estilo arquitectónico SPA Feature-Driven, módulos vigentes, decisiones de diseño y antecedentes previos a la separación.
+- `docs/cobertura.md` detalla la cobertura nativa de Node, las exclusiones justificadas y el módulo crítico `licitacionUtils.js`.
+- `docs/CriteriosAceptacion.md`, `docs/ReqExtrafuncionales.md` y `docs/PerfilMedidasCalidad.md` mantienen la trazabilidad entre historias de usuario, REF y medidas ISO/IEC 25023.
 - `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
