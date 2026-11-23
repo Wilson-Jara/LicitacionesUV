@@ -289,10 +289,12 @@ instala e inicia PostgreSQL 16 directamente, configura la conexión local y ejec
 `npm run db:setup` antes del servidor. Consultar la
 [guía del backend](https://github.com/Wilson-Jara/LicitacionesUV-backend).
 
-El frontend todavía usa `licitaciones.mock.json`; no realiza llamadas a la API.
-`VITE_API_BASE_URL` queda documentada para una integración posterior. El backend
-permite por defecto el origen Vite `http://localhost:5173` mediante `CORS_ORIGIN`.
-La integración con Mercado Público tampoco forma parte de esta separación.
+El frontend obtiene el catálogo de la API en `VITE_API_BASE_URL` (por defecto
+`http://localhost:3000/api`), así que para ver licitaciones en desarrollo la API
+debe estar levantada; si no responde, cada pantalla muestra el error con un botón
+«Reintentar». El backend permite por defecto el origen Vite
+`http://localhost:5173` mediante `CORS_ORIGIN`. La integración con Mercado Público
+tampoco forma parte de esta separación.
 
 ### Variables de entorno
 
@@ -304,6 +306,57 @@ cp .env.example .env
 
 - Cada variable está documentada con su **nombre**, **formato** y **obligatoriedad** dentro de `.env.example`.
 - Los archivos `.env` reales nunca se suben al repositorio (excluidos por `.gitignore`), igual que certificados y llaves privadas (`*.pem`, `*.key`, `*.p12`, `*.pfx`).
+
+### Despliegue del frontend (Vercel)
+
+**URL pública:** <https://licitacionesuv.vercel.app>
+
+El frontend se publica como sitio estático en Vercel. `vercel.json` fija el
+framework (Vite), el comando `npm run build`, la carpeta `dist` y una reescritura
+de todas las rutas a `index.html`, para que al recargar o abrir directamente
+`/licitaciones/:id`, `/favoritos` u otra ruta de React Router no se responda 404.
+
+```bash
+npx vercel login       # una vez, con la cuenta de quien despliega
+npx vercel             # despliegue de vista previa (pide vincular el proyecto la primera vez)
+npx vercel --prod      # despliegue de producción
+```
+
+La CLI guarda el vínculo local en `.vercel/`, que está excluido de Git.
+
+**Antes de desplegar, la API debe estar publicada.** El frontend obtiene el
+catálogo de la API, y Vite incrusta `VITE_API_BASE_URL` al compilar. Si la
+variable no está definida en el proyecto de Vercel (Settings → Environment
+Variables), el sitio publicado llama a `http://localhost:3000/api`, que no existe
+para los visitantes, y muestra el error con el botón «Reintentar». Por eso:
+
+1. La API debe estar desplegada con una URL pública y su `CORS_ORIGIN` debe
+   incluir `https://licitacionesuv.vercel.app`.
+2. `VITE_API_BASE_URL` debe apuntar a esa API en el entorno _Production_ de
+   Vercel.
+3. Cambiar la variable no actualiza el sitio publicado: hay que volver a
+   desplegar.
+
+#### Quién vuelve a desplegar y cuándo
+
+El proyecto `licitacionesuv` de Vercel pertenece a la cuenta de Vicente Saa
+(@Reinald-Code) y **no está conectado a GitHub**, así que el sitio no se actualiza
+solo con cada push o merge: si nadie despliega, la URL sigue mostrando la versión
+anterior.
+
+- **Responsable:** Vicente Saa (@Reinald-Code). Si no está disponible, otra persona
+  puede publicar una copia con su propia cuenta (`npx vercel --prod`), pero obtendrá
+  otra URL, que habría que actualizar aquí y en `CORS_ORIGIN` del backend.
+- **Cuándo:** después de cada merge a `main`, antes de cada demo o presentación y
+  cada vez que cambie `VITE_API_BASE_URL`.
+- **Cómo:** desde una copia limpia y actualizada de la rama que se publica:
+
+  ```bash
+  git pull
+  npm ci
+  npm run verify
+  npx vercel --prod
+  ```
 
 ---
 

@@ -30,6 +30,7 @@ Estado verificado localmente el 22 de noviembre de 2026:
 - Catálogo de licitaciones obtenido de la API con `LicitacionesProvider` y hook `useLicitaciones` (estados `cargando`, `listo` y `error` con reintento). `features/licitaciones/data/licitaciones.mock.json`, con `sector` opcional y `etiquetas` normalizadas, se conserva como datos de las pruebas del contrato y de los filtros.
 - El acceso seguro a `localStorage` de umbrales y favoritos está centralizado en `src/shared/lib/persistenciaLocal.js` (`obtenerAlmacenamientoLocal`, `leerJson`, `escribirJson`): ninguna función lanza y cada consumidor decide su respaldo. Contrato, indicadores y deuda postergada en `docs/persistencia-local.md`.
 - La API vive en el repositorio independiente `LicitacionesUV-backend`: PostgreSQL mediante `pg`, catálogo ficticio propio, migraciones, pruebas y CI propios. El cliente la consume por HTTP (`services/licitacionesApi.js`) y no importa ni lee sus archivos.
+- Despliegue del frontend como sitio estático en Vercel mediante la CLI; `vercel.json` fija Vite, `npm run build`, la salida `dist` y la reescritura de todas las rutas a `index.html` para React Router. El vínculo local `.vercel/` está excluido de Git.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
@@ -101,6 +102,7 @@ Estado verificado localmente el 22 de noviembre de 2026:
 | Archivo                                                            | Responsabilidad actual                                                                                           |
 | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción).         |
+| `vercel.json`                                                      | Configuración de despliegue en Vercel (Vite, `dist` y reescritura de rutas a `index.html`).                      |
 | `index.html`                                                       | Punto de entrada HTML.                                                                                           |
 | `src/main.jsx`                                                     | Punto de montaje de React.                                                                                       |
 | `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales, catálogo (API) y Router.                           |
@@ -294,7 +296,7 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 
 ## 13. Documentación relacionada
 
-- `docs/modelado/README.md` reúne los diagramas UML del sistema. Los casos de uso distinguen la SPA del consumo directo de la API.
+- `docs/modelado/4-componentes.md` y su fuente PlantUML trazan los componentes e interfaces implementados en frontend y backend, incluidos los catálogos independientes, Web Storage, exportación PDF, repositorios en memoria/PostgreSQL y la integración HTTP aún no ensamblada.
 - `docs/separacion-backend.md` describe los límites de ambos repositorios y las verificaciones de separación. La API independiente usa PostgreSQL; el principal contiene solo el cliente y no lo consume todavía.
 - `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
