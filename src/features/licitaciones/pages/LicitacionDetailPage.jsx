@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { motion as Motion } from 'motion/react'
@@ -13,7 +13,8 @@ import {
 } from 'lucide-react'
 import FavoritoButton from '../components/FavoritoButton.jsx'
 import NotFoundPage from '../../../app/routes/NotFoundPage.jsx'
-import mockData from '../data/licitaciones.mock.json'
+import { EstadoCatalogo } from '../components/EstadoCatalogo'
+import { fetchLicitacion } from '../services/licitacionesApi.js'
 import {
   formatLicitacionAmount,
   formatLicitacionDate,
@@ -25,17 +26,49 @@ import './LicitacionDetailPage.css'
 
 /**
  * Página de detalle de una licitación (ruta `/licitaciones/:id`, HU #44).
- * Busca la licitación por el `id` de la URL; si no existe, muestra la página 404.
+ * Pide la licitación a la API (`GET /api/licitaciones/:id`) con el `id` de la URL:
+ * mientras responde muestra "cargando", si la API responde 404 muestra la página 404
+ * y si la API no responde muestra el error con un botón para reintentar.
  *
  * @returns {JSX.Element}
  */
 function LicitacionDetailPage() {
   const { id } = useParams()
-  const licitacion = mockData.find((item) => item.id === id)
+  const [carga, setCarga] = useState({ id: null, estado: 'cargando', licitacion: null })
+  const [intento, setIntento] = useState(0)
 
-  if (!licitacion) return <NotFoundPage />
+  useEffect(() => {
+    let vigente = true
+    fetchLicitacion(id)
+      .then((licitacion) => {
+        if (vigente) setCarga({ id, estado: licitacion ? 'listo' : 'no-encontrada', licitacion })
+      })
+      .catch(() => {
+        if (vigente) setCarga({ id, estado: 'error', licitacion: null })
+      })
+    return () => {
+      vigente = false
+    }
+  }, [id, intento])
 
-  return <LicitacionDetail key={licitacion.id} licitacion={licitacion} />
+  // Hasta que llega la respuesta del id actual (primera carga, otro id o reintento) se muestra "cargando".
+  const estado = carga.id === id ? carga.estado : 'cargando'
+
+  if (estado === 'cargando' || estado === 'error') {
+    const reintentar = () => {
+      setCarga({ id: null, estado: 'cargando', licitacion: null })
+      setIntento((n) => n + 1)
+    }
+    return (
+      <section className="frame licitacion-detail">
+        <EstadoCatalogo estado={estado} onReintentar={reintentar} />
+      </section>
+    )
+  }
+
+  if (estado === 'no-encontrada') return <NotFoundPage />
+
+  return <LicitacionDetail key={carga.licitacion.id} licitacion={carga.licitacion} />
 }
 
 /**
