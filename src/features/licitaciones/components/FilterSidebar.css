@@ -42,7 +42,8 @@
 .filter-search label,
 .filter-group label,
 .filter-group__label,
-.filter-type legend {
+.filter-type legend,
+.filter-amount legend {
   display: block;
   margin-bottom: 0.45rem;
   color: var(--hero-ink);
@@ -80,7 +81,8 @@
   font-size: 1rem;
 }
 
-.filter-group select {
+.filter-group select,
+.filter-amount input {
   width: 100%;
   min-height: 2.85rem;
   padding: 0.55rem 0.75rem;
@@ -89,15 +91,46 @@
   font-size: 1rem;
 }
 
-.filter-type {
+.filter-type,
+.filter-amount fieldset {
   min-width: 0;
   padding: 0;
   margin: 0;
   border: 0;
 }
 
-.filter-type legend {
+.filter-type legend,
+.filter-amount legend {
   padding: 0;
+}
+
+.filter-amount,
+.filter-amount fieldset,
+.filter-amount__bounds {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.filter-amount__bounds {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7.5rem), 1fr));
+}
+
+.filter-amount p {
+  color: var(--hero-muted);
+  font-size: 1rem;
+}
+
+.filter-amount label {
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.filter-amount input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.filter-amount .filter-amount__error {
+  color: var(--danger);
 }
 
 .filter-chips {
@@ -171,6 +204,7 @@
   font-size: 1rem;
   font-weight: 650;
   text-align: start;
+  overflow-wrap: anywhere;
 }
 
 .filter-reset-btn {

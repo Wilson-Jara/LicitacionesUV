@@ -255,6 +255,39 @@ describe('filterLicitaciones', () => {
 
     assert.deepEqual(resultado, [])
   })
+
+  it('incluye ambos extremos del rango y admite un límite único o igual a cero', () => {
+    const catalogo = [0, 100, 150.5, 200, 300].map((amount) => ({ amount, currency: 'CLP' }))
+    assert.deepEqual(filterLicitaciones(catalogo, { min: '100', max: '200' }), catalogo.slice(1, 4))
+    assert.deepEqual(filterLicitaciones(catalogo, { min: '200' }), catalogo.slice(3))
+    assert.deepEqual(filterLicitaciones(catalogo, { max: '0' }), catalogo.slice(0, 1))
+    assert.deepEqual(filterLicitaciones(catalogo, { min: '150,5', max: '150.5' }), [catalogo[2]])
+  })
+
+  it('excluye montos ausentes, negativos y en otras monedas solo con el rango activo', () => {
+    const catalogo = [
+      null,
+      { currency: 'CLP' },
+      { amount: -1, currency: 'CLP' },
+      { amount: 100, currency: 'USD' },
+      { amount: 100, currency: 'CLP' },
+    ]
+    assert.deepEqual(filterLicitaciones(catalogo), catalogo)
+    assert.deepEqual(filterLicitaciones(catalogo, { min: '0' }), catalogo.slice(-1))
+  })
+
+  it('combina el rango con los demás filtros y puede devolver cero coincidencias', () => {
+    const catalogo = licitacionesCategorizadas.map((licitacion) => ({
+      ...licitacion,
+      amount: 200,
+    }))
+    const filtros = new URLSearchParams(
+      'keyword=software&region=metropolitana&tipo=privada&sector=tecnologia&etiqueta=software&min=100&max=200',
+    )
+    assert.deepEqual(filterLicitaciones(catalogo, filtros), [catalogo[0]])
+    filtros.set('max', '199')
+    assert.deepEqual(filterLicitaciones(catalogo, filtros), [])
+  })
 })
 
 describe('sanitizeFilterParams', () => {
@@ -281,6 +314,8 @@ describe('sanitizeFilterParams', () => {
       sector: '',
       etiqueta: '',
       tipo: '',
+      min: '',
+      max: '',
       sort: '',
     })
   })
@@ -299,13 +334,15 @@ describe('sanitizeFilterParams', () => {
       sector: 'tecnologia',
       etiqueta: 'auditoria',
       tipo: 'publica',
+      min: '',
+      max: '',
       sort: '',
     })
   })
 
   it('sanea parámetros desde una instancia de URLSearchParams', () => {
     const params = new URLSearchParams(
-      'keyword=transporte&region=biobio&sector=tecnologia&etiqueta=software&tipo=privada&extra=xyz',
+      'keyword=transporte&region=biobio&sector=tecnologia&etiqueta=software&tipo=privada&min=0&max=100&extra=xyz',
     )
     const sanea = sanitizeFilterParams(params)
 
@@ -315,6 +352,8 @@ describe('sanitizeFilterParams', () => {
       sector: 'tecnologia',
       etiqueta: 'software',
       tipo: 'privada',
+      min: '0',
+      max: '100',
       sort: '',
     })
   })
@@ -326,6 +365,8 @@ describe('sanitizeFilterParams', () => {
       sector: '',
       etiqueta: '',
       tipo: '',
+      min: '',
+      max: '',
       sort: '',
     })
     assert.deepEqual(sanitizeFilterParams(undefined), {
@@ -334,6 +375,8 @@ describe('sanitizeFilterParams', () => {
       sector: '',
       etiqueta: '',
       tipo: '',
+      min: '',
+      max: '',
       sort: '',
     })
     assert.deepEqual(
@@ -344,9 +387,23 @@ describe('sanitizeFilterParams', () => {
         sector: '',
         etiqueta: '',
         tipo: '',
+        min: '',
+        max: '',
         sort: '',
       },
     )
+  })
+
+  it('conserva los últimos límites válidos y descarta los no numéricos o negativos', () => {
+    const params = new URLSearchParams('min=15,5&min=-5&max=40&max=50&max=sin-monto')
+    const { min, max } = sanitizeFilterParams(params)
+    assert.deepEqual({ min, max }, { min: '15.5', max: '50' })
+    assert.equal(sanitizeFilterParams({ min: '9'.repeat(400), max: {} }).min, '')
+  })
+
+  it('descarta un rango invertido conservando los otros filtros', () => {
+    const { min, max, region } = sanitizeFilterParams({ min: '15', max: '10', region: 'biobio' })
+    assert.deepEqual({ min, max, region }, { min: '', max: '', region: 'biobio' })
   })
 })
 
@@ -444,6 +501,8 @@ describe('sanitizeFilterParams - orden', () => {
       sector: '',
       etiqueta: '',
       tipo: '',
+      min: '',
+      max: '',
       sort: 'fecha-asc',
     })
   })
@@ -586,6 +645,12 @@ describe('sortLicitaciones', () => {
 })
 
 describe('countActiveFilters', () => {
+  it('cuenta el rango como un filtro con uno o dos límites válidos', () => {
+    assert.equal(countActiveFilters({ max: '0' }), 1)
+    assert.equal(countActiveFilters({ min: '100', max: '200', tipo: 'publica' }), 2)
+    assert.equal(countActiveFilters({ min: '200', max: '100' }), 0)
+  })
+
   it('cuenta correctamente los filtros activos', () => {
     assert.equal(countActiveFilters({ keyword: '', region: '', tipo: '' }), 0)
     assert.equal(countActiveFilters({ keyword: 'salud', region: '', tipo: '' }), 1)

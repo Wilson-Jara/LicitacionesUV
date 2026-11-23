@@ -16,11 +16,11 @@
 Estado verificado localmente el 22 de noviembre de 2026:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
-- `npm run test` ejecuta las 209 pruebas del cliente (incluye `tests/licitacionesApi.test.js`, que prueba el cliente HTTP con un `fetch` falso). Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run test` ejecuta las 215 pruebas del cliente (incluye `tests/licitacionesApi.test.js`, que prueba el cliente HTTP con un `fetch` falso). Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
-- `npm run verify` pasa: lint, formato, 209 pruebas y build. La cobertura local alcanza 98,42 % de líneas, 91,70 % de ramas y 97,95 % de funciones. `licitacionUtils.js` mantiene 100 % en las tres métricas.
+- `npm run verify` pasa: lint, formato, 215 pruebas y build. La cobertura local alcanza 98,51 % de líneas, 92,15 % de ramas y 98,05 % de funciones. `licitacionUtils.js` mantiene 100 % en las tres métricas.
 - El contrato rechaza fechas imposibles, la medición de filtros es reproducible y las pruebas del PDF derivan la separación de `PDF_LAYOUT_MM` y cubren enlaces envueltos.
 
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
@@ -44,6 +44,7 @@ Estado verificado localmente el 22 de noviembre de 2026:
   - La sesión simulada se conserva al recargar la pestaña mediante `sessionStorage` (`licitacionesuv-sesion-demo`), con el nombre y el correo de acceso. Cerrar sesión elimina esa entrada.
 - **Explorador de Licitaciones:**
   - Barra lateral (`FilterSidebar`) con búsqueda por título, atajos de ejemplo, selección de región, sector y etiqueta, botones de modalidad y aviso de catálogo ficticio. Los filtros aplicados se pueden quitar individualmente y, junto con el orden, se conservan en la URL.
+  - Filtro de monto en CLP con límites inclusivos y opcionales (`?min=…&max=…`). «Aplicar rango» actualiza ambos parámetros juntos y combina el rango con los demás filtros mediante AND. Se admiten números no negativos con punto o coma decimal y se valida que el mínimo sea menor o igual al máximo. Los enlaces con el rango invertido se interpretan sin límites. Un rango activo se aplica a los montos en CLP.
   - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
   - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, sector, etiquetas, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
   - Lista semántica con contador accesible, estado vacío y restablecimiento de filtros. En pantallas estrechas, los filtros se pueden desplegar.
