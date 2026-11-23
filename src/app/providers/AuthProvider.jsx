@@ -1,6 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useState } from 'react'
 import PropTypes from 'prop-types'
+import {
+  endDemoSession,
+  restoreDemoSession,
+  saveProfile,
+  startDemoSession,
+} from '../../features/auth/data/profileStorage.js'
 
 /**
  * Contexto de React para compartir el estado de usuario y la apertura del modal de autenticación.
@@ -16,21 +22,25 @@ export const AuthContext = createContext(null)
  * @returns {import('react').JSX.Element} Componente proveedor de contexto de autenticación.
  */
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(() => restoreDemoSession())
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
   const login = (userData) => {
-    setUser(userData)
+    setUser(startDemoSession(userData))
     setIsAuthModalOpen(false)
   }
 
   const logout = () => {
+    endDemoSession()
     setUser(null)
   }
 
-  const register = (userData) => {
-    setUser(userData)
-    setIsAuthModalOpen(false)
+  const updateProfile = ({ name, email }) => {
+    if (!user || !saveProfile(user.email, { name, email })) return false
+
+    // El correo de acceso sigue identificando los favoritos de la cuenta.
+    setUser({ ...user, name, contactEmail: email })
+    return true
   }
 
   const openAuthModal = () => setIsAuthModalOpen(true)
@@ -40,7 +50,8 @@ export const AuthProvider = ({ children }) => {
     user,
     login,
     logout,
-    register,
+    register: login,
+    updateProfile,
     isAuthModalOpen,
     openAuthModal,
     closeAuthModal,

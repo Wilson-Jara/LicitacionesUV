@@ -5,10 +5,11 @@ import { AuthContext } from '../../../app/providers/AuthProvider'
  * Hook para acceder al contexto global de autenticación y control del modal de acceso.
  *
  * @returns {{
- *   user: {name: string, email: string, photoUrl?: string} | null,
+ *   user: {name: string, email: string, contactEmail: string, photoUrl?: string} | null,
  *   login: (userData: {name: string, email: string, photoUrl?: string}) => void,
  *   logout: () => void,
  *   register: (userData: {name: string, email: string, photoUrl?: string}) => void,
+ *   updateProfile: (profile: {name: string, email: string}) => boolean,
  *   isAuthModalOpen: boolean,
  *   openAuthModal: () => void,
  *   closeAuthModal: () => void

@@ -1,5 +1,7 @@
 # Ejercicio 2.2 · Construcción para la verificación
 
+> **Referencia histórica anterior a la separación.** Las rutas `backend/...`, los comandos y los resultados de este ejercicio describen la versión original. La API actual, sus pruebas y guías ejecutables viven en [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend). Este documento conserva la evidencia del ejercicio y no es una instrucción para ejecutar esas rutas desde el frontend.
+
 Este documento registra los contratos implementados de tres operaciones: filtrar
 licitaciones, consultar su detalle y agregar un favorito. Las comprobaciones usan
 el catálogo mock del proyecto y un usuario de prueba; no requieren PostgreSQL.

@@ -1,60 +1,123 @@
-import { Link } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { motion as Motion } from 'motion/react'
+import { LogIn, LogOut } from 'lucide-react'
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import { useFavoritos } from '../../features/favoritos/hooks/useFavoritos'
 import ThemeToggle from './ThemeToggle'
 import './Navbar.css'
 
-/**
- * Barra de navegación institucional, presente en todas las páginas públicas.
- * Muestra la marca, los enlaces a Licitaciones, Favoritos, Estadísticas y
- * Administración (configuración de umbrales) y el botón de tema. Con sesión
- * iniciada muestra el usuario y "Cerrar sesión"; sin sesión, un botón que abre
- * el modal de acceso.
- *
- * @returns {JSX.Element}
- */
+const pillSpring = { type: 'spring', stiffness: 420, damping: 32 }
+
 function Navbar() {
   const { user, logout, openAuthModal } = useAuth()
+  const { favoritos } = useFavoritos()
+  const { pathname, search } = useLocation()
+  const isLoginPage = pathname === '/login'
+  const carryFilters = pathname === '/licitaciones' || pathname === '/estadisticas'
+  const navItems = [
+    {
+      key: 'explorar',
+      to: { pathname: '/licitaciones', search: carryFilters ? search : '' },
+      label: 'Explorar',
+      active: pathname === '/licitaciones' || pathname.startsWith('/licitaciones/'),
+    },
+    {
+      key: 'favoritos',
+      to: '/favoritos',
+      label: 'Favoritos',
+      count: user ? favoritos.length : 0,
+      active: pathname === '/favoritos',
+    },
+    {
+      key: 'estadisticas',
+      to: { pathname: '/estadisticas', search: carryFilters ? search : '' },
+      label: 'Estadísticas',
+      active: pathname === '/estadisticas',
+    },
+    {
+      key: 'umbrales',
+      to: '/configuracion/umbrales',
+      label: 'Umbrales',
+      active: pathname === '/configuracion/umbrales',
+    },
+  ]
+
+  if (user) {
+    navItems.push({
+      key: 'perfil',
+      to: '/perfil',
+      label: 'Perfil',
+      active: pathname === '/perfil',
+    })
+  }
 
   return (
-    <>
-      <header className="navbar">
-        <Link to="/" className="navbar__brand">
-          <span className="navbar__brand-shield" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.54-3.13 8.78-7 9.88-3.87-1.1-7-5.34-7-9.88V6.3l7-3.12zM11 7h2v6h-2V7zm0 8h2v2h-2v-2z" />
-            </svg>
-          </span>
-          <div className="navbar__brand-text">
-            <span className="navbar__brand-name">
-              Licitaciones<span className="brand-uv-accent">UV</span>
-            </span>
-            <span className="navbar__brand-sub">Universidad de Valparaíso</span>
-          </div>
+    <header className="navbar">
+      <div className="frame navbar__inner">
+        <Link to="/licitaciones" className="navbar__brand">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="currentColor" />
+            <path
+              d="M9 10h14M9 16h10M9 22h12"
+              stroke="var(--primary-contrast)"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+          </svg>
+          Licitaciones UV
         </Link>
-        <nav className="navbar__links">
-          <Link to="/licitaciones">Licitaciones</Link>
-          <Link to="/favoritos">Favoritos</Link>
-          <Link to="/estadisticas">Estadísticas</Link>
-          <Link to="/configuracion/umbrales">Administración</Link>
+        <nav className="navbar__links" aria-label="Navegación principal">
+          {navItems.map((item) => (
+            <NavLink key={item.key} to={item.to} className="navbar__link">
+              {item.active && (
+                <Motion.span
+                  layoutId="navbar-active-pill"
+                  className="navbar__active-pill"
+                  transition={pillSpring}
+                  aria-hidden="true"
+                />
+              )}
+              <span className="navbar__link-label">
+                {item.label}
+                {item.count > 0 && (
+                  <Motion.span
+                    key={item.count}
+                    className="navbar__count"
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={pillSpring}
+                    aria-label={item.count + ' guardadas'}
+                  >
+                    {item.count}
+                  </Motion.span>
+                )}
+              </span>
+            </NavLink>
+          ))}
+        </nav>
+        <div className="navbar__actions">
           <ThemeToggle />
           {user ? (
-            <div className="navbar__user">
-              <img src={user.photoUrl} alt="User Avatar" className="navbar__avatar" />
-              <div className="navbar__user-info">
-                <span className="navbar__user-name">{user.name}</span>
-              </div>
-              <button onClick={logout} className="navbar__btn-logout">
-                Cerrar sesión
-              </button>
-            </div>
-          ) : (
-            <button onClick={openAuthModal} className="navbar__btn-login">
-              Iniciar sesión
+            <button type="button" className="text-button navbar__session-btn" onClick={logout}>
+              <LogOut size={18} aria-hidden="true" />
+              <span>Cerrar sesión</span>
             </button>
+          ) : (
+            !isLoginPage && (
+              <button
+                type="button"
+                className="button button--primary navbar__session-btn"
+                onClick={openAuthModal}
+              >
+                <LogIn size={18} aria-hidden="true" />
+                <span>Iniciar sesión</span>
+              </button>
+            )
           )}
-        </nav>
-      </header>
-    </>
+        </div>
+        {user && <span className="navbar__user">{user.name}</span>}
+      </div>
+    </header>
   )
 }
 

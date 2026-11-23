@@ -1,5 +1,7 @@
 # Guía de depuración en vivo — Vicente García
 
+> **Referencia histórica anterior a la separación.** Las rutas `backend/...`, los comandos y los resultados de este ejercicio describen la versión original. La API actual, sus pruebas y guías ejecutables viven en [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend). Este documento conserva la evidencia del ejercicio y no es una instrucción para ejecutar esas rutas desde el frontend.
+
 > Guía personal para la sesión de depuración del Hito 2.
 > La evidencia oficial del equipo está en `docs/depuracion.md`; esta guía es el paso a paso para ejecutar esa misma depuración si te toca.
 

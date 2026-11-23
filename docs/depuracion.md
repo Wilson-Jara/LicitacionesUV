@@ -1,5 +1,7 @@
 # Depuración sistemática · Búsqueda por palabra clave
 
+> **Referencia histórica anterior a la separación.** Las rutas `backend/...`, los comandos y los resultados de este ejercicio describen la versión original. La API actual, sus pruebas y guías ejecutables viven en [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend). Este documento conserva la evidencia del ejercicio y no es una instrucción para ejecutar esas rutas desde el frontend.
+
 > **Historia:** #43 · **Correcciones originales:** PR #71 (frontend) y PR #88 (API) · **Fecha:** 27-10-2026
 
 Registro de la depuración de un defecto real del proyecto, siguiendo el método **reproducir → aislar → hipótesis → corregir → verificar**.

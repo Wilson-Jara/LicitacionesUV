@@ -1,10 +1,20 @@
-import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { useAuth } from '../../auth/hooks/useAuth'
-import { useFavoritos } from '../../favoritos/hooks/useFavoritos'
+import { motion as Motion } from 'motion/react'
+import {
+  AlertTriangle,
+  Archive,
+  ArrowLeft,
+  CheckCircle2,
+  ExternalLink,
+  FileDown,
+  Loader2,
+} from 'lucide-react'
+import FavoritoButton from '../components/FavoritoButton.jsx'
 import NotFoundPage from '../../../app/routes/NotFoundPage.jsx'
-import mockData from '../data/licitaciones.mock.json'
+import { EstadoCatalogo } from '../components/EstadoCatalogo'
+import { fetchLicitacion } from '../services/licitacionesApi.js'
 import {
   formatLicitacionAmount,
   formatLicitacionDate,
@@ -16,17 +26,49 @@ import './LicitacionDetailPage.css'
 
 /**
  * Página de detalle de una licitación (ruta `/licitaciones/:id`, HU #44).
- * Busca la licitación por el `id` de la URL; si no existe, muestra la página 404.
+ * Pide la licitación a la API (`GET /api/licitaciones/:id`) con el `id` de la URL:
+ * mientras responde muestra "cargando", si la API responde 404 muestra la página 404
+ * y si la API no responde muestra el error con un botón para reintentar.
  *
  * @returns {JSX.Element}
  */
 function LicitacionDetailPage() {
   const { id } = useParams()
-  const licitacion = mockData.find((item) => item.id === id)
+  const [carga, setCarga] = useState({ id: null, estado: 'cargando', licitacion: null })
+  const [intento, setIntento] = useState(0)
 
-  if (!licitacion) return <NotFoundPage />
+  useEffect(() => {
+    let vigente = true
+    fetchLicitacion(id)
+      .then((licitacion) => {
+        if (vigente) setCarga({ id, estado: licitacion ? 'listo' : 'no-encontrada', licitacion })
+      })
+      .catch(() => {
+        if (vigente) setCarga({ id, estado: 'error', licitacion: null })
+      })
+    return () => {
+      vigente = false
+    }
+  }, [id, intento])
 
-  return <LicitacionDetail licitacion={licitacion} />
+  // Hasta que llega la respuesta del id actual (primera carga, otro id o reintento) se muestra "cargando".
+  const estado = carga.id === id ? carga.estado : 'cargando'
+
+  if (estado === 'cargando' || estado === 'error') {
+    const reintentar = () => {
+      setCarga({ id: null, estado: 'cargando', licitacion: null })
+      setIntento((n) => n + 1)
+    }
+    return (
+      <section className="frame licitacion-detail">
+        <EstadoCatalogo estado={estado} onReintentar={reintentar} />
+      </section>
+    )
+  }
+
+  if (estado === 'no-encontrada') return <NotFoundPage />
+
+  return <LicitacionDetail key={carga.licitacion.id} licitacion={carga.licitacion} />
 }
 
 /**
@@ -44,25 +86,10 @@ function LicitacionDetailPage() {
  * @returns {JSX.Element}
  */
 function LicitacionDetail({ licitacion }) {
-  const { user, openAuthModal } = useAuth()
-  const { isFavorito, agregarFavorito, quitarFavorito } = useFavoritos()
+  const { state } = useLocation()
   const [exportando, setExportando] = useState(false)
   const [exportError, setExportError] = useState(null)
-  const guardado = isFavorito(licitacion.id)
   const cerrada = isLicitacionCerrada(licitacion.closingDate)
-
-  const handleToggleFavorito = () => {
-    if (cerrada && !guardado) return
-    if (!user) {
-      openAuthModal()
-      return
-    }
-    if (guardado) {
-      quitarFavorito(licitacion.id)
-    } else {
-      agregarFavorito(licitacion)
-    }
-  }
 
   const handleExportarPdf = async () => {
     setExportando(true)
@@ -80,92 +107,108 @@ function LicitacionDetail({ licitacion }) {
   }
 
   return (
-    <section className="licitacion-detail">
-      <Link className="licitacion-detail-back" to="/licitaciones">
-        ← Volver a licitaciones
+    <section className="frame licitacion-detail">
+      <Link
+        className="licitacion-detail-back"
+        to={{ pathname: '/licitaciones', search: state?.explorerSearch ?? '' }}
+      >
+        <ArrowLeft size={18} aria-hidden="true" />
+        <span>Volver a licitaciones</span>
       </Link>
 
-      <article className="licitacion-detail-card">
+      <Motion.article
+        className="licitacion-detail-card"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+      >
         <header className="licitacion-detail-header">
           <div className="licitacion-detail-badges">
             <span className="licitacion-detail-type">{getTypeLabel(licitacion.type)}</span>
-            <span className={`licitacion-detail-status ${cerrada ? 'is-closed' : 'is-open'}`}>
-              {cerrada ? 'Cerrada' : 'Vigente'}
+            <span className="licitacion-status" data-closed={cerrada}>
+              {cerrada ? (
+                <Archive size={16} aria-hidden="true" />
+              ) : (
+                <CheckCircle2 size={16} aria-hidden="true" />
+              )}
+              <span>{cerrada ? 'Cerrada' : 'Vigente'}</span>
             </span>
           </div>
           <h1>{licitacion.title}</h1>
           <p>{licitacion.institution}</p>
         </header>
 
-        <dl className="licitacion-detail-data">
-          <div>
-            <dt>Monto estimado</dt>
-            <dd className="licitacion-detail-amount">
-              {formatLicitacionAmount(licitacion.amount, licitacion.currency)}
-            </dd>
-          </div>
-          <div>
-            <dt>Moneda</dt>
-            <dd>{licitacion.currency}</dd>
-          </div>
-          <div>
-            <dt>Fecha de cierre</dt>
-            <dd>{formatLicitacionDate(licitacion.closingDate)}</dd>
-          </div>
-          <div>
-            <dt>Tipo</dt>
-            <dd>{getTypeLabel(licitacion.type)}</dd>
-          </div>
-          <div>
-            <dt>Región</dt>
-            <dd>{getRegionLabel(licitacion.region)}</dd>
-          </div>
-        </dl>
+        <div className="licitacion-detail-body">
+          <dl className="licitacion-detail-data">
+            <div>
+              <dt>Monto estimado</dt>
+              <dd className="licitacion-detail-amount">
+                {formatLicitacionAmount(licitacion.amount, licitacion.currency)}
+              </dd>
+            </div>
+            <div>
+              <dt>Moneda</dt>
+              <dd>{licitacion.currency}</dd>
+            </div>
+            <div>
+              <dt>Fecha de cierre</dt>
+              <dd>
+                <time dateTime={licitacion.closingDate}>
+                  {formatLicitacionDate(licitacion.closingDate)}
+                </time>
+              </dd>
+            </div>
+            <div>
+              <dt>Tipo</dt>
+              <dd>{getTypeLabel(licitacion.type)}</dd>
+            </div>
+            <div>
+              <dt>Región</dt>
+              <dd>{getRegionLabel(licitacion.region)}</dd>
+            </div>
+          </dl>
 
-        <div className="licitacion-detail-actions">
-          <button
-            type="button"
-            className="licitacion-detail-export"
-            onClick={handleExportarPdf}
-            disabled={exportando}
-          >
-            {exportando ? 'Generando PDF…' : 'Exportar PDF'}
-          </button>
-          <button
-            type="button"
-            className={`licitacion-detail-favorite ${guardado ? 'is-saved' : ''}`}
-            onClick={handleToggleFavorito}
-            disabled={cerrada && !guardado}
-            aria-pressed={guardado}
-          >
-            {cerrada && !guardado
-              ? 'Licitación cerrada'
-              : guardado
-                ? 'Quitar favorito'
-                : 'Guardar favorito'}
-          </button>
-          <a
-            className="licitacion-detail-source"
-            href={licitacion.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Ver fuente oficial ↗
-          </a>
+          <div className="licitacion-detail-actions">
+            <a
+              className="button button--primary"
+              href={licitacion.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>Ver fuente oficial</span>
+              <ExternalLink size={17} aria-hidden="true" />
+              <span className="sr-only"> (abre en una pestaña nueva)</span>
+            </a>
+            <button
+              type="button"
+              className="button"
+              onClick={handleExportarPdf}
+              disabled={exportando}
+            >
+              {exportando ? (
+                <Loader2 size={17} aria-hidden="true" className="icon-spin" />
+              ) : (
+                <FileDown size={17} aria-hidden="true" />
+              )}
+              <span>{exportando ? 'Generando PDF…' : 'Exportar PDF'}</span>
+            </button>
+            <FavoritoButton licitacion={licitacion} />
+          </div>
+
+          {exportError && (
+            <p className="licitacion-detail-error" role="alert">
+              <AlertTriangle size={18} aria-hidden="true" />
+              <span>{exportError}</span>
+            </p>
+          )}
+
+          {cerrada && (
+            <p className="licitacion-detail-notice">
+              Esta licitación ya cerró y no puede guardarse como favorita.
+            </p>
+          )}
         </div>
-
-        {exportError && (
-          <p className="licitacion-detail-error" role="status">
-            {exportError}
-          </p>
-        )}
-
-        {cerrada && (
-          <p className="licitacion-detail-notice" role="status">
-            Esta licitación ya cerró y no puede guardarse como favorita.
-          </p>
-        )}
-      </article>
+      </Motion.article>
     </section>
   )
 }

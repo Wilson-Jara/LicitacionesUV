@@ -9,54 +9,54 @@
 - **Tipo:** aplicación web cliente.
 - **Idioma de negocio/documentación:** español.
 - **Propósito declarado:** crear, centralizar y gestionar licitaciones universitarias, además de comparar ofertas y ayudar a seleccionar la mejor propuesta de proveedores.
-- **Estado real actual:** aplicación web en React con enrutamiento (`react-router-dom`), interfaz y módulo de acceso basados en el wireframe oficial de Figma de la Universidad de Valparaíso, explorador de licitaciones con filtros y orden sincronizados en URL y gestión de favoritos.
+- **Estado real actual:** aplicación web en React con enrutamiento (`react-router-dom`). Usa la identidad pública «Licitaciones UV», un catálogo de demostración con filtros y orden en URL, acceso simulado y gestión de favoritos.
 
 ## 2. Estado verificado
 
-Revisión realizada el 27 de octubre de 2026:
+Estado verificado localmente el 22 de noviembre de 2026:
 
-- `npm run lint`: pasa sin errores; permanece una advertencia de dependencias de `useMemo` en `LicitacionesExplorerPage.jsx`.
-- `npm run build`: pasa correctamente y genera `dist/`.
-- `npm run test`: suite de smoke tests, persistencia de favoritos, búsqueda, reglas de cierre, exportación PDF, filtros y ordenamiento por fecha/monto, distribuciones de estadísticas y contratos de la API del backend. Las pruebas de integración con PostgreSQL se omiten sin `DATABASE_URL_TEST` y se ejecutan en CI con una base de pruebas.
-- `npm run format:check`: pasa con formato consistente Prettier.
-- `npm run verify`: ejecuta limpia, lint, format:check, test y build con éxito.
-- `npm run test:coverage`: pasa los umbrales con 97,08 % de líneas, 90,94 % de ramas y 98,84 % de funciones en los módulos JavaScript medidos; los componentes JSX quedan fuera de esa medición.
-- `npm run test:coverage:critico`: 20 pruebas aprobadas y 100 % de líneas, ramas y funciones en `licitacionUtils.js`.
-- Integración continua con GitHub Actions (`.github/workflows/verify.yml`) que ejecuta `npm run verify` en PR y push a `main`/`develop`, con un servicio `postgres:16` para las pruebas de integración del backend.
-- Asignación automática de revisores en Pull Requests mediante `.github/CODEOWNERS`, complementaria a la protección de ramas (al menos 1 aprobación de un par).
+- Este repositorio contiene solo el frontend; `backend/` se retiró.
+- `npm run test` ejecuta las 227 pruebas del cliente (incluye `tests/licitacionesApi.test.js`, que prueba el cliente HTTP con un `fetch` falso). Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
+- El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
+- Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
+- `npm run verify` pasa: lint, formato, 227 pruebas y build. La cobertura local alcanza 98,42 % de líneas, 91,70 % de ramas y 97,95 % de funciones. `licitacionUtils.js` mantiene 100 % en las tres métricas.
+- El contrato rechaza fechas imposibles, la medición de filtros es reproducible y las pruebas del PDF derivan la separación de `PDF_LAYOUT_MM` y cubren enlaces envueltos.
+
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
 - Configuración de umbrales de aprobación por unidad con `UmbralesProvider` y hook `useUmbrales`, persistida en `localStorage` como datos editables (REF-14).
 - Router con navegación interna (`react-router-dom` v7).
-- Persistencia local y datos mock en `features/licitaciones/data/licitaciones.mock.json`.
-- Backend base en `backend/`: API REST con el módulo nativo `node:http` y PostgreSQL mediante `pg`, endpoints de salud y licitaciones con el mismo contrato del mock (REF-10), configuración por entorno y pruebas con `node --test` cubiertas por `npm run test` desde la raíz.
+- Catálogo de licitaciones obtenido de la API con `LicitacionesProvider` y hook `useLicitaciones` (estados `cargando`, `listo` y `error` con reintento). `features/licitaciones/data/licitaciones.mock.json`, con `sector` opcional y `etiquetas` normalizadas, se conserva como datos de las pruebas del contrato y de los filtros.
+- El acceso seguro a `localStorage` de umbrales y favoritos está centralizado en `src/shared/lib/persistenciaLocal.js` (`obtenerAlmacenamientoLocal`, `leerJson`, `escribirJson`): ninguna función lanza y cada consumidor decide su respaldo. Contrato, indicadores y deuda postergada en `docs/persistencia-local.md`.
+- La API vive en el repositorio independiente `LicitacionesUV-backend`: PostgreSQL mediante `pg`, catálogo ficticio propio, migraciones, pruebas y CI propios. El cliente la consume por HTTP (`services/licitacionesApi.js`) y no importa ni lee sus archivos.
+- Despliegue del frontend como sitio estático en Vercel mediante la CLI; `vercel.json` fija Vite, `npm run build`, la salida `dist` y la reescritura de todas las rutas a `index.html` para React Router. El vínculo local `.vercel/` está excluido de Git.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
 
-- **Módulo de Autenticación Institucional (Figma Wireframes):**
-  - Modal de autenticación (`AuthModal`) y página dedicada de acceso (`LoginPage` en `/login`).
-  - Diseño _split-screen_: panel izquierdo con identidad institucional de la Universidad de Valparaíso / República de Chile, escudo, métricas en línea y colores oficiales (Azul Marino `#0E1B38` y Dorado `#C59B27`); los paneles de marca permanecen navy en ambos temas.
-  - Panel derecho con formulario de acceso ("Módulo de Acceso"), campos de correo institucional y contraseña con botón para alternar visibilidad, aviso de soporte institucional, enlaces a términos e indicador de estado operativo.
-  - Alternancia entre inicio de sesión y registro de cuenta.
-  - Accesos sociales simulados con Google y GitHub.
-  - Validación de campos con mensajes de error.
+- **Acceso simulado:**
+  - `AuthModal` y `LoginPage` (`/login`) comparten `AuthForm` y el panel ilustrado `AuthIntro`. Ambos identifican la sesión como simulada y permiten rellenar datos ficticios de ejemplo.
+  - Se conserva el inicio de sesión, el registro, la visibilidad de contraseña, la validación de campos y el acceso simulado con Google y GitHub.
+  - El modal usa el elemento nativo `dialog`, mantiene el foco durante la navegación por tabulador y restaura el foco al control de apertura al cerrar. Si ese control desaparece, enfoca el contenido principal.
+- **Perfil de usuario (`/perfil`):**
+  - Con sesión de prueba, permite editar el nombre y el correo de contacto. El formulario anuncia los errores y confirma los cambios guardados. Sin sesión, la ruta invita a iniciar sesión mediante el modal de acceso.
+  - `profileStorage.js` guarda el perfil por cuenta en `localStorage` (`licitacionesuv-perfil:<correo de acceso>`). El correo de acceso conserva la identidad de la cuenta y sus favoritos.
+  - La sesión simulada se conserva al recargar la pestaña mediante `sessionStorage` (`licitacionesuv-sesion-demo`), con el nombre y el correo de acceso. Cerrar sesión elimina esa entrada.
 - **Explorador de Licitaciones:**
-  - Header Hero institucional con sobretítulo dorado, estadísticas clave del portal y tipografía institucional.
-  - Barra lateral de filtros (`FilterSidebar`) con la estética de Figma: sobretítulo dorado, buscador con limpieza rápida, búsqueda por título, selectores estilizados, botones _pills_ de tipo, chips interactivos de filtros activos con eliminación individual, aviso informativo institucional y estado sincronizado con URL.
+  - Barra lateral (`FilterSidebar`) con búsqueda por título, atajos de ejemplo, selección de región, sector y etiqueta, botones de modalidad y aviso de catálogo ficticio. Los filtros aplicados se pueden quitar individualmente y, junto con el orden, se conservan en la URL.
   - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
-  - Tarjetas de licitación (`LicitacionCard`) con iconos vectoriales, indicador de estado por puntos (verde para Pública, ámbar para Privada), etiqueta de región, botón de acción y botón Guardar/Quitar favorito.
-  - Enlace a la vista de detalle (`/licitaciones/:id`) desde el título y la acción de cada tarjeta.
-  - Lista de licitaciones (`LicitacionList`) con estado vacío ilustrado y botón directo de restablecimiento de filtros.
-  - Barra de resumen de resultados y alternancia de filtros para dispositivos móviles.
+  - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, sector, etiquetas, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
+  - Lista semántica con contador accesible, estado vacío y restablecimiento de filtros. En pantallas estrechas, los filtros se pueden desplegar.
 - **Panel de Estadísticas (`/estadisticas`):**
   - Distribuciones por región, tipo (`publica`/`privada`) y sector, calculadas como cantidad de licitaciones sobre el conjunto filtrado del explorador.
-  - Se recalcula al cambiar, combinar o limpiar filtros; al quedar sin resultados muestra un estado vacío y no conserva cifras anteriores.
-  - El sector se deriva de la institución (Universidad, Municipalidad, Ministerio, Banco, Empresa u Otro) porque el mock no trae un campo de etiqueta propio; cada licitación cuenta en una categoría.
+  - El enlace entre explorador y estadísticas mantiene los parámetros de la URL. El panel se recalcula con esos parámetros y muestra un estado vacío cuando no hay coincidencias.
+  - El sector usa el campo explícito del mock (`tecnologia`, `infraestructura` o `finanzas`); si falta, se deriva de la institución para conservar compatibilidad con datos anteriores.
   - Cada distribución ofrece una alternativa textual accesible (texto para lectores de pantalla y tabla con categorías y valores) además de las barras visuales.
+  - El total y los porcentajes de cada distribución se calculan una sola vez en `calcularFilasDistribucion` (`estadisticasUtils.js`); las barras, la tabla accesible y la alternativa textual leen ese resultado (#134, detalle en `docs/estadisticas-porcentajes.md`).
 - **Detalle de Licitación:**
   - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
-  - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos.
+  - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos. Las filas de región y bases oficiales conservan posiciones verticales separadas incluso cuando el enlace se envuelve.
   - La generación del PDF ocurre en un **Web Worker** (fuera del hilo principal) con `jsPDF`; el hilo principal solo recibe el `ArrayBuffer` y dispara la descarga, por lo que la navegación no se bloquea (CA6). Si el navegador no soporta Web Workers, la exportación se rechaza y se muestra un mensaje de error visible (CA5), sin ejecutar generación síncrona en el hilo principal. La carga del módulo de exportación y del worker es diferida.
   - Las licitaciones cerradas no pueden guardarse como favoritas; las que ya estaban guardadas aún pueden quitarse.
   - El campo `sourceUrl` se mantiene en el contrato de datos mock.
@@ -64,125 +64,117 @@ Revisión realizada el 27 de octubre de 2026:
   - Botón "Guardar / Quitar" en `LicitacionCard`; sin sesión, al intentar guardar se abre el modal de autenticación (REF-02).
   - Persistencia local por usuario en `localStorage` (clave `licitacionesuv-favoritos`) con el par `idLicitacion` + `fechaGuardado`.
   - Página `/favoritos` (`MisFavoritosPage`) que lista las licitaciones guardadas con título, monto y fecha de cierre mediante `LicitacionCard`, permite quitarlas al instante y muestra estado vacío cuando no hay favoritos (o invitación a iniciar sesión si no hay sesión).
-- **Barra de Navegación (`Navbar`):**
-  - Cabecera institucional con isotipo UV, enlaces a licitaciones/favoritos y a la administración de umbrales, información de usuario logueado con avatar y botón de acceso modal.
+- **Barra de navegación (`Navbar`):**
+  - Cabecera compartida con la marca «Licitaciones UV», enlaces activos a explorador, favoritos, estadísticas y umbrales, cambio de tema y controles de sesión.
+  - El layout incluye salto al contenido, título de documento por ruta y manejo de foco al cambiar de pantalla.
 - **Temas Claro/Oscuro:**
   - Alternancia de tema mediante atributo `data-theme` en `<html>`, con variables CSS duplicadas por tema en `src/index.css`.
   - Script inline en `index.html` que aplica el tema guardado o la preferencia del sistema antes del montaje de React, evitando el flash de tema incorrecto.
   - Persistencia de la elección en `localStorage` (clave `licitacionesuv-theme`).
   - Botón de alternancia accesible (`ThemeToggle` con `aria-label` y `aria-pressed`) en la barra de navegación.
-  - Los componentes usan variables semánticas (`--card-bg`, `--surface-soft`, `--border-strong`, etc.); los hex restantes pertenecen a paneles de marca navy que permanecen oscuros en ambos temas.
+  - Los componentes usan variables semánticas para fondo, texto, bordes, foco y estados. La paleta **Índigo-Morado UV y Arena** alcanza contraste WCAG 2.2 AAA (`≥ 7,47:1` en texto/enlaces/estados y `≥ 5,01:1` en bordes de controles) con referencia tipográfica mínima de `1rem` (16 px) en ambos temas. Las animaciones (`motion` envuelto en `<MotionConfig reducedMotion="user">`) y transiciones respetan la preferencia de movimiento reducido.
 - **Configuración de Umbrales de Aprobación (US-10, CR-302):**
   - Página `/configuracion/umbrales` (`ConfiguracionUmbralesPage`) que permite crear, editar y eliminar umbrales por unidad mediante los formularios `UmbralForm` y `UnidadForm` y el listado editable `UmbralesTable`.
   - Los umbrales son **datos configurables**, no constantes del código (CA2, regla R4 / REF-14): el punto de partida vive en `umbralesIniciales.js` y la configuración vigente se persiste en `localStorage` (clave `licitacionesuv-umbrales`).
-  - El rango de cada umbral es `[montoMinimo, montoMaximo)`: el mínimo es inclusivo, el máximo es exclusivo y `null` en el máximo significa «sin tope». La validación impide montos negativos, rangos invertidos y solapamientos dentro de una unidad.
+  - El rango de cada umbral es `[montoMinimo, montoMaximo)`: el mínimo es inclusivo, el máximo es exclusivo y `null` en el máximo significa «sin tope». La validación impide montos negativos, rangos invertidos y solapamientos dentro de una unidad, y exige pesos enteros representables con precisión (`Number.isSafeInteger`). Los montos se escriben en campos de texto con teclado numérico y `parseMontoClp` solo acepta dígitos, para rechazar entradas como `0,5` o `1.000.000` que un campo `type="number"` reinterpreta en silencio.
+  - Las operaciones de `useUmbrales` devuelven `true` solo si cambiaron la configuración. `UmbralForm` reconcilia la unidad elegida con las vigentes (`idUnidadVigente`): si se elimina, el selector pide una unidad nueva en vez de cambiar a otra, y la página solo confirma un guardado aplicado; si se descarta, el formulario muestra el error y conserva los datos. La selección se invalida en el mismo render en que la unidad desaparece, porque los ids se generan como «mayor + 1» y una unidad nueva podría reutilizar el de la eliminada.
+  - Los umbrales con decimales guardados antes de esa validación se siguen leyendo (no se redondean ni se borran), pero la tabla los describe con sus montos exactos y los marca para corregirlos (`tieneMontosNoEnteros`).
+  - Varias pestañas comparten la configuración sin sobrescribirse: cada operación toma un bloqueo compartido entre pestañas (`conBloqueoEntrePestanas`, Web Locks), vuelve a leer `localStorage`, aplica el cambio sobre lo vigente y lo guarda en el mismo paso (`guardarUmbrales`); ya no se escribe en un efecto posterior al render. Por eso las operaciones de `useUmbrales` devuelven promesas. `agregarUmbral`, `actualizarUmbral` y `agregarUnidad` validan contra lo vigente (solapamientos, montos, nombres repetidos) y descartan lo incompatible; `actualizarUmbral` también rechaza la edición si el umbral cambió desde que se abrió el editor (`mismosValoresUmbral`). El evento `storage` recarga la configuración cuando otra pestaña guarda y la página lo avisa (`cambiosDeOtraPestana`); si se eliminó el umbral en edición, sale del modo edición con un aviso, y si se modificó, avisa antes de guardar. Si el almacenamiento se puede leer pero no escribir (sin espacio), la operación se rechaza; solo con el almacenamiento bloqueado se trabaja sobre la copia en memoria. La página lo avisa (`problemaAlmacenamiento`: `bloqueado` o `sin-espacio`). Los ids se generan como «mayor + 1» sin reutilizarse: la configuración guarda `ultimosIds` con el mayor número usado de unidad y de umbral, y las configuraciones anteriores sin ese campo se siguen leyendo.
   - Un simulador consulta el nivel aprobador que corresponde a un monto con la configuración vigente y se recalcula de inmediato al editar, sin recargar la página ni volver a desplegar (CA3).
-- **Backend (base Fase 2):**
-  - Servidor HTTP con el módulo nativo `node:http` (sin dependencias): entrada `backend/src/server.js`, composición en `backend/src/app.js` (CORS, parseo JSON, enrutamiento y manejo de errores) y enrutador propio con parámetros de ruta en `backend/src/lib/router.js`.
-  - `GET /api/health` (estado del servicio) y `GET /api/licitaciones` con filtros opcionales (`keyword` solo sobre el título y sin espacios externos, `region` y `tipo`; todos sin distinguir mayúsculas) y detalle `GET /api/licitaciones/:id`.
-  - Manejo de errores: cuerpo JSON inválido o `:id` mal codificado responden 400, cuerpos de más de 1 MB responden 413 y los errores 5xx devuelven un mensaje genérico (el detalle solo se registra con `console.error`).
-  - El detalle de licitación comprueba con `assert.equal` que el identificador devuelto por el repositorio coincide con el solicitado; si se rompe esta invariante interna, responde 500 con el mensaje genérico de error. Una prueba en `backend/tests/licitaciones.test.js` inyecta un repositorio falso que devuelve otro identificador y verifica el código 500 y el cuerpo genérico completo.
-  - Datos de licitaciones mediante un repositorio (`backend/src/data/licitaciones.repository.js`): PostgreSQL cuando existe `DATABASE_URL` y, si no, el mock del frontend en memoria, con el mismo contrato y los mismos filtros en ambos casos (REF-10). El frontend todavía lee el mock local; la migración a la API es una entrega posterior.
-  - Esquema PostgreSQL con migraciones SQL numeradas en `backend/migrations/` (las 8 entidades del dominio y el catálogo de regiones), aplicadas con `npm run db:migrate` y registradas en `schema_migrations`; `npm run db:seed` carga las licitaciones desde el mock. Las tablas de CR-302 existen sin endpoints.
-  - PostgreSQL 16 local con `docker-compose.yml` (raíz), que también crea la base de pruebas `licitaciones_test`.
-  - CORS habilitado para el dev server de Vite y configuración por entorno en `backend/.env.example` (`PORT`, `CORS_ORIGIN`, `DATABASE_URL`, `DATABASE_URL_TEST` y `JWT_SECRET` reservada).
+  - Las tablas conservan sus encabezados y se desplazan dentro de una región enfocada por teclado cuando el ancho es insuficiente.
+- **Límite con el backend independiente:**
+  - La API expone salud, listado filtrado y detalle con los nueve campos del contrato; `sector` y `etiquetas` son opcionales para el cliente (sin ellos, el sector se deriva del organismo y los desplegables de sector y etiqueta muestran solo lo que traiga el catálogo). Usa PostgreSQL con conexión configurada y catálogo propio en memoria sin ella.
+  - Las migraciones, el seed y las pruebas de integración se administran desde la raíz de `LicitacionesUV-backend`.
+  - El frontend consume la API en `VITE_API_BASE_URL` (por defecto `http://localhost:3000/api`): `LicitacionesProvider` pide una vez `GET /api/licitaciones` y el explorador, favoritos y estadísticas filtran y ordenan en el navegador sobre ese catálogo; el detalle pide `GET /api/licitaciones/:id` y muestra la página 404 cuando la API responde 404. Si la API no responde, cada pantalla muestra el error con un botón «Reintentar» (`EstadoCatalogo`).
+  - La autenticación real, favoritos y umbrales en la API y Mercado Público siguen sin implementarse.
 
 ## 4. Arquitectura y flujo de entrada
 
 1. `index.html` define el documento HTML, favicon y contenedor `#root`.
 2. `src/main.jsx` importa `index.css` y monta `<App />`.
-3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider`, `UmbralesProvider` y `BrowserRouter`.
-4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/configuracion/umbrales`, 404).
-5. `src/app/layouts/PublicLayout.jsx` define el layout con la barra de navegación persistente.
-6. `src/index.css` define las variables de diseño institucional (Navy, Gold, neutros, sombras y tipografía).
-7. `backend/src/server.js` inicia el servidor HTTP de la API (por defecto en `http://localhost:3000`); el frontend todavía lee el mock local y la migración a la API corresponde a una entrega posterior.
+3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider`, `UmbralesProvider`, `LicitacionesProvider` y `BrowserRouter`.
+4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/perfil`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/estadisticas`, `/configuracion/umbrales`, 404).
+5. `src/app/layouts/PublicLayout.jsx` monta la barra de navegación, la ruta activa y el diálogo común de acceso.
+6. `src/index.css` define los tokens de ambos temas, la tipografía, el foco y los controles comunes.
+7. La API se inicia desde el repositorio independiente, por defecto en `http://localhost:3000`. El frontend Vite usa `http://localhost:5173` y necesita la API levantada para mostrar licitaciones; en un despliegue, `VITE_API_BASE_URL` apunta a la API publicada y el backend debe permitir ese origen con `CORS_ORIGIN`.
 
 ## 5. Inventario de archivos relevantes
 
-| Archivo                                                            | Responsabilidad actual                                                                                   |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción). |
-| `index.html`                                                       | Punto de entrada HTML.                                                                                   |
-| `src/main.jsx`                                                     | Punto de montaje de React.                                                                               |
-| `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales y Router.                                   |
-| `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                         |
-| `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.                      |
-| `src/index.css`                                                    | Variables globales de diseño institucional UV, reset y tipografía.                                       |
-| `src/features/auth/components/AuthModal.jsx`                       | Modal de inicio de sesión/registro con split-screen de Figma.                                            |
-| `src/features/auth/components/AuthModal.css`                       | Estilos del modal institucional.                                                                         |
-| `src/features/auth/pages/LoginPage.jsx`                            | Página completa de inicio de sesión según wireframe de Figma.                                            |
-| `src/features/auth/pages/LoginPage.css`                            | Estilos de la página de inicio de sesión.                                                                |
-| `src/features/auth/hooks/useAuth.js`                               | Hook de consumo del contexto de autenticación.                                                           |
-| `src/app/providers/AuthProvider.jsx`                               | Proveedor de estado de autenticación y del modal de acceso global.                                       |
-| `src/app/providers/FavoritosProvider.jsx`                          | Proveedor de favoritos con persistencia en localStorage por usuario.                                     |
-| `src/features/favoritos/hooks/useFavoritos.js`                     | Hook de consumo del contexto de favoritos.                                                               |
-| `src/features/favoritos/data/favoritosStorage.js`                  | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).                              |
-| `src/app/providers/ThemeProvider.jsx`                              | Proveedor de tema claro/oscuro con persistencia en localStorage.                                         |
-| `src/shared/components/Navbar.jsx`                                 | Barra de navegación institucional con escudo y acciones de usuario.                                      |
-| `src/shared/components/Navbar.css`                                 | Estilos del Navbar.                                                                                      |
-| `src/shared/components/ThemeToggle.jsx`                            | Botón accesible de alternancia de tema claro/oscuro.                                                     |
-| `src/shared/components/ThemeToggle.css`                            | Estilos del botón de tema.                                                                               |
-| `src/shared/hooks/useTheme.js`                                     | Hook de consumo del contexto de tema.                                                                    |
-| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones con selector de orden.                                   |
-| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`         | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación.                |
-| `src/features/licitaciones/services/exportLicitacionPdf.js`        | Punto de entrada del navegador: crea el Web Worker y delega en la orquestación.                          |
-| `src/features/licitaciones/services/exportLicitacionPdfCore.js`    | Orquestación pura: crea el worker, recibe el PDF y dispara la descarga (testeable).                      |
-| `src/features/licitaciones/services/exportLicitacionPdf.worker.js` | Web Worker que genera el PDF con `jsPDF` fuera del hilo principal.                                       |
-| `src/features/licitaciones/services/buildLicitacionPdf.js`         | Lógica pura de generación del PDF de resumen (formato chileno y español).                                |
-| `src/features/licitaciones/services/licitacionPdfFilename.js`      | Nombre de archivo estable `licitacion-<id>.pdf` sin dependencias.                                        |
-| `src/features/licitaciones/licitacionUtils.js`                     | Formateo compartido y regla para determinar si una licitación está cerrada.                              |
-| `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo, y ordenamiento por fecha de cierre o monto.                          |
-| `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros y orden con URL.                                                       |
-| `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                                |
-| `src/features/licitaciones/components/LicitacionCard.jsx`          | Tarjeta individual de licitación con botón Guardar/Quitar favorito.                                      |
-| `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                                   |
-| `src/features/estadisticas/estadisticasUtils.js`                   | Cálculo puro de distribuciones por región, tipo y sector, y alternativa textual accesible.               |
-| `src/features/estadisticas/components/DistribucionPanel.jsx`       | Panel de una distribución con barras y alternativa textual accesible.                                    |
-| `src/features/estadisticas/pages/PanelEstadisticasPage.jsx`        | Página `/estadisticas` que muestra las distribuciones del conjunto filtrado.                             |
-| `src/features/favoritos/pages/MisFavoritosPage.jsx`                | Página de favoritos: listado, estado vacío y quitar licitaciones.                                        |
-| `src/features/favoritos/pages/MisFavoritosPage.css`                | Estilos de la página de favoritos.                                                                       |
-| `src/app/providers/UmbralesProvider.jsx`                           | Proveedor de umbrales de aprobación con persistencia en localStorage.                                    |
-| `src/features/aprobaciones/hooks/useUmbrales.js`                   | Hook de consumo del contexto de umbrales.                                                                |
-| `src/features/aprobaciones/data/umbralesIniciales.js`              | Datos iniciales editables de umbrales por unidad (semilla de configuración).                             |
-| `src/features/aprobaciones/data/umbralesStorage.js`                | Persistencia y normalización de umbrales en localStorage con CRUD por unidad.                            |
-| `src/features/aprobaciones/umbralesUtils.js`                       | Lógica pura de etiquetas, validación, formato y resolución de umbrales.                                  |
-| `src/features/aprobaciones/components/UmbralForm.jsx`              | Formulario para crear o editar un umbral con validación de rango y nivel.                                |
-| `src/features/aprobaciones/components/UnidadForm.jsx`              | Formulario para agregar una unidad con umbrales propios.                                                 |
-| `src/features/aprobaciones/components/UmbralesTable.jsx`           | Listado editable de umbrales por unidad con acciones de editar y eliminar.                               |
-| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.jsx`    | Panel de configuración de umbrales con simulador de resolución inmediata.                                |
-| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.css`    | Estilos del panel de configuración de umbrales.                                                          |
-| `tests/smoke.test.js`                                              | Pruebas automatizadas de línea base reproducible.                                                        |
-| `tests/favoritosStorage.test.js`                                   | Pruebas de la persistencia de favoritos.                                                                 |
-| `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                                     |
-| `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).                 |
-| `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                          |
-| `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda, combinación de filtros y ordenamiento.                                              |
-| `tests/estadisticasUtils.test.js`                                  | Pruebas de distribuciones, derivación de sector, filtros y accesibilidad.                                |
-| `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                                      |
-| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.                           |
-| `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                 |
-| `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                               |
-| `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                                 |
-| `.github/CODEOWNERS`                                               | Asigna automáticamente los revisores de cada PR según el área modificada.                                |
-| `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                               |
-| `backend/package.json`                                             | Dependencia `pg` y scripts del backend (`dev`, `start`, `test`, `db:migrate`, `db:seed`).                |
-| `backend/src/server.js`                                            | Punto de entrada del servidor HTTP de la API.                                                            |
-| `backend/src/app.js`                                               | Composición de la API: CORS, parseo JSON, enrutamiento y manejo de errores.                              |
-| `backend/src/lib/router.js`                                        | Enrutador HTTP propio con parámetros de ruta (`:id`).                                                    |
-| `backend/src/lib/http.js`                                          | Helpers de respuesta JSON, lectura de cuerpo y errores HTTP.                                             |
-| `backend/src/config/env.js`                                        | Configuración por entorno con carga de `backend/.env`.                                                   |
-| `backend/src/routes/health.routes.js`                              | Endpoint `GET /api/health`.                                                                              |
-| `backend/src/routes/licitaciones.routes.js`                        | Endpoints de listado y detalle de licitaciones.                                                          |
-| `backend/src/data/licitaciones.repository.js`                      | Repositorios de licitaciones (memoria y PostgreSQL) con el contrato del mock.                            |
-| `backend/src/data/mockLicitaciones.js`                             | Carga del mock del frontend como datos de ejemplo del backend.                                           |
-| `backend/src/db/`                                                  | Conexión (`pool.js`), migraciones (`migrator.js`) y carga del seed (`seed.js`).                          |
-| `backend/migrations/*.sql`                                         | Migraciones SQL numeradas del esquema PostgreSQL.                                                        |
-| `backend/scripts/`                                                 | Scripts `db:migrate` y `db:seed`.                                                                        |
-| `backend/db/init/`                                                 | Script de inicio del contenedor que crea la base de pruebas.                                             |
-| `docker-compose.yml`                                               | PostgreSQL 16 para desarrollo local.                                                                     |
-| `backend/tests/*.test.js`                                          | Pruebas de la API con `node --test`.                                                                     |
-| `docs/api/*.md`                                                    | Documentación de las APIs del Entregable 2 (#43 y #44) y su trazabilidad con los CA.                     |
-| `docs/thunder-client/*.json`                                       | Colecciones exportadas de Thunder Client con los casos de prueba de cada API.                            |
+| Archivo                                                            | Responsabilidad actual                                                                                           |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción).         |
+| `vercel.json`                                                      | Configuración de despliegue en Vercel (Vite, `dist` y reescritura de rutas a `index.html`).                      |
+| `index.html`                                                       | Punto de entrada HTML.                                                                                           |
+| `src/main.jsx`                                                     | Punto de montaje de React.                                                                                       |
+| `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales, catálogo (API) y Router.                           |
+| `src/app/routes/AppRoutes.jsx`                                     | Enrutamiento de la aplicación (`/login`, `/licitaciones`, etc.).                                                 |
+| `src/app/layouts/PublicLayout.jsx`                                 | Layout principal con Navbar, contenedor de páginas y modal de autenticación global.                              |
+| `src/index.css`                                                    | Tokens de tema, foco, tipografía y controles comunes.                                                            |
+| `src/features/auth/components/AuthModal.jsx`                       | Diálogo de inicio de sesión/registro con retorno de foco.                                                        |
+| `src/features/auth/components/AuthModal.css`                       | Estilos compartidos de acceso y del diálogo.                                                                     |
+| `src/features/auth/components/AuthForm.jsx`                        | Formulario compartido de acceso, registro y cuentas de ejemplo.                                                  |
+| `src/features/auth/components/AuthIntro.jsx`                       | Panel de contexto e ilustración de acceso.                                                                       |
+| `src/features/auth/pages/LoginPage.jsx`                            | Página completa de acceso simulado.                                                                              |
+| `src/features/auth/pages/LoginPage.css`                            | Estilos de la página de inicio de sesión.                                                                        |
+| `src/features/auth/hooks/useAuth.js`                               | Hook de consumo del contexto de autenticación.                                                                   |
+| `src/app/providers/AuthProvider.jsx`                               | Proveedor de estado de autenticación y del modal de acceso global.                                               |
+| `src/app/providers/FavoritosProvider.jsx`                          | Proveedor de favoritos con persistencia en localStorage por usuario.                                             |
+| `src/features/favoritos/hooks/useFavoritos.js`                     | Hook de consumo del contexto de favoritos.                                                                       |
+| `src/features/favoritos/data/favoritosStorage.js`                  | Lógica pura de persistencia de favoritos (lectura/escritura y altas/bajas).                                      |
+| `src/app/providers/ThemeProvider.jsx`                              | Proveedor de tema claro/oscuro con persistencia en localStorage.                                                 |
+| `src/shared/components/Navbar.jsx`                                 | Marca pública, navegación activa, tema y controles de sesión.                                                    |
+| `src/shared/components/Navbar.css`                                 | Estilos del Navbar.                                                                                              |
+| `src/shared/components/ThemeToggle.jsx`                            | Botón accesible de alternancia de tema claro/oscuro.                                                             |
+| `src/shared/components/ThemeToggle.css`                            | Estilos del botón de tema.                                                                                       |
+| `src/shared/hooks/useTheme.js`                                     | Hook de consumo del contexto de tema.                                                                            |
+| `src/shared/lib/persistenciaLocal.js`                              | Acceso seguro a `localStorage` (obtener, leer y escribir JSON) compartido por umbrales y favoritos.              |
+| `src/features/licitaciones/pages/LicitacionesExplorerPage.jsx`     | Página principal de exploración de licitaciones con selector de orden.                                           |
+| `src/features/licitaciones/pages/LicitacionDetailPage.jsx`         | Vista de detalle, fuente oficial, exportación a PDF y estado de cierre de una licitación.                        |
+| `src/features/licitaciones/services/exportLicitacionPdf.js`        | Punto de entrada del navegador: crea el Web Worker y delega en la orquestación.                                  |
+| `src/features/licitaciones/services/exportLicitacionPdfCore.js`    | Orquestación pura: crea el worker, recibe el PDF y dispara la descarga (testeable).                              |
+| `src/features/licitaciones/services/exportLicitacionPdf.worker.js` | Web Worker que genera el PDF con `jsPDF` fuera del hilo principal.                                               |
+| `src/features/licitaciones/services/buildLicitacionPdf.js`         | Lógica pura de generación del PDF de resumen (formato chileno y español).                                        |
+| `src/features/licitaciones/services/licitacionPdfFilename.js`      | Nombre de archivo estable `licitacion-<id>.pdf` sin dependencias.                                                |
+| `src/features/licitaciones/licitacionUtils.js`                     | Formateo compartido y regla para determinar si una licitación está cerrada.                                      |
+| `src/features/licitaciones/licitacionFilters.js`                   | Filtrado por título, región y tipo, y ordenamiento por fecha de cierre o monto.                                  |
+| `src/features/licitaciones/hooks/useLicitacionFilters.js`          | Hook de sincronización de filtros y orden con URL.                                                               |
+| `src/features/licitaciones/components/FilterSidebar.jsx`           | Barra lateral de filtros.                                                                                        |
+| `src/features/licitaciones/components/LicitacionCard.jsx`          | Fila de licitación con enlace al detalle y acción de favorito.                                                   |
+| `src/features/licitaciones/components/FavoritoButton.jsx`          | Acción compartida de guardar o quitar, según sesión y vigencia.                                                  |
+| `src/features/licitaciones/components/LicitacionList.jsx`          | Lista de licitaciones.                                                                                           |
+| `src/features/estadisticas/estadisticasUtils.js`                   | Cálculo puro de distribuciones por región, tipo y sector, y alternativa textual accesible.                       |
+| `src/features/estadisticas/components/DistribucionPanel.jsx`       | Panel de una distribución con barras y alternativa textual accesible.                                            |
+| `src/features/estadisticas/pages/PanelEstadisticasPage.jsx`        | Página `/estadisticas` que muestra las distribuciones del conjunto filtrado.                                     |
+| `src/features/favoritos/pages/MisFavoritosPage.jsx`                | Página de favoritos: listado, estado vacío y quitar licitaciones.                                                |
+| `src/features/favoritos/pages/MisFavoritosPage.css`                | Estilos de la página de favoritos.                                                                               |
+| `src/app/providers/UmbralesProvider.jsx`                           | Proveedor de umbrales de aprobación con persistencia en localStorage.                                            |
+| `src/features/aprobaciones/hooks/useUmbrales.js`                   | Hook de consumo del contexto de umbrales.                                                                        |
+| `src/features/aprobaciones/data/umbralesIniciales.js`              | Datos iniciales editables de umbrales por unidad (semilla de configuración).                                     |
+| `src/features/aprobaciones/data/umbralesStorage.js`                | Persistencia y normalización de umbrales en localStorage con CRUD por unidad.                                    |
+| `src/features/aprobaciones/umbralesUtils.js`                       | Lógica pura de etiquetas, validación, formato y resolución de umbrales.                                          |
+| `src/features/aprobaciones/components/UmbralForm.jsx`              | Formulario para crear o editar un umbral con validación de rango y nivel.                                        |
+| `src/features/aprobaciones/components/UnidadForm.jsx`              | Formulario para agregar una unidad con umbrales propios.                                                         |
+| `src/features/aprobaciones/components/UmbralesTable.jsx`           | Listado editable de umbrales por unidad con acciones de editar y eliminar.                                       |
+| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.jsx`    | Panel de configuración de umbrales con simulador de resolución inmediata.                                        |
+| `src/features/aprobaciones/pages/ConfiguracionUmbralesPage.css`    | Estilos del panel de configuración de umbrales.                                                                  |
+| `tests/smoke.test.js`                                              | Pruebas automatizadas de línea base reproducible.                                                                |
+| `tests/favoritosStorage.test.js`                                   | Pruebas de la persistencia de favoritos.                                                                         |
+| `tests/accesoLocalStorage.test.js`                                 | Caracterización del acceso a `localStorage` de umbrales y favoritos (disponible, ausente, bloqueado, sin cuota). |
+| `tests/persistenciaLocal.test.js`                                  | Pruebas del contrato de `persistenciaLocal.js`.                                                                  |
+| `tests/licitacionUtils.test.js`                                    | Pruebas de la regla de vigencia de las licitaciones.                                                             |
+| `tests/exportLicitacionPdf.test.js`                                | Pruebas de contenido del PDF, round-trip del worker y orquestación (errores y descarga).                         |
+| `docs/CriteriosAceptacion.md`                                      | Criterios de aceptación de las historias de usuario y trazabilidad con los REF.                                  |
+| `tests/licitacionFilters.test.js`                                  | Pruebas de búsqueda, combinación de filtros y ordenamiento.                                                      |
+| `tests/estadisticasUtils.test.js`                                  | Pruebas de distribuciones, derivación de sector, filtros y accesibilidad.                                        |
+| `docs/AI_context.md`                                               | Contexto técnico actualizado para asistentes de IA.                                                              |
+| `.github/workflows/verify.yml`                                     | Workflow de CI que ejecuta `npm run verify` en PR y push a `main` y `develop`.                                   |
+| `.github/workflows/ai-review.yml`                                  | Revisión automática de PRs e issues con DeepSeek (etiqueta `ai-review`).                                         |
+| `.github/scripts/ai-review.mjs`                                    | Script sin dependencias que redacta secretos y llama a la API de DeepSeek.                                       |
+| `.github/pull_request_template.md`                                 | Plantilla de Pull Request con checklist de verificación.                                                         |
+| `.github/CODEOWNERS`                                               | Asigna a QA (@StelleC) como propietario de código de todos los archivos.                                         |
+| `.github/ISSUE_TEMPLATE/`                                          | Plantillas de issues (HU, tarea/chore, bug) con DoR y DoD.                                                       |
+| `docs/api/*.md`                                                    | Documentación de las APIs del Entregable 2 (#43 y #44) y su trazabilidad con los CA.                             |
+| `docs/thunder-client/*.json`                                       | Colecciones exportadas de Thunder Client con los casos de prueba de cada API.                                    |
 
 ## 6. Stack y dependencias
 
@@ -192,11 +184,13 @@ Revisión realizada el 27 de octubre de 2026:
 - React Router DOM `7.18.2`.
 - PropTypes `15.8.1`.
 - jsPDF `4.2.1` (generación de PDF en cliente).
+- Lucide React `1.77.0` (iconografía vectorial accesible).
+- Motion `14.14.0` (animaciones con `<MotionConfig reducedMotion="user">`).
 - Vite `8.2.1`.
 - ESLint `10.8.1`.
 - Prettier `3.9.6`.
 - Módulos ES habilitados mediante `"type": "module"`.
-- Backend: Node.js con el módulo nativo `node:http` y `pg` `8.23.1` como única dependencia (driver de PostgreSQL); PostgreSQL 16; la configuración ESLint declara `globals.node` para `backend/**`.
+- PostgreSQL y el driver `pg` pertenecen al backend independiente; no son dependencias de este cliente.
 
 ## 7. Comandos de desarrollo
 
@@ -212,17 +206,9 @@ npm run verify
 npm run preview
 ```
 
-Backend (desde la carpeta `backend/`):
-
-```bash
-npm run dev   # servidor con recarga automática (node --watch)
-npm start     # servidor
-npm test      # pruebas de la API (también cubiertas por npm run verify desde la raíz)
-npm run db:migrate  # aplica las migraciones pendientes (requiere DATABASE_URL)
-npm run db:seed     # carga las licitaciones del mock en la base
-```
-
-PostgreSQL local (desde la raíz, con las variables `POSTGRES_*` en `.env`): `docker compose up -d`.
+Los comandos de API, migraciones y seed se ejecutan desde la raíz del
+repositorio independiente y se describen en su README. No se ejecutan desde este
+proyecto. El backend no necesita un build de Vite.
 
 ## 8. Convenciones observadas
 
@@ -240,10 +226,14 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 ## 9. Variables de entorno y seguridad
 
 - `.env` y otros archivos de entorno están excluidos por `.gitignore`.
-- `.env.example` (raíz) define `VITE_API_BASE_URL` (el frontend aún no la consume); `backend/.env.example` define `PORT` y `CORS_ORIGIN` y documenta, comentadas, `DATABASE_URL` (sin ella la API usa el mock), `DATABASE_URL_TEST` (debe terminar en `_test`) y `JWT_SECRET` (reservada). El `.env.example` raíz documenta además `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` y `POSTGRES_PORT` para Docker Compose.
+- `.env.example` documenta únicamente `VITE_API_BASE_URL`, la URL de la API que consume el cliente. Las variables PostgreSQL y del servidor se documentan en el backend independiente; no se trasladan archivos `.env` reales.
 - Las variables con prefijo `VITE_` quedan expuestas al cliente al compilar; nunca colocar secretos allí.
 - Antes de integrar una API se debe definir el contrato, el manejo de errores, estados de carga y configuración por entorno.
 - No incluir credenciales, tokens, datos personales reales ni valores de `.env` en código, commits o documentación.
+
+El revisor automático `.github/scripts/ai-review.mjs` limita la lectura a 75.000
+caracteres por archivo de contexto y 120.000 caracteres para el diff completo del
+PR. Estos límites se aplican antes de enviar el contenido redactado a DeepSeek.
 
 ## 10. Alcance y privacidad del contexto
 
@@ -307,9 +297,13 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 
 ## 13. Documentación relacionada
 
+- `docs/modelado/4-componentes.md` y su fuente PlantUML trazan los componentes e interfaces implementados en frontend y backend, incluidos los catálogos independientes, Web Storage, exportación PDF, repositorios en memoria/PostgreSQL y la integración HTTP aún no ensamblada.
+- `docs/separacion-backend.md` describe los límites de ambos repositorios y las verificaciones de separación. La API independiente usa PostgreSQL; el principal contiene solo el cliente y no lo consume todavía.
 - `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
 - `docs/depuracion.md` registra la depuración sistemática del filtro por palabra clave (método, evidencia con el depurador y prueba de regresión).
+- `docs/persistencia-local.md` documenta el módulo compartido de acceso a `localStorage`: contrato, ejemplo ejecutable, indicadores antes y después y deuda postergada.
 - `docs/ejercicio-2-2.md` documenta los contratos de filtrado, detalle de la API y alta de favoritos, con precondiciones, postcondiciones, invariantes, validaciones y evidencia reproducible sobre el mock. La ficha de filtrado también está disponible, sincronizada, en `docs/Ejercicio_2_2_Ficha_Operacion_1.docx` y `docs/Ejercicio_2_2_Ficha_Operacion_1.pdf`.
 - Este documento describe el estado técnico del repositorio; la guía de roles describe cómo se coordina el equipo. No deben confundirse responsabilidades de equipo con funcionalidades ya implementadas.
+- `docs/mockups/frontend-redesign/` contiene la referencia visual de Licitaciones UV y su documentación de diseño.
