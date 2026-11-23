@@ -1,13 +1,22 @@
 .theme-toggle {
   gap: 0.45rem;
-  padding-inline: 0.7rem;
-  font-weight: 500;
+  padding-inline: 0.8rem;
+  font-weight: 600;
 }
 
-.theme-toggle svg {
-  width: 1.1rem;
-  height: 1.1rem;
-  flex: 0 0 1.1rem;
+.theme-toggle__icon {
+  display: inline-flex;
+  width: 1.15rem;
+  height: 1.15rem;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1.15rem;
+}
+
+.theme-toggle__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .theme-toggle[aria-pressed='true'] {
@@ -19,10 +28,10 @@
 @media (max-width: 45rem) {
   .theme-toggle {
     min-width: 2.75rem;
-    padding-inline: 0.45rem;
+    padding-inline: 0.55rem;
   }
 
-  .theme-toggle span {
+  .theme-toggle > span:last-child {
     display: none;
   }
 }
