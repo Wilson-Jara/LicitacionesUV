@@ -154,6 +154,32 @@ export function obtenerLicitacionesFiltradas(licitaciones, filters) {
 }
 
 /**
+ * Calcula, en un solo lugar, el total y el porcentaje de cada categoría de una
+ * distribución. Lo usan las barras, la tabla accesible y la alternativa textual,
+ * para que las tres muestren siempre los mismos valores (#134).
+ *
+ * Regla: una cantidad no numérica cuenta como 0; el porcentaje es
+ * `Math.round(cantidad / total * 100)` y vale 0 cuando el total es 0. Cada
+ * porcentaje se redondea por separado, por lo que la suma visible puede ser 99 o 101.
+ *
+ * @param {Array<{clave?: string, etiqueta: string, cantidad: number}>} [datos=[]] - Categorías con su conteo.
+ * @returns {{total: number, filas: Array<{clave?: string, etiqueta: string, cantidad: number, porcentaje: number}>}}
+ *   Total de la distribución y cada categoría con su cantidad normalizada y su porcentaje entero.
+ */
+export function calcularFilasDistribucion(datos = []) {
+  const lista = Array.isArray(datos) ? datos : []
+  const cantidades = lista.map((item) => Number(item?.cantidad) || 0)
+  const total = cantidades.reduce((acc, cantidad) => acc + cantidad, 0)
+  const filas = lista.map((item, i) => ({
+    clave: item?.clave,
+    etiqueta: item?.etiqueta,
+    cantidad: cantidades[i],
+    porcentaje: total > 0 ? Math.round((cantidades[i] / total) * 100) : 0,
+  }))
+  return { total, filas }
+}
+
+/**
  * Genera una alternativa textual accesible para una distribución (CA3).
  * Incluye dimensión, categorías y valores.
  *
@@ -166,7 +192,7 @@ export function generarAlternativaTextual(dimension, datos = []) {
     return `Distribución por ${dimension}: sin datos disponibles.`
   }
 
-  const total = datos.reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0)
+  const { total } = calcularFilasDistribucion(datos)
   const partes = datos.map((item) => `${item.etiqueta}: ${item.cantidad}`).join('; ')
 
   return `Distribución por ${dimension}, total ${total}. ${partes}.`
