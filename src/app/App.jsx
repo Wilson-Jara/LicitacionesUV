@@ -1,4 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
+import { MotionConfig } from 'motion/react'
 import AppRoutes from './routes/AppRoutes.jsx'
 import { AuthProvider } from './providers/AuthProvider.jsx'
 import { FavoritosProvider } from './providers/FavoritosProvider.jsx'
@@ -7,23 +8,26 @@ import { ThemeProvider } from './providers/ThemeProvider.jsx'
 import './App.css'
 
 /**
- * Compone los proveedores de tema, sesión, favoritos y umbrales con el enrutador principal.
+ * Compone los proveedores de tema, sesión, favoritos, umbrales y configuración
+ * de movimiento accesible con el enrutador principal.
  *
  * @returns {JSX.Element} Aplicación lista para mostrar sus rutas.
  */
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <FavoritosProvider>
-          <UmbralesProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </UmbralesProvider>
-        </FavoritosProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <MotionConfig reducedMotion="user">
+      <ThemeProvider>
+        <AuthProvider>
+          <FavoritosProvider>
+            <UmbralesProvider>
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </UmbralesProvider>
+          </FavoritosProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </MotionConfig>
   )
 }
 

@@ -1,5 +1,10 @@
 import PropTypes from 'prop-types'
-import { formatRangoUmbral, getNivelAprobadorLabel, getTipoUnidadLabel } from '../umbralesUtils.js'
+import {
+  formatRangoUmbral,
+  getNivelAprobadorLabel,
+  getTipoUnidadLabel,
+  tieneMontosNoEnteros,
+} from '../umbralesUtils.js'
 
 /**
  * Listado editable de umbrales agrupados por unidad (US-10, CA1).
@@ -54,7 +59,15 @@ export function UmbralesTable({ unidades, onEditar, onEliminar, onEliminarUnidad
                 <tbody>
                   {unidad.umbrales.map((umbral) => (
                     <tr key={umbral.id}>
-                      <td className="umbrales-tabla__rango">{formatRangoUmbral(umbral)}</td>
+                      <td className="umbrales-tabla__rango">
+                        {formatRangoUmbral(umbral)}
+                        {tieneMontosNoEnteros(umbral) && (
+                          <span className="umbrales-tabla__aviso">
+                            Tiene montos con decimales guardados antes de la corrección. Edítalo
+                            para usar pesos enteros.
+                          </span>
+                        )}
+                      </td>
                       <td>
                         <span className={`nivel-badge nivel-badge--${umbral.nivelAprobador}`}>
                           {getNivelAprobadorLabel(umbral.nivelAprobador)}

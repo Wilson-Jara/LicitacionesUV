@@ -11,7 +11,11 @@ import {
   generarIdUnidad,
   getNivelAprobadorLabel,
   getTipoUnidadLabel,
+  idUnidadVigente,
+  mismosValoresUmbral,
+  parseMontoClp,
   resolverNivelAprobador,
+  tieneMontosNoEnteros,
   validarUmbral,
   validarUnidad,
 } from '../src/features/aprobaciones/umbralesUtils.js'
@@ -47,6 +51,18 @@ describe('umbralesUtils · formato', () => {
     assert.equal(formatRangoUmbral(UMBRAL_SIN_TOPE), '$50.000.001 o más')
   })
 
+  it('#125: marca y describe sin rangos imposibles los umbrales con decimales ya guardados', () => {
+    const legado = { montoMinimo: 0, montoMaximo: 0.5, nivelAprobador: 'jefe_unidad' }
+    assert.equal(tieneMontosNoEnteros(legado), true)
+    assert.equal(tieneMontosNoEnteros({ montoMinimo: 0.5, montoMaximo: null }), true)
+    assert.equal(tieneMontosNoEnteros(UMBRAL_JEFE), false)
+    assert.equal(tieneMontosNoEnteros(UMBRAL_SIN_TOPE), false)
+
+    const texto = formatRangoUmbral(legado)
+    assert.equal(texto.includes('-'), false, `sin montos negativos: ${texto}`)
+    assert.match(texto, /hasta antes de \$0,5/)
+  })
+
   it('formatea la marca de actualización y tolera valores ausentes o inválidos', () => {
     assert.equal(formatUmbralTimestamp(null), 'sin cambios registrados')
     assert.equal(formatUmbralTimestamp('no-es-fecha'), 'no-es-fecha')
@@ -74,12 +90,106 @@ describe('umbralesUtils · validación de umbrales', () => {
     )
   })
 
+  it('#125: rechaza montos fraccionarios y no representables con precisión', () => {
+    const base = { montoMinimo: 0, montoMaximo: null, nivelAprobador: 'jefe_unidad' }
+    assert.ok(validarUmbral({ ...base, montoMaximo: 0.5 }).montoMaximo, 'máximo 0,5')
+    assert.ok(validarUmbral({ ...base, montoMinimo: 0.5 }).montoMinimo, 'mínimo 0,5')
+    assert.ok(validarUmbral({ ...base, montoMaximo: 2 ** 53 }).montoMaximo, 'máximo 2^53')
+    assert.ok(validarUmbral({ ...base, montoMinimo: 2 ** 53 }).montoMinimo, 'mínimo 2^53')
+    assert.ok(validarUmbral({ ...base, montoMaximo: Infinity }).montoMaximo, 'máximo infinito')
+    assert.ok(validarUmbral({ ...base, montoMaximo: Number.NaN }).montoMaximo, 'máximo NaN')
+  })
+
+  it('#125: mantiene rangos válidos de un peso, sin tope y en el límite seguro', () => {
+    const unPeso = { montoMinimo: 5, montoMaximo: 6, nivelAprobador: 'jefe_unidad' }
+    assert.equal(esValido(validarUmbral(unPeso, [])), true)
+    const sinTope = { montoMinimo: 1, montoMaximo: null, nivelAprobador: 'rectoria' }
+    assert.equal(esValido(validarUmbral(sinTope, [])), true)
+    const limite = {
+      montoMinimo: 0,
+      montoMaximo: Number.MAX_SAFE_INTEGER,
+      nivelAprobador: 'rectoria',
+    }
+    assert.equal(esValido(validarUmbral(limite, [])), true)
+    const vacio = { montoMinimo: 5, montoMaximo: 5, nivelAprobador: 'jefe_unidad' }
+    assert.ok(validarUmbral(vacio, []).montoMaximo, 'un rango [5, 5) no contiene montos')
+  })
+
   it('detecta el solapamiento con otros umbrales de la unidad', () => {
     const solapado = { montoMinimo: 5000000, montoMaximo: 6000000, nivelAprobador: 'rectoria' }
     assert.ok(validarUmbral(solapado, [UMBRAL_JEFE]).montoMinimo)
 
     const contiguo = { montoMinimo: 10000001, montoMaximo: 20000001, nivelAprobador: 'rectoria' }
     assert.equal(esValido(validarUmbral(contiguo, [UMBRAL_JEFE])), true)
+  })
+})
+
+describe('umbralesUtils · lectura de montos en CLP (#125)', () => {
+  it('trata el campo vacío como ausencia de monto', () => {
+    assert.equal(parseMontoClp(''), null)
+    assert.equal(parseMontoClp('   '), null)
+    assert.equal(parseMontoClp(undefined), null)
+  })
+
+  it('lee enteros sin signo e ignora los espacios alrededor', () => {
+    assert.equal(parseMontoClp('0'), 0)
+    assert.equal(parseMontoClp(' 10000001 '), 10000001)
+  })
+
+  it('rechaza decimales, separadores, signos y notación científica', () => {
+    for (const texto of ['0,5', '0.5', '1.000.000', '1,000', '-1', '+1', '1e3', '12 000', 'abc']) {
+      assert.ok(Number.isNaN(parseMontoClp(texto)), `"${texto}" debe ser inválido`)
+    }
+  })
+
+  it('deja a la validación los enteros que superan el límite seguro', () => {
+    const leido = parseMontoClp('9007199254740993')
+    assert.equal(Number.isSafeInteger(leido), false)
+    assert.ok(
+      validarUmbral({ montoMinimo: 0, montoMaximo: leido, nivelAprobador: 'rectoria' }).montoMaximo,
+    )
+  })
+})
+
+describe('umbralesUtils · unidad seleccionada vigente (#125)', () => {
+  const unidades = [{ id: 'unidad-2' }, { id: 'unidad-3' }]
+
+  it('conserva la selección mientras la unidad exista', () => {
+    assert.equal(idUnidadVigente(unidades, 'unidad-3'), 'unidad-3')
+  })
+
+  it('pide una selección nueva si la unidad elegida se eliminó, sin pasar a otra', () => {
+    assert.equal(idUnidadVigente(unidades, 'unidad-1'), '')
+    assert.equal(idUnidadVigente([], 'unidad-1'), '')
+  })
+
+  it('tolera selecciones vacías y listas inválidas', () => {
+    assert.equal(idUnidadVigente(unidades, ''), '')
+    assert.equal(idUnidadVigente(null, 'unidad-2'), '')
+    assert.equal(idUnidadVigente(unidades, undefined), '')
+  })
+})
+
+describe('umbralesUtils · comparación de versiones de un umbral (#124)', () => {
+  it('considera iguales los mismos valores, con máximo vacío como sin tope', () => {
+    assert.equal(mismosValoresUmbral(UMBRAL_JEFE, { ...UMBRAL_JEFE, id: 'otro' }), true)
+    assert.equal(
+      mismosValoresUmbral(
+        { ...UMBRAL_SIN_TOPE, montoMaximo: undefined },
+        { ...UMBRAL_SIN_TOPE, montoMaximo: null },
+      ),
+      true,
+    )
+  })
+
+  it('detecta cambios en el mínimo, el máximo o el nivel, y entradas ausentes', () => {
+    assert.equal(mismosValoresUmbral(UMBRAL_JEFE, { ...UMBRAL_JEFE, montoMinimo: 1 }), false)
+    assert.equal(mismosValoresUmbral(UMBRAL_JEFE, { ...UMBRAL_JEFE, montoMaximo: 9 }), false)
+    assert.equal(
+      mismosValoresUmbral(UMBRAL_JEFE, { ...UMBRAL_JEFE, nivelAprobador: 'rectoria' }),
+      false,
+    )
+    assert.equal(mismosValoresUmbral(UMBRAL_JEFE, null), false)
   })
 })
 
