@@ -1,6 +1,5 @@
-import { useRef, useState } from 'react'
-import { Calendar, CheckCircle2, ChevronDown, SlidersHorizontal, Wallet } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
+import { Calendar, CheckCircle2, ChevronDown, SlidersHorizontal, Wallet } from 'lucide-react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
@@ -111,9 +110,9 @@ function LicitacionesExplorerPage() {
           <FilterSidebar
             searchRef={searchRef}
             onSearchSubmit={() => resultsHeading.current?.focus()}
+            sectores={sectoresDisponibles}
+            etiquetas={etiquetasDisponibles}
           />
-        <div id="filter-sidebar-wrapper" className={showMobileFilters ? 'filters-open' : ''}>
-          <FilterSidebar sectores={sectoresDisponibles} etiquetas={etiquetasDisponibles} />
         </div>
 
         <div className="explorer-main">

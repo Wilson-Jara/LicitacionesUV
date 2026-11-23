@@ -13,14 +13,15 @@
 
 ## 2. Estado verificado
 
-Revisión local del 8 de noviembre de 2026 tras separar la API:
+Estado verificado localmente el 22 de noviembre de 2026:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
-- `npm run test` ejecuta las 149 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run test` ejecuta las 200 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
-- `npm run verify` pasa: lint, formato, 149 pruebas y build. El contrato rechaza fechas imposibles, la medición de filtros es reproducible y las pruebas del PDF derivan la separación de `PDF_LAYOUT_MM` y cubren enlaces envueltos. La cobertura se debe recalcular tras estas entregas; son resultados locales, no del CI remoto.
+- `npm run verify` pasa: lint, formato, 200 pruebas y build. La cobertura local alcanza 98,42 % de líneas, 91,70 % de ramas y 97,95 % de funciones. `licitacionUtils.js` mantiene 100 % en las tres métricas.
+- El contrato rechaza fechas imposibles, la medición de filtros es reproducible y las pruebas del PDF derivan la separación de `PDF_LAYOUT_MM` y cubren enlaces envueltos.
 
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
 - Gestión de favoritos con `FavoritosProvider` y hook `useFavoritos`, persistidos en `localStorage` por usuario e incluyendo `fechaGuardado` por licitación.
@@ -42,8 +43,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
   - `profileStorage.js` guarda el perfil por cuenta en `localStorage` (`licitacionesuv-perfil:<correo de acceso>`). El correo de acceso conserva la identidad de la cuenta y sus favoritos.
   - La sesión simulada se conserva al recargar la pestaña mediante `sessionStorage` (`licitacionesuv-sesion-demo`), con el nombre y el correo de acceso. Cerrar sesión elimina esa entrada.
 - **Explorador de Licitaciones:**
-  - Cabecera con búsqueda por título, atajos de ejemplo y aviso explícito de catálogo ficticio. El término, la región, el sector, la etiqueta, el tipo y el orden siguen en la URL.
-  - Barra lateral (`FilterSidebar`) con selección de región, sector y etiqueta, radios de tipo y filtros aplicados que se pueden quitar individualmente.
+  - Barra lateral (`FilterSidebar`) con búsqueda por título, atajos de ejemplo, selección de región, sector y etiqueta, botones de modalidad y aviso de catálogo ficticio. Los filtros aplicados se pueden quitar individualmente y, junto con el orden, se conservan en la URL.
   - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
   - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, sector, etiquetas, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
   - Lista semántica con contador accesible, estado vacío y restablecimiento de filtros. En pantallas estrechas, los filtros se pueden desplegar.

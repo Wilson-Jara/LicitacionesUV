@@ -97,13 +97,12 @@
   gap: 0.35rem;
 }
 
-.licitacion-card__budget {
 .licitacion-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   padding: 0;
-  margin: 0.45rem 0 0;
+  margin: 0;
   list-style: none;
 }
 
@@ -112,10 +111,10 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--text);
-  font-size: 0.8125rem;
+  font-size: 1rem;
 }
 
-.licitacion-card-data {
+.licitacion-card__budget {
   display: grid;
   justify-items: end;
   gap: 0.15rem;

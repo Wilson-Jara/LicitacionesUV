@@ -52,7 +52,16 @@ export function LicitacionCard({ licitacion, onRemove }) {
               <MapPin size={16} aria-hidden="true" />
               <span>{getRegionLabel(region)}</span>
             </span>
+            {sector && <span>{getSectorLabel(sector)}</span>}
           </div>
+
+          {etiquetas.length > 0 && (
+            <ul className="licitacion-tags" aria-label="Etiquetas">
+              {etiquetas.map((etiqueta) => (
+                <li key={etiqueta}>{getEtiquetaLabel(etiqueta)}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="licitacion-card__budget">
@@ -66,12 +75,6 @@ export function LicitacionCard({ licitacion, onRemove }) {
       <footer className="licitacion-card__footer">
         <p className="licitacion-card__closing">
           Cierra: <time dateTime={closingDate}>{formatLicitacionDate(closingDate)}</time>
-    <article className="licitacion-card">
-      <div className="licitacion-card-heading">
-        <p className="licitacion-card-meta">
-          <strong>{getTypeLabel(type)}</strong>
-          <span>{getRegionLabel(region)}</span>
-          {sector && <span>{getSectorLabel(sector)}</span>}
         </p>
         <div className="licitacion-card-actions">
           <FavoritoButton licitacion={licitacion} compact onRemove={onRemove} />
@@ -83,22 +86,6 @@ export function LicitacionCard({ licitacion, onRemove }) {
             <span>Ver detalle</span>
             <ArrowRight size={17} aria-hidden="true" />
           </Link>
-        </h3>
-        <p className="licitacion-institution">{institution}</p>
-        {etiquetas.length > 0 && (
-          <ul className="licitacion-tags" aria-label="Etiquetas">
-            {etiquetas.map((etiqueta) => (
-              <li key={etiqueta}>{getEtiquetaLabel(etiqueta)}</li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <dl className="licitacion-card-data">
-        <div>
-          <dt>Cierre</dt>
-          <dd>
-            <time dateTime={closingDate}>{formatLicitacionDate(closingDate)}</time>
-          </dd>
         </div>
       </footer>
     </article>

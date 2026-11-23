@@ -15,8 +15,7 @@ const tipos = [
 
 const ejemplos = ['Mantenimiento', 'Software', 'Consultoría']
 
-export function FilterSidebar({ searchRef, onSearchSubmit }) {
-export function FilterSidebar({ sectores = [], etiquetas = [] }) {
+export function FilterSidebar({ searchRef, onSearchSubmit, sectores = [], etiquetas = [] }) {
   const { filters, setFilter, clearFilters } = useLicitacionFilters()
   const activeCount = countActiveFilters(filters)
   const activos = [
@@ -117,6 +116,7 @@ export function FilterSidebar({ sectores = [], etiquetas = [] }) {
           ))}
         </select>
       </div>
+
       <div className="filter-group">
         <label htmlFor="etiqueta">Etiqueta</label>
         <select
@@ -132,6 +132,7 @@ export function FilterSidebar({ sectores = [], etiquetas = [] }) {
           ))}
         </select>
       </div>
+
       <fieldset className="filter-type">
         <legend>Modalidad</legend>
         <div className="filter-chips" role="group" aria-label="Modalidad de licitación">
@@ -144,14 +145,6 @@ export function FilterSidebar({ sectores = [], etiquetas = [] }) {
                 className="filter-chip"
                 aria-pressed={selected}
                 onClick={() => setFilter('tipo', value)}
-                aria-label={'Quitar filtro de ' + label + ': ' + value}
-                onClick={() => {
-                  setFilter(key, '')
-                  const target = ['keyword', 'region', 'sector', 'etiqueta'].includes(key)
-                    ? key
-                    : 'filter-reset'
-                  document.getElementById(target)?.focus()
-                }}
               >
                 {selected && <Check size={15} aria-hidden="true" />}
                 <span>{label}</span>
@@ -186,8 +179,7 @@ export function FilterSidebar({ sectores = [], etiquetas = [] }) {
                     aria-label={'Quitar filtro de ' + label + ': ' + value}
                     onClick={() => {
                       setFilter(key, '')
-                      const target =
-                        key === 'keyword' ? 'keyword' : key === 'region' ? 'region' : 'filter-reset'
+                      const target = key === 'tipo' ? 'filter-reset' : key
                       document.getElementById(target)?.focus()
                     }}
                   >
