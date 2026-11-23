@@ -1,6 +1,16 @@
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import { motion as Motion } from 'motion/react'
+import {
+  AlertTriangle,
+  Archive,
+  ArrowLeft,
+  CheckCircle2,
+  ExternalLink,
+  FileDown,
+  Loader2,
+} from 'lucide-react'
 import FavoritoButton from '../components/FavoritoButton.jsx'
 import NotFoundPage from '../../../app/routes/NotFoundPage.jsx'
 import mockData from '../data/licitaciones.mock.json'
@@ -25,7 +35,7 @@ function LicitacionDetailPage() {
 
   if (!licitacion) return <NotFoundPage />
 
-  return <LicitacionDetail licitacion={licitacion} />
+  return <LicitacionDetail key={licitacion.id} licitacion={licitacion} />
 }
 
 /**
@@ -69,15 +79,26 @@ function LicitacionDetail({ licitacion }) {
         className="licitacion-detail-back"
         to={{ pathname: '/licitaciones', search: state?.explorerSearch ?? '' }}
       >
-        ← Volver a licitaciones
+        <ArrowLeft size={18} aria-hidden="true" />
+        <span>Volver a licitaciones</span>
       </Link>
 
-      <article className="licitacion-detail-card">
+      <Motion.article
+        className="licitacion-detail-card"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+      >
         <header className="licitacion-detail-header">
           <div className="licitacion-detail-badges">
             <span className="licitacion-detail-type">{getTypeLabel(licitacion.type)}</span>
             <span className="licitacion-status" data-closed={cerrada}>
-              {cerrada ? 'Cerrada' : 'Vigente'}
+              {cerrada ? (
+                <Archive size={16} aria-hidden="true" />
+              ) : (
+                <CheckCircle2 size={16} aria-hidden="true" />
+              )}
+              <span>{cerrada ? 'Cerrada' : 'Vigente'}</span>
             </span>
           </div>
           <h1>{licitacion.title}</h1>
@@ -98,7 +119,11 @@ function LicitacionDetail({ licitacion }) {
             </div>
             <div>
               <dt>Fecha de cierre</dt>
-              <dd>{formatLicitacionDate(licitacion.closingDate)}</dd>
+              <dd>
+                <time dateTime={licitacion.closingDate}>
+                  {formatLicitacionDate(licitacion.closingDate)}
+                </time>
+              </dd>
             </div>
             <div>
               <dt>Tipo</dt>
@@ -117,7 +142,8 @@ function LicitacionDetail({ licitacion }) {
               target="_blank"
               rel="noreferrer"
             >
-              Ver fuente oficial <span aria-hidden="true">↗</span>
+              <span>Ver fuente oficial</span>
+              <ExternalLink size={17} aria-hidden="true" />
               <span className="sr-only"> (abre en una pestaña nueva)</span>
             </a>
             <button
@@ -126,14 +152,20 @@ function LicitacionDetail({ licitacion }) {
               onClick={handleExportarPdf}
               disabled={exportando}
             >
-              {exportando ? 'Generando PDF…' : 'Exportar PDF'}
+              {exportando ? (
+                <Loader2 size={17} aria-hidden="true" className="icon-spin" />
+              ) : (
+                <FileDown size={17} aria-hidden="true" />
+              )}
+              <span>{exportando ? 'Generando PDF…' : 'Exportar PDF'}</span>
             </button>
             <FavoritoButton licitacion={licitacion} />
           </div>
 
           {exportError && (
-            <p className="licitacion-detail-error" role="status">
-              {exportError}
+            <p className="licitacion-detail-error" role="alert">
+              <AlertTriangle size={18} aria-hidden="true" />
+              <span>{exportError}</span>
             </p>
           )}
 
@@ -143,7 +175,7 @@ function LicitacionDetail({ licitacion }) {
             </p>
           )}
         </div>
-      </article>
+      </Motion.article>
     </section>
   )
 }
