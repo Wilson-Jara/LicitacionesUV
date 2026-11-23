@@ -41,6 +41,10 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
   - `AuthModal` y `LoginPage` (`/login`) comparten `AuthForm` y el panel ilustrado `AuthIntro`. Ambos identifican la sesión como simulada y permiten rellenar datos ficticios de ejemplo.
   - Se conserva el inicio de sesión, el registro, la visibilidad de contraseña, la validación de campos y el acceso simulado con Google y GitHub.
   - El modal usa el elemento nativo `dialog`, mantiene el foco durante la navegación por tabulador y restaura el foco al control de apertura al cerrar. Si ese control desaparece, enfoca el contenido principal.
+- **Perfil de usuario (`/perfil`):**
+  - Con sesión de prueba, permite editar el nombre y el correo de contacto. El formulario anuncia los errores y confirma los cambios guardados. Sin sesión, la ruta invita a iniciar sesión mediante el modal de acceso.
+  - `profileStorage.js` guarda el perfil por cuenta en `localStorage` (`licitacionesuv-perfil:<correo de acceso>`). El correo de acceso conserva la identidad de la cuenta y sus favoritos.
+  - La sesión simulada se conserva al recargar la pestaña mediante `sessionStorage` (`licitacionesuv-sesion-demo`), con el nombre y el correo de acceso. Cerrar sesión elimina esa entrada.
 - **Explorador de Licitaciones:**
   - Cabecera con búsqueda por título, atajos de ejemplo y aviso explícito de catálogo ficticio. El término, la región, el sector, la etiqueta, el tipo y el orden siguen en la URL.
   - Barra lateral (`FilterSidebar`) con selección de región, sector y etiqueta, radios de tipo y filtros aplicados que se pueden quitar individualmente.
@@ -87,7 +91,7 @@ Revisión local del 8 de noviembre de 2026 tras separar la API:
 1. `index.html` define el documento HTML, favicon y contenedor `#root`.
 2. `src/main.jsx` importa `index.css` y monta `<App />`.
 3. `src/app/App.jsx` envuelve la aplicación en `ThemeProvider`, `AuthProvider`, `FavoritosProvider`, `UmbralesProvider` y `BrowserRouter`.
-4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/configuracion/umbrales`, 404).
+4. `src/app/routes/AppRoutes.jsx` gestiona las rutas (`/login`, `/perfil`, `/licitaciones`, `/licitaciones/:id`, `/favoritos`, `/estadisticas`, `/configuracion/umbrales`, 404).
 5. `src/app/layouts/PublicLayout.jsx` monta la barra de navegación, la ruta activa y el diálogo común de acceso.
 6. `src/index.css` define los tokens de ambos temas, la tipografía, el foco y los controles comunes.
 7. La API se inicia desde el repositorio independiente, por defecto en `http://localhost:3000`. El frontend Vite usa `http://localhost:5173` y conserva sus datos locales.
