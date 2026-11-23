@@ -2,10 +2,11 @@ import { useMemo, useRef, useState } from 'react'
 import { Calendar, CheckCircle2, ChevronDown, SlidersHorizontal, Wallet } from 'lucide-react'
 import { LicitacionList } from '../components/LicitacionList'
 import { FilterSidebar } from '../components/FilterSidebar'
+import { EstadoCatalogo } from '../components/EstadoCatalogo'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
+import { useLicitaciones } from '../hooks/useLicitaciones'
 import { countActiveFilters, filterLicitaciones, sortLicitaciones } from '../licitacionFilters.js'
 import { formatLicitacionAmount, isLicitacionCerrada } from '../licitacionUtils.js'
-import mockData from '../data/licitaciones.mock.json'
 import { getSectorLabel, getEtiquetaLabel } from '../categorias.js'
 import './LicitacionesExplorerPage.css'
 
@@ -59,11 +60,12 @@ function LicitacionesExplorerPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const searchRef = useRef(null)
   const resultsHeading = useRef(null)
-  // Las opciones se derivan de la fuente activa; al migrar a la API solo cambia
-  // `mockData`, sin tocar los desplegables.
-  const sectoresDisponibles = useMemo(() => listarSectores(mockData), [])
-  const etiquetasDisponibles = useMemo(() => listarEtiquetas(mockData), [])
-  const results = sortLicitaciones(filterLicitaciones(mockData, filters), filters.sort)
+  // El catálogo llega de la API una sola vez; filtros, orden y opciones de los
+  // desplegables se calculan en el navegador sobre esa lista.
+  const { licitaciones, estado, recargar } = useLicitaciones()
+  const sectoresDisponibles = useMemo(() => listarSectores(licitaciones), [licitaciones])
+  const etiquetasDisponibles = useMemo(() => listarEtiquetas(licitaciones), [licitaciones])
+  const results = sortLicitaciones(filterLicitaciones(licitaciones, filters), filters.sort)
   const activeCount = countActiveFilters(filters)
   const vigentesCount = results.filter((item) => !isLicitacionCerrada(item.closingDate)).length
   const totalAmount = results.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
@@ -122,7 +124,7 @@ function LicitacionesExplorerPage() {
                 Explorador de licitaciones
               </h1>
               <p role="status">
-                {results.length} de {mockData.length} convocatorias visibles
+                {results.length} de {licitaciones.length} convocatorias visibles
               </p>
             </div>
             <div className="sort-control">
@@ -189,7 +191,11 @@ function LicitacionesExplorerPage() {
             </div>
           </dl>
 
-          <LicitacionList licitaciones={results} onResetFilters={reset} />
+          {estado === 'listo' ? (
+            <LicitacionList licitaciones={results} onResetFilters={reset} />
+          ) : (
+            <EstadoCatalogo estado={estado} onReintentar={recargar} />
+          )}
         </div>
       </div>
     </section>
