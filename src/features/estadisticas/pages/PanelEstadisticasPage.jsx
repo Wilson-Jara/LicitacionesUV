@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useLicitacionFilters } from '../../licitaciones/hooks/useLicitacionFilters'
-import mockData from '../../licitaciones/data/licitaciones.mock.json'
+import { useLicitaciones } from '../../licitaciones/hooks/useLicitaciones'
+import { EstadoCatalogo } from '../../licitaciones/components/EstadoCatalogo'
 import { calcularDistribuciones, obtenerLicitacionesFiltradas } from '../estadisticasUtils.js'
 import { DistribucionPanel } from '../components/DistribucionPanel'
 import './PanelEstadisticasPage.css'
@@ -16,10 +17,11 @@ import './PanelEstadisticasPage.css'
 function PanelEstadisticasPage() {
   const { filters } = useLicitacionFilters()
   const { search } = useLocation()
+  const { licitaciones, estado, recargar } = useLicitaciones()
 
   const licitacionesFiltradas = useMemo(
-    () => obtenerLicitacionesFiltradas(mockData, filters),
-    [filters],
+    () => obtenerLicitacionesFiltradas(licitaciones, filters),
+    [licitaciones, filters],
   )
 
   const distribuciones = useMemo(
@@ -38,12 +40,14 @@ function PanelEstadisticasPage() {
         </p>
         <p className="estadisticas__contador" role="status">
           Mostrando <strong>{licitacionesFiltradas.length}</strong> de{' '}
-          <strong>{Array.isArray(mockData) ? mockData.length : 0}</strong> licitaciones
+          <strong>{licitaciones.length}</strong> licitaciones
         </p>
         <Link to={{ pathname: '/licitaciones', search }}>Ajustar filtros en el explorador</Link>
       </header>
 
-      {sinResultados ? (
+      {estado !== 'listo' ? (
+        <EstadoCatalogo estado={estado} onReintentar={recargar} />
+      ) : sinResultados ? (
         <div className="estadisticas__vacio" role="status" aria-live="polite">
           <h2>Sin resultados con los filtros actuales</h2>
           <p>Ajusta o limpia los filtros del explorador para ver las distribuciones.</p>
