@@ -294,6 +294,7 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 
 ## 13. Documentación relacionada
 
+- `docs/modelado/README.md` reúne los diagramas UML del sistema. Los casos de uso distinguen la SPA del consumo directo de la API.
 - `docs/separacion-backend.md` describe los límites de ambos repositorios y las verificaciones de separación. La API independiente usa PostgreSQL; el principal contiene solo el cliente y no lo consume todavía.
 - `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
