@@ -6,6 +6,13 @@ Plataforma web desarrollada en **React + Vite** diseñada para centralizar, filt
 
 Este repositorio contiene el frontend. La API y PostgreSQL viven en [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend). La separación y sus verificaciones están documentadas en [Separación del backend](docs/separacion-backend.md).
 
+**Si es tu primera vez con el proyecto**, sigue este orden: [Requisitos previos](#️-requisitos-previos) → [Instalación](#️-instalación-y-puesta-en-marcha) → [Ejemplo de ejecución](#ejemplo-de-ejecución-y-resultado-esperado) → [Problemas frecuentes](#problemas-frecuentes) → [Cómo extender y probar un cambio](#cómo-extender-y-probar-un-cambio). Todas las evidencias están enlazadas en [Evidencias y documentación](#evidencias-y-documentación).
+
+| Versión publicada         | URL                                                      |
+| ------------------------- | -------------------------------------------------------- |
+| Frontend (Vercel)         | <https://licitacionesuv.vercel.app>                      |
+| API (Render, plan gratis) | <https://licitacionesuv-backend.onrender.com/api/health> |
+
 ---
 
 ## 📌 Descripción del sistema
@@ -212,13 +219,19 @@ La aplicación se construye como una **SPA en React** organizada bajo el enfoque
 
 ## 🛠️ Requisitos Previos
 
-Para ejecutar el entorno local, necesitas:
+Estas son las versiones con las que el proyecto se construye y se prueba. Si usas las mismas, deberías obtener exactamente los resultados descritos en este README.
 
-- **Runtime:** Node.js 20.19+ o 22.12+
-- **Gestor de paquetes:** npm 10+
-- **Stack principal:** React 19, Vite 8, ESLint 10
-- **Pruebas:** runner nativo de Node (`node --test`)
-- **Editor recomendado:** Visual Studio Code
+| Herramienta | Versión verificada                   | Mínimo y notas                                                                                                                     |
+| ----------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Node.js     | **22.22.0** (la que usa el CI)       | 20.19 alcanza para `dev`, `build` y `test`; `npm run test:coverage` necesita **22.8 o superior** porque usa umbrales de cobertura. |
+| npm         | 10.x                                 | Viene con Node.js 22.                                                                                                              |
+| Git         | 2.x                                  | Con fines de línea LF (ver [Problemas frecuentes](#problemas-frecuentes)).                                                         |
+| Navegador   | Chrome o Edge actualizado            | La app usa `sessionStorage` (sesión de prueba), `localStorage` (favoritos, umbrales) y Web Workers (PDF).                          |
+| Sistema     | Windows 10/11 (equipo) y Ubuntu (CI) | Los comandos de este README funcionan en PowerShell y en bash.                                                                     |
+| Backend     | Repositorio `LicitacionesUV-backend` | Necesario para ver licitaciones: el frontend pide el catálogo a la API.                                                            |
+| Editor      | Visual Studio Code (recomendado)     | Con la extensión de Prettier, para formatear igual que el CI.                                                                      |
+
+**Stack principal:** React 19, Vite 8, React Router 7, jsPDF 4, Motion 14, ESLint 10 y Prettier 3. Las versiones exactas están en `package.json` y `package-lock.json`. Pruebas con el runner nativo de Node (`node --test`).
 
 ### Wrapper y línea base reproducible
 
@@ -246,13 +259,15 @@ node --version
 npm --version
 ```
 
-Si tu versión de Node.js es menor a la 20.19, actualízala antes de continuar.
+Debe mostrar `v22.x` (idealmente `v22.22.0`) y `10.x`. Si tu versión de Node.js es menor a la 22.8, actualízala antes de continuar: con una más antigua el proyecto arranca, pero `npm run test:coverage` falla.
 
 ### 3. Instalar dependencias
 
 ```bash
-npm install
+npm ci
 ```
+
+`npm ci` instala exactamente las versiones de `package-lock.json`. Úsalo también **cada vez que hagas `git pull`**: si otra persona agregó una dependencia (por ejemplo `motion`), tu `node_modules` queda desactualizado y la app no arranca. `npm install` solo se usa cuando quieres agregar o actualizar una dependencia a propósito.
 
 ### 4. Comando único integrador
 
@@ -357,6 +372,138 @@ anterior.
   npm run verify
   npx vercel --prod
   ```
+
+---
+
+## Ejemplo de ejecución y resultado esperado
+
+Recorrido completo en local, con dos terminales. Lo que aparece en «Resultado esperado» es lo que debes ver; si algo no coincide, revisa [Problemas frecuentes](#problemas-frecuentes).
+
+**Terminal 1 · API** (desde la raíz de `LicitacionesUV-backend`):
+
+```bash
+npm ci
+npm start
+```
+
+Resultado esperado:
+
+```
+DATABASE_URL no definida: la API usa el catálogo propio en memoria
+API LicitacionesUV escuchando en http://localhost:3000
+```
+
+**Terminal 2 · Frontend** (desde la raíz de este repositorio):
+
+```bash
+npm ci
+npm run dev
+```
+
+Resultado esperado: Vite muestra `Local: http://localhost:5173/`.
+
+**En el navegador:**
+
+| Paso | Acción                                                    | Resultado esperado                                                                                                                            |
+| ---- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Abrir <http://localhost:3000/api/health>                  | `{"status":"ok","service":"licitacionesuv-backend",...}`                                                                                      |
+| 2    | Abrir <http://localhost:5173/licitaciones>                | El contador dice **«6 de 6 convocatorias visibles»**.                                                                                         |
+| 3    | Escribir `software` en el buscador                        | Queda **1** resultado: «Renovación de licencias de software» (`licitacion-005`). La URL incluye `?keyword=software`.                          |
+| 4    | Abrir <http://localhost:5173/licitaciones/licitacion-999> | Se muestra la página «no encontrada», porque la API responde `404 {"error":"Licitación no encontrada"}`.                                      |
+| 5    | Detener la API (Ctrl+C en la terminal 1) y recargar       | Aparece **«No se pudo cargar el catálogo»** con el botón **«Reintentar»**. Al volver a levantar la API y pulsar «Reintentar», carga de nuevo. |
+
+**Verificación completa** (desde este repositorio):
+
+```bash
+npm run verify
+npm run test:coverage
+```
+
+Resultado esperado: `verify` termina sin errores (ESLint y Prettier no informan problemas, el resumen de pruebas termina en `# fail 0` y Vite muestra `✓ built in ...`), y `test:coverage` imprime la tabla de cobertura sin el mensaje `does not meet threshold`. Qué mide y por qué está en [docs/cobertura.md](docs/cobertura.md).
+
+---
+
+## Problemas frecuentes
+
+| Síntoma                                                                                                          | Causa                                                                                                                                                                                                                                                                      | Solución                                                                                                                                                                                     |
+| ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vite muestra un error del tipo `Failed to resolve import "motion/react"` y la app no carga.                      | `node_modules` desactualizado: hiciste `git pull` y alguien agregó una dependencia.                                                                                                                                                                                        | Ejecutar `npm ci` y volver a iniciar `npm run dev`.                                                                                                                                          |
+| El backend se detiene con `Cannot find package 'pg' imported from .../src/db/pool.js`.                           | Lo mismo en el repositorio del backend: falta instalar sus dependencias.                                                                                                                                                                                                   | En la raíz de `LicitacionesUV-backend`, ejecutar `npm ci`.                                                                                                                                   |
+| En local aparece «No se pudo cargar el catálogo».                                                                | La API no está levantada o `VITE_API_BASE_URL` apunta a otra dirección.                                                                                                                                                                                                    | Levantar la API (`npm start` en el backend), comprobar <http://localhost:3000/api/health> y pulsar «Reintentar». Si cambiaste `.env`, reiniciar `npm run dev`.                               |
+| En <https://licitacionesuv.vercel.app> aparece «No se pudo cargar el catálogo», sobre todo en la primera visita. | **Render dormido:** en el plan gratuito, la API se suspende tras un rato sin visitas. La primera petición responde `503` (`SERVICE WAKING UP`) mientras arranca, y tarda alrededor de un minuto.                                                                           | Abrir <https://licitacionesuv-backend.onrender.com/api/health>, esperar a que responda `{"status":"ok",...}` y pulsar «Reintentar». Antes de una demo, hacerlo unos minutos antes.           |
+| La consola del navegador dice `blocked by CORS policy`.                                                          | La API acepta un solo origen (`CORS_ORIGIN`, por defecto `http://localhost:5173`). Si el puerto 5173 estaba ocupado, Vite abre la app en `5174` y la API la rechaza. Tampoco se puede usar la API de Render desde `localhost`, porque su origen permitido es el de Vercel. | Cerrar la otra instancia de Vite para que vuelva a `5173`, o poner la URL que muestra Vite en `CORS_ORIGIN` del `.env` del backend y reiniciarlo. En desarrollo, usar la API local.          |
+| `npm run format:check` marca con `[warn]` archivos que no modificaste (Windows).                                 | **Fines de línea CRLF:** Git o el editor guardaron los archivos con `CRLF`, y Prettier exige `LF` (`.gitattributes` fija `eol=lf`).                                                                                                                                        | Ejecutar `npm run format` y comprobar con `git status` que solo cambian los fines de línea. Para que no vuelva a pasar: `git config core.autocrlf false` y, en VS Code, `"files.eol": "\n"`. |
+| `npm run test:coverage` termina con `bad option: --test-coverage-lines`.                                         | Node.js anterior a 22.8: los umbrales de cobertura no existen en esa versión.                                                                                                                                                                                              | Instalar Node.js 22 LTS (`node --version` debe mostrar `v22.x`).                                                                                                                             |
+| La API no arranca: `listen EADDRINUSE: address already in use 0.0.0.0:3000`.                                     | Ya hay otra API (u otro programa) usando el puerto 3000.                                                                                                                                                                                                                   | Cerrar la otra terminal, o usar `PORT=3001` en el `.env` del backend y `VITE_API_BASE_URL=http://localhost:3001/api` en el `.env` del frontend.                                              |
+| PowerShell responde que `test:coverage` (o `verify`) no se reconoce como comando.                                | Son scripts de `package.json`, no programas instalados.                                                                                                                                                                                                                    | Anteponer `npm run`: `npm run test:coverage`.                                                                                                                                                |
+
+---
+
+## Cómo extender y probar un cambio
+
+### Dónde va cada cosa
+
+El frontend está organizado por funcionalidad (`src/features/<funcionalidad>/`). Dentro de cada una, las reglas de negocio viven en funciones puras (`.js`) separadas de los componentes (`.jsx`), porque así se pueden probar con `node --test` sin navegador.
+
+| Si quieres cambiar…                             | Edita                                                                                                           | Y prueba en                                                                                          |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Una regla de búsqueda, filtro u orden           | `src/features/licitaciones/licitacionFilters.js`                                                                | `tests/licitacionFilters.test.js`                                                                    |
+| Formatos de monto o fecha, o la regla de cierre | `src/features/licitaciones/licitacionUtils.js`                                                                  | `tests/licitacionUtils.test.js`                                                                      |
+| Cómo se llama a la API                          | `src/features/licitaciones/services/licitacionesApi.js`                                                         | `tests/licitacionesApi.test.js` (usa un `fetch` falso, no necesita la API levantada)                 |
+| Los campos de una licitación (si cambia la API) | `src/features/licitaciones/contratoLicitaciones.js` y el backend                                                | `tests/licitacionesDataContract.test.js`                                                             |
+| Favoritos o umbrales guardados en el navegador  | `src/features/favoritos/data/` o `src/features/aprobaciones/data/`, sobre `src/shared/lib/persistenciaLocal.js` | `tests/favoritosStorage.test.js`, `tests/umbralesStorage.test.js`, `tests/persistenciaLocal.test.js` |
+| Una pantalla o un componente                    | El `.jsx` de la carpeta de la funcionalidad y su `.css`                                                         | A mano con `npm run dev` y `npm run build`                                                           |
+| Una ruta nueva                                  | `src/app/routes/AppRoutes.jsx` (y el enlace en `src/shared/components/Navbar.jsx`)                              | A mano, recargando la ruta en `npm run dev`                                                          |
+
+### Paso a paso
+
+1. **Rama desde `develop` actualizado:**
+   ```bash
+   git checkout develop
+   git pull
+   npm ci
+   git checkout -b feat/<numero-issue>-<descripcion-corta>
+   ```
+   Prefijos: `feat/` para funcionalidades, `fix/` para correcciones, `docs/` para documentación (ver [Flujo de Trabajo en Git](#-flujo-de-trabajo-en-git)).
+2. **Escribe primero la prueba** del comportamiento nuevo en el archivo de `tests/` que corresponda, con un caso válido, uno de límite y uno de error. Ejecútala sola y comprueba que **falla**:
+   ```bash
+   node --test tests/licitacionFilters.test.js
+   ```
+3. **Implementa el cambio** y repite el comando hasta que pase.
+4. **Prueba a mano** con `npm run dev` (y la API levantada) el flujo afectado.
+5. **Verifica todo** antes de subir:
+   ```bash
+   npm run format
+   npm run verify
+   npm run test:coverage
+   ```
+6. **Commit y Pull Request hacia `develop`**, con la plantilla del repositorio. El CI repite `verify` y la cobertura; el PR necesita la aprobación de QA y de otro integrante.
+7. **Después del merge a `main`**, volver a desplegar el frontend (ver [Quién vuelve a desplegar y cuándo](#quién-vuelve-a-desplegar-y-cuándo)).
+
+**Ejemplo real de este ciclo:** la corrección de `useAuth` siguió exactamente estos pasos, del Issue #114 al Release `v1.0.0`. Está registrada en [Taller de Gestión de la Configuración](#actividad--taller-de-gestión-de-la-configuración-del-issue-al-release).
+
+---
+
+## Evidencias y documentación
+
+| Tema                                                    | Documento                                                                                                                 |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Contexto técnico y reglas para IA                       | [docs/AI_context.md](docs/AI_context.md) · [AGENTS.md](AGENTS.md)                                                         |
+| Arquitectura y separación del backend                   | [docs/Arquitectura.md](docs/Arquitectura.md) · [docs/separacion-backend.md](docs/separacion-backend.md)                   |
+| Modelado (casos de uso, clases, secuencia, componentes) | [docs/modelado/](docs/modelado/README.md)                                                                                 |
+| Criterios de aceptación                                 | [docs/CriteriosAceptacion.md](docs/CriteriosAceptacion.md)                                                                |
+| Requisitos extrafuncionales y calidad                   | [docs/ReqExtrafuncionales.md](docs/ReqExtrafuncionales.md) · [docs/PerfilMedidasCalidad.md](docs/PerfilMedidasCalidad.md) |
+| API y colecciones de Thunder Client                     | [docs/api/](docs/api/README.md) · [docs/thunder-client/](docs/thunder-client/)                                            |
+| Pruebas y cobertura                                     | [docs/cobertura.md](docs/cobertura.md)                                                                                    |
+| Depuración                                              | [docs/depuracion.md](docs/depuracion.md) · [docs/evidencia/depuracion/](docs/evidencia/depuracion/)                       |
+| Contratos y programación defensiva                      | [docs/ejercicio-2-2.md](docs/ejercicio-2-2.md) · [docs/evidencia/contratos/](docs/evidencia/contratos/)                   |
+| Intervención: persistencia local (#124)                 | [docs/persistencia-local.md](docs/persistencia-local.md)                                                                  |
+| Intervención: porcentajes de estadísticas (#134)        | [docs/estadisticas-porcentajes.md](docs/estadisticas-porcentajes.md)                                                      |
+| Exportación a PDF                                       | [docs/evidencia/export-pdf/](docs/evidencia/export-pdf/)                                                                  |
+| Filtros por sector y etiqueta                           | [docs/evidencia/filtros-sector-etiqueta/](docs/evidencia/filtros-sector-etiqueta/)                                        |
+| Mockups                                                 | [docs/mockups/](docs/mockups/)                                                                                            |
+| Roles del equipo                                        | [docs/roles-equipo.md](docs/roles-equipo.md)                                                                              |
+| Backend: guía, PostgreSQL y evidencias                  | [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend#readme)                                    |
 
 ---
 
