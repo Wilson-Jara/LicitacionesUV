@@ -1,9 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import { motion as Motion } from 'motion/react'
+import {
+  AlertTriangle,
+  Archive,
+  ArrowLeft,
+  CheckCircle2,
+  ExternalLink,
+  FileDown,
+  Loader2,
+} from 'lucide-react'
 import FavoritoButton from '../components/FavoritoButton.jsx'
 import NotFoundPage from '../../../app/routes/NotFoundPage.jsx'
-import mockData from '../data/licitaciones.mock.json'
+import { EstadoCatalogo } from '../components/EstadoCatalogo'
+import { fetchLicitacion } from '../services/licitacionesApi.js'
 import {
   formatLicitacionAmount,
   formatLicitacionDate,
@@ -15,17 +26,49 @@ import './LicitacionDetailPage.css'
 
 /**
  * Página de detalle de una licitación (ruta `/licitaciones/:id`, HU #44).
- * Busca la licitación por el `id` de la URL; si no existe, muestra la página 404.
+ * Pide la licitación a la API (`GET /api/licitaciones/:id`) con el `id` de la URL:
+ * mientras responde muestra "cargando", si la API responde 404 muestra la página 404
+ * y si la API no responde muestra el error con un botón para reintentar.
  *
  * @returns {JSX.Element}
  */
 function LicitacionDetailPage() {
   const { id } = useParams()
-  const licitacion = mockData.find((item) => item.id === id)
+  const [carga, setCarga] = useState({ id: null, estado: 'cargando', licitacion: null })
+  const [intento, setIntento] = useState(0)
 
-  if (!licitacion) return <NotFoundPage />
+  useEffect(() => {
+    let vigente = true
+    fetchLicitacion(id)
+      .then((licitacion) => {
+        if (vigente) setCarga({ id, estado: licitacion ? 'listo' : 'no-encontrada', licitacion })
+      })
+      .catch(() => {
+        if (vigente) setCarga({ id, estado: 'error', licitacion: null })
+      })
+    return () => {
+      vigente = false
+    }
+  }, [id, intento])
 
-  return <LicitacionDetail licitacion={licitacion} />
+  // Hasta que llega la respuesta del id actual (primera carga, otro id o reintento) se muestra "cargando".
+  const estado = carga.id === id ? carga.estado : 'cargando'
+
+  if (estado === 'cargando' || estado === 'error') {
+    const reintentar = () => {
+      setCarga({ id: null, estado: 'cargando', licitacion: null })
+      setIntento((n) => n + 1)
+    }
+    return (
+      <section className="frame licitacion-detail">
+        <EstadoCatalogo estado={estado} onReintentar={reintentar} />
+      </section>
+    )
+  }
+
+  if (estado === 'no-encontrada') return <NotFoundPage />
+
+  return <LicitacionDetail key={carga.licitacion.id} licitacion={carga.licitacion} />
 }
 
 /**
@@ -69,15 +112,26 @@ function LicitacionDetail({ licitacion }) {
         className="licitacion-detail-back"
         to={{ pathname: '/licitaciones', search: state?.explorerSearch ?? '' }}
       >
-        ← Volver a licitaciones
+        <ArrowLeft size={18} aria-hidden="true" />
+        <span>Volver a licitaciones</span>
       </Link>
 
-      <article className="licitacion-detail-card">
+      <Motion.article
+        className="licitacion-detail-card"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+      >
         <header className="licitacion-detail-header">
           <div className="licitacion-detail-badges">
             <span className="licitacion-detail-type">{getTypeLabel(licitacion.type)}</span>
             <span className="licitacion-status" data-closed={cerrada}>
-              {cerrada ? 'Cerrada' : 'Vigente'}
+              {cerrada ? (
+                <Archive size={16} aria-hidden="true" />
+              ) : (
+                <CheckCircle2 size={16} aria-hidden="true" />
+              )}
+              <span>{cerrada ? 'Cerrada' : 'Vigente'}</span>
             </span>
           </div>
           <h1>{licitacion.title}</h1>
@@ -98,7 +152,11 @@ function LicitacionDetail({ licitacion }) {
             </div>
             <div>
               <dt>Fecha de cierre</dt>
-              <dd>{formatLicitacionDate(licitacion.closingDate)}</dd>
+              <dd>
+                <time dateTime={licitacion.closingDate}>
+                  {formatLicitacionDate(licitacion.closingDate)}
+                </time>
+              </dd>
             </div>
             <div>
               <dt>Tipo</dt>
@@ -117,7 +175,8 @@ function LicitacionDetail({ licitacion }) {
               target="_blank"
               rel="noreferrer"
             >
-              Ver fuente oficial <span aria-hidden="true">↗</span>
+              <span>Ver fuente oficial</span>
+              <ExternalLink size={17} aria-hidden="true" />
               <span className="sr-only"> (abre en una pestaña nueva)</span>
             </a>
             <button
@@ -126,14 +185,20 @@ function LicitacionDetail({ licitacion }) {
               onClick={handleExportarPdf}
               disabled={exportando}
             >
-              {exportando ? 'Generando PDF…' : 'Exportar PDF'}
+              {exportando ? (
+                <Loader2 size={17} aria-hidden="true" className="icon-spin" />
+              ) : (
+                <FileDown size={17} aria-hidden="true" />
+              )}
+              <span>{exportando ? 'Generando PDF…' : 'Exportar PDF'}</span>
             </button>
             <FavoritoButton licitacion={licitacion} />
           </div>
 
           {exportError && (
-            <p className="licitacion-detail-error" role="status">
-              {exportError}
+            <p className="licitacion-detail-error" role="alert">
+              <AlertTriangle size={18} aria-hidden="true" />
+              <span>{exportError}</span>
             </p>
           )}
 
@@ -143,7 +208,7 @@ function LicitacionDetail({ licitacion }) {
             </p>
           )}
         </div>
-      </article>
+      </Motion.article>
     </section>
   )
 }

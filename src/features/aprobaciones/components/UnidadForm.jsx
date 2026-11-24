@@ -11,18 +11,28 @@ export function UnidadForm({ unidades, onGuardar, onCancelar }) {
   const [nombre, setNombre] = useState('')
   const [tipo, setTipo] = useState('facultad')
   const [errores, setErrores] = useState({})
+  const [guardando, setGuardando] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
+    if (guardando) return
     const datos = { nombre: nombre.trim(), tipo }
     const nuevosErrores = validarUnidad(datos, unidades)
 
     setErrores(nuevosErrores)
     if (!esValido(nuevosErrores)) return
 
-    onGuardar(datos)
-    setNombre('')
-    setTipo('facultad')
+    // #124: si la unidad no se creó (por ejemplo, otra pestaña creó una con el
+    // mismo nombre), se conservan los datos escritos. Mientras se guarda, el
+    // envío queda bloqueado para que un doble clic no repita la operación.
+    setGuardando(true)
+    try {
+      if (!(await onGuardar(datos))) return
+      setNombre('')
+      setTipo('facultad')
+    } finally {
+      setGuardando(false)
+    }
   }
 
   return (
@@ -71,7 +81,12 @@ export function UnidadForm({ unidades, onGuardar, onCancelar }) {
       </div>
 
       <div className="umbral-form__actions">
-        <button type="submit" className="umbral-btn umbral-btn--primary">
+        <button
+          type="submit"
+          className="umbral-btn umbral-btn--primary"
+          disabled={guardando}
+          aria-busy={guardando}
+        >
           Agregar unidad
         </button>
         <button type="button" className="umbral-btn" onClick={onCancelar}>
