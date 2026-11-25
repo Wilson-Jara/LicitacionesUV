@@ -1,10 +1,12 @@
 import PropTypes from 'prop-types'
+import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { AnimatePresence, motion as Motion } from 'motion/react'
 import { Check, Info, Search, X } from 'lucide-react'
 import { useLicitacionFilters } from '../hooks/useLicitacionFilters'
 import { getEtiquetaLabel, getSectorLabel } from '../categorias.js'
-import { getRegionLabel } from '../licitacionUtils.js'
-import { countActiveFilters, VALID_REGIONES } from '../licitacionFilters.js'
+import { formatLicitacionAmount, getRegionLabel } from '../licitacionUtils.js'
+import { countActiveFilters, normalizeAmountBound, VALID_REGIONES } from '../licitacionFilters.js'
 import './FilterSidebar.css'
 
 const tipos = [
@@ -15,8 +17,94 @@ const tipos = [
 
 const ejemplos = ['Mantenimiento', 'Software', 'Consultoría']
 
+const amountFields = [
+  ['min', 'Monto mínimo'],
+  ['max', 'Monto máximo'],
+]
+
+function formatAmountRange(min, max) {
+  const minLabel = min && formatLicitacionAmount(Number(min), 'CLP', 20)
+  const maxLabel = max && formatLicitacionAmount(Number(max), 'CLP', 20)
+  if (minLabel && maxLabel) return `${minLabel} a ${maxLabel}`
+  if (minLabel) return `Desde ${minLabel}`
+  return maxLabel ? `Hasta ${maxLabel}` : ''
+}
+
+function AmountRangeFilter({ min, max, onApply }) {
+  const { key, search } = useLocation()
+  const source = JSON.stringify([min, max, search ? '' : key])
+  const [draft, setDraft] = useState({ source, min, max, error: null })
+
+  if (draft.source !== source) setDraft({ source, min, max, error: null })
+
+  function applyRange(event) {
+    event.preventDefault()
+    const values = { min: normalizeAmountBound(draft.min), max: normalizeAmountBound(draft.max) }
+    const invalid = amountFields.find(([field]) => draft[field].trim() && !values[field])
+
+    let error = null
+    if (invalid) {
+      error = { field: invalid[0], message: 'Ingresa un número mayor o igual a cero.' }
+    } else if (values.min && values.max && Number(values.min) > Number(values.max)) {
+      error = { field: 'max', message: 'El monto máximo debe ser mayor o igual al mínimo.' }
+    }
+
+    setDraft({ ...draft, ...(error ? {} : values), error })
+    if (error) {
+      event.currentTarget.elements.namedItem(error.field).focus()
+      return
+    }
+    onApply(values.min, values.max)
+  }
+
+  return (
+    <form className="filter-amount" onSubmit={applyRange}>
+      <fieldset aria-describedby="monto-hint">
+        <legend>Rango de monto (CLP)</legend>
+        <p id="monto-hint">Deja en blanco cualquier límite que no quieras aplicar.</p>
+        <div className="filter-amount__bounds">
+          {amountFields.map(([field, label]) => {
+            const invalid = draft.error?.field === field
+            return (
+              <div key={field}>
+                <label htmlFor={`monto-${field}`}>{label}</label>
+                <input
+                  id={`monto-${field}`}
+                  name={field}
+                  type="text"
+                  inputMode="decimal"
+                  value={draft[field]}
+                  aria-invalid={invalid || undefined}
+                  aria-describedby={invalid ? 'monto-error' : undefined}
+                  onChange={(event) =>
+                    setDraft({ ...draft, [field]: event.target.value, error: null })
+                  }
+                />
+              </div>
+            )
+          })}
+        </div>
+        {draft.error && (
+          <p className="filter-amount__error" id="monto-error" role="alert">
+            {draft.error.message}
+          </p>
+        )}
+      </fieldset>
+      <button className="button" type="submit">
+        Aplicar rango
+      </button>
+    </form>
+  )
+}
+
+AmountRangeFilter.propTypes = {
+  min: PropTypes.string,
+  max: PropTypes.string,
+  onApply: PropTypes.func,
+}
+
 export function FilterSidebar({ searchRef, onSearchSubmit, sectores = [], etiquetas = [] }) {
-  const { filters, setFilter, clearFilters } = useLicitacionFilters()
+  const { filters, setFilter, setAmountRange, clearFilters } = useLicitacionFilters()
   const activeCount = countActiveFilters(filters)
   const activos = [
     ['keyword', filters.keyword.trim(), 'palabra clave'],
@@ -24,6 +112,7 @@ export function FilterSidebar({ searchRef, onSearchSubmit, sectores = [], etique
     ['sector', filters.sector && getSectorLabel(filters.sector), 'sector'],
     ['etiqueta', filters.etiqueta && getEtiquetaLabel(filters.etiqueta), 'etiqueta'],
     ['tipo', filters.tipo && tipos.find(([key]) => key === filters.tipo)?.[1], 'tipo'],
+    ['monto', formatAmountRange(filters.min, filters.max), 'monto'],
   ].filter(([, value]) => value)
 
   return (
@@ -154,6 +243,8 @@ export function FilterSidebar({ searchRef, onSearchSubmit, sectores = [], etique
         </div>
       </fieldset>
 
+      <AmountRangeFilter min={filters.min} max={filters.max} onApply={setAmountRange} />
+
       <AnimatePresence initial={false}>
         {activos.length > 0 && (
           <Motion.ul
@@ -178,6 +269,11 @@ export function FilterSidebar({ searchRef, onSearchSubmit, sectores = [], etique
                     type="button"
                     aria-label={'Quitar filtro de ' + label + ': ' + value}
                     onClick={() => {
+                      if (key === 'monto') {
+                        setAmountRange('', '')
+                        document.getElementById('monto-min')?.focus()
+                        return
+                      }
                       setFilter(key, '')
                       const target = key === 'tipo' ? 'filter-reset' : key
                       document.getElementById(target)?.focus()
