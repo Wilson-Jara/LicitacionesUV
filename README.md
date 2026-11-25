@@ -503,6 +503,7 @@ El frontend está organizado por funcionalidad (`src/features/<funcionalidad>/`)
 | Filtros por sector y etiqueta                           | [docs/evidencia/filtros-sector-etiqueta/](docs/evidencia/filtros-sector-etiqueta/)                                        |
 | Mockups                                                 | [docs/mockups/](docs/mockups/)                                                                                            |
 | Roles del equipo                                        | [docs/roles-equipo.md](docs/roles-equipo.md)                                                                              |
+| Licencia y avisos de terceros                           | [LICENSE](LICENSE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)                                                     |
 | Backend: guía, PostgreSQL y evidencias                  | [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend#readme)                                    |
 
 ---
@@ -642,6 +643,12 @@ La integración de `develop` → `main` **no ocurre con cada feature**. Solo se 
 5. Mantener `develop` como base de trabajo para el siguiente ciclo.
 
 Para correcciones urgentes detectadas en producción se crea una rama `hotfix/[descripcion]` **desde `main`**, se integra a `main` y luego se sincroniza con `develop` (`git checkout develop && git merge main`).
+
+---
+
+## 📄 Licencia
+
+Este proyecto se distribuye bajo la licencia **MIT** (ver [`LICENSE`](LICENSE)). Los avisos y obligaciones de las dependencias de terceros empleadas en ejecución se detallan en [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ---
 
