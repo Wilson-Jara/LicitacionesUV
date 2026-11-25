@@ -45,6 +45,7 @@ Estado verificado localmente el 22 de noviembre de 2026:
   - La sesión simulada se conserva al recargar la pestaña mediante `sessionStorage` (`licitacionesuv-sesion-demo`), con el nombre y el correo de acceso. Cerrar sesión elimina esa entrada.
 - **Explorador de Licitaciones:**
   - Barra lateral (`FilterSidebar`) con búsqueda por título, atajos de ejemplo, selección de región, sector y etiqueta, botones de modalidad y aviso de catálogo ficticio. Los filtros aplicados se pueden quitar individualmente y, junto con el orden, se conservan en la URL.
+  - Filtro de monto en CLP con límites inclusivos y opcionales (`?min=…&max=…`). «Aplicar rango» actualiza ambos parámetros juntos y combina el rango con los demás filtros mediante AND. Se admiten números no negativos con punto o coma decimal y se valida que el mínimo sea menor o igual al máximo. Los enlaces con el rango invertido se interpretan sin límites. Un rango activo se aplica a los montos en CLP.
   - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
   - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, sector, etiquetas, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
   - Lista semántica con contador accesible, estado vacío y restablecimiento de filtros. En pantallas estrechas, los filtros se pueden desplegar.
@@ -103,6 +104,8 @@ Estado verificado localmente el 22 de noviembre de 2026:
 | Archivo                                                            | Responsabilidad actual                                                                                           |
 | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción).         |
+| `LICENSE`                                                          | Licencia MIT del proyecto con atribución al equipo LicitacionesUV.                                               |
+| `THIRD_PARTY_NOTICES.md`                                           | Licencias y obligaciones de las dependencias de ejecución incluidas en el paquete.                               |
 | `vercel.json`                                                      | Configuración de despliegue en Vercel (Vite, `dist` y reescritura de rutas a `index.html`).                      |
 | `index.html`                                                       | Punto de entrada HTML.                                                                                           |
 | `src/main.jsx`                                                     | Punto de montaje de React.                                                                                       |
@@ -305,6 +308,7 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
 - `docs/depuracion.md` registra la depuración sistemática del filtro por palabra clave (método, evidencia con el depurador y prueba de regresión).
 - `docs/persistencia-local.md` documenta el módulo compartido de acceso a `localStorage`: contrato, ejemplo ejecutable, indicadores antes y después y deuda postergada.
+- `docs/interfaces-dependencias.md` documenta las operaciones públicas de cada módulo de ambos repositorios, quién las importa, la interfaz REST entre ellos y el caso «Buscar licitaciones» ejecutado con `v1.0.0` y con la versión actual (criterio 4 del Hito 3, #136).
 - `docs/intervenciones.md` consolida las tres intervenciones estructurales del frontend y del backend independiente (`persistenciaLocal`, `calcularFilasDistribucion` y `runInTransaction`), sus indicadores antes y después, pruebas asociadas y limitaciones conocidas.
 - `docs/informe-cierre.md` resume el alcance entregado en ambos repositorios, decisiones y sus efectos, evidencias verificadas y notas de versión preparadas (`v2.0.0` en cliente y `v1.0.0` en API).
 - `docs/ejercicio-2-2.md` documenta los contratos de filtrado, detalle de la API y alta de favoritos, con precondiciones, postcondiciones, invariantes, validaciones y evidencia reproducible sobre el mock. La ficha de filtrado también está disponible, sincronizada, en `docs/Ejercicio_2_2_Ficha_Operacion_1.docx` y `docs/Ejercicio_2_2_Ficha_Operacion_1.pdf`.

@@ -11,19 +11,20 @@ const TYPE_NAMES = {
 }
 
 /**
- * Formatea un monto como moneda local de Chile (CLP por defecto), sin decimales.
+ * Formatea un monto como moneda local de Chile (CLP por defecto), sin decimales por defecto.
  *
  * @param {number} amount - Monto a formatear. Debe ser un número finito.
  * @param {string} [currency='CLP'] - Código ISO 4217 de la moneda a mostrar.
+ * @param {number} [maximumFractionDigits=0] - Máximo de decimales a mostrar.
  * @returns {string} Representación del monto con símbolo de moneda según la
  *   configuración regional `es-CL`. Ejemplo: `$1.234.567`.
  * @throws {RangeError} Si `currency` no es un código de moneda válido para `Intl.NumberFormat`.
  */
-export function formatLicitacionAmount(amount, currency = 'CLP') {
+export function formatLicitacionAmount(amount, currency = 'CLP', maximumFractionDigits = 0) {
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
     currency,
-    maximumFractionDigits: 0,
+    maximumFractionDigits,
   }).format(amount)
 }
 

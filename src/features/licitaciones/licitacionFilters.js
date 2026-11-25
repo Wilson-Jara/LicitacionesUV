@@ -57,6 +57,20 @@ function resolveKeywordParam(values) {
   return ''
 }
 
+export function normalizeAmountBound(value) {
+  if (typeof value !== 'string') return ''
+  const normalized = value.trim().replace(',', '.')
+  if (!/^\d+(?:\.\d+)?$/.test(normalized) || !Number.isFinite(Number(normalized))) return ''
+  return normalized
+}
+
+function resolveAmountRange(rawParams) {
+  const min = getAllParams(rawParams, 'min').map(normalizeAmountBound).findLast(Boolean) || ''
+  const max = getAllParams(rawParams, 'max').map(normalizeAmountBound).findLast(Boolean) || ''
+  if (min && max && Number(min) > Number(max)) return { min: '', max: '' }
+  return { min, max }
+}
+
 /**
  * Sanea y normaliza los parámetros de filtro de forma defensiva, ya sea que provengan
  * de un objeto plano o de una instancia de `URLSearchParams`. Descarta parámetros
@@ -69,7 +83,7 @@ function resolveKeywordParam(values) {
  *
  * @param {URLSearchParams|Record<string, unknown>} [rawParams={}] - Parámetros en bruto.
  * @returns {{keyword: string, region: string, sector: string, etiqueta: string,
- *   tipo: string, sort: string}} Filtros y criterio de orden saneados.
+ *   tipo: string, min: string, max: string, sort: string}} Filtros y orden saneados.
  */
 export function sanitizeFilterParams(rawParams = {}) {
   const keywordValues = getAllParams(rawParams, 'keyword')
@@ -86,7 +100,7 @@ export function sanitizeFilterParams(rawParams = {}) {
   const tipo = resolveLastValidParam(tipoValues, VALID_TIPOS)
   const sort = resolveLastValidParam(sortValues, VALID_SORTS)
 
-  return { keyword, region, sector, etiqueta, tipo, sort }
+  return { keyword, region, sector, etiqueta, tipo, ...resolveAmountRange(rawParams), sort }
 }
 
 /**
@@ -94,8 +108,8 @@ export function sanitizeFilterParams(rawParams = {}) {
  * contiene texto después de aplicar trim.
  *
  * @param {{keyword?: string, region?: string, sector?: string, etiqueta?: string,
- *   tipo?: string}} [filters={}] - Objeto de filtros.
- * @returns {number} Cantidad de filtros efectivamente activos (0 a 5).
+ *   tipo?: string, min?: string, max?: string}} [filters={}] - Objeto de filtros.
+ * @returns {number} Cantidad de filtros efectivamente activos (0 a 6).
  */
 export function countActiveFilters(filters = {}) {
   const keyword = typeof filters?.keyword === 'string' ? filters.keyword.trim() : ''
@@ -103,7 +117,8 @@ export function countActiveFilters(filters = {}) {
   const sector = typeof filters?.sector === 'string' ? filters.sector.trim() : ''
   const etiqueta = typeof filters?.etiqueta === 'string' ? filters.etiqueta.trim() : ''
   const tipo = typeof filters?.tipo === 'string' ? filters.tipo.trim() : ''
-  return [keyword, region, sector, etiqueta, tipo].filter(Boolean).length
+  const { min, max } = resolveAmountRange(filters)
+  return [keyword, region, sector, etiqueta, tipo, min || max].filter(Boolean).length
 }
 
 function normalizeKeyword(keyword) {
@@ -137,13 +152,21 @@ function matchesTipo(licitacion, tipo) {
   return licitacion?.type === tipo
 }
 
+function matchesAmount(licitacion, min, max) {
+  if (!min && !max) return true
+  const { amount, currency = 'CLP' } = licitacion ?? {}
+  if (currency !== 'CLP' || !Number.isFinite(amount) || amount < 0) return false
+  return (!min || amount >= Number(min)) && (!max || amount <= Number(max))
+}
+
 function matchesAllFilters(licitacion, filters) {
   return (
     matchesKeyword(licitacion, normalizeKeyword(filters.keyword)) &&
     matchesRegion(licitacion, filters.region) &&
     matchesSector(licitacion, filters.sector) &&
     matchesEtiqueta(licitacion, filters.etiqueta) &&
-    matchesTipo(licitacion, filters.tipo)
+    matchesTipo(licitacion, filters.tipo) &&
+    matchesAmount(licitacion, filters.min, filters.max)
   )
 }
 
@@ -153,16 +176,16 @@ function matchesAllFilters(licitacion, filters) {
  * el resultado.
  *
  * @param {Array<{title: string, region: string, sector?: string,
- *   etiquetas?: Array<string>, type: string}>} [licitaciones=[]] -
+ *   etiquetas?: Array<string>, type: string, amount?: number, currency?: string}>} [licitaciones=[]] -
  *   Catálogo de licitaciones. Cada elemento debe exponer `title` (texto de
  *   búsqueda), `region` y `type` (claves internas comparadas por igualdad);
  *   `sector` y `etiquetas` son opcionales y se comparan normalizados.
  * @param {{keyword?: string, region?: string, sector?: string, etiqueta?: string,
- *   tipo?: string}} [filters={}] - Filtros a aplicar: `keyword` busca de forma
+ *   tipo?: string, min?: string, max?: string}} [filters={}] - Filtros a aplicar: `keyword` busca de forma
  *   insensible a mayúsculas únicamente en el título (quitando espacios externos
  *   con `trim`); `region`, `sector`, `etiqueta` y `tipo` exigen coincidencia
  *   exacta con la clave de la licitación, sin distinguir mayúsculas ni tildes,
- *   y descartan valores no válidos.
+ *   y descartan valores no válidos. `min` y `max` son límites inclusivos en CLP.
  * @returns {Array} Nueva lista con las licitaciones que cumplen todos los
  *   criterios activos; vacía si ninguna coincide. No muta el arreglo de entrada.
  */
