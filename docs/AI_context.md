@@ -45,6 +45,7 @@ Estado verificado localmente el 22 de noviembre de 2026:
   - La sesión simulada se conserva al recargar la pestaña mediante `sessionStorage` (`licitacionesuv-sesion-demo`), con el nombre y el correo de acceso. Cerrar sesión elimina esa entrada.
 - **Explorador de Licitaciones:**
   - Barra lateral (`FilterSidebar`) con búsqueda por título, atajos de ejemplo, selección de región, sector y etiqueta, botones de modalidad y aviso de catálogo ficticio. Los filtros aplicados se pueden quitar individualmente y, junto con el orden, se conservan en la URL.
+  - Filtro de monto en CLP con límites inclusivos y opcionales (`?min=…&max=…`). «Aplicar rango» actualiza ambos parámetros juntos y combina el rango con los demás filtros mediante AND. Se admiten números no negativos con punto o coma decimal y se valida que el mínimo sea menor o igual al máximo. Los enlaces con el rango invertido se interpretan sin límites. Un rango activo se aplica a los montos en CLP.
   - Selector "Ordenar por" en la barra de resultados con fecha de cierre (ascendente/descendente) y monto (ascendente/descendente), sincronizado en la URL mediante `?sort=` y aplicado después de los filtros.
   - Filas de licitación (`LicitacionCard`) con título enlazado, tipo, región, sector, etiquetas, organismo, fecha, monto, estado y acción de favorito. El detalle recupera los parámetros del explorador al volver mediante su enlace.
   - Lista semántica con contador accesible, estado vacío y restablecimiento de filtros. En pantallas estrechas, los filtros se pueden desplegar.
