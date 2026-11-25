@@ -504,6 +504,7 @@ El frontend está organizado por funcionalidad (`src/features/<funcionalidad>/`)
 | Filtros por sector y etiqueta                           | [docs/evidencia/filtros-sector-etiqueta/](docs/evidencia/filtros-sector-etiqueta/)                                                                         |
 | Mockups                                                 | [docs/mockups/](docs/mockups/)                                                                                                                             |
 | Roles del equipo                                        | [docs/roles-equipo.md](docs/roles-equipo.md)                                                                                                               |
+| Informe de cierre y notas de versión (C7)               | [docs/informe-cierre.md](docs/informe-cierre.md)                                                                                                           |
 | Backend: guía, PostgreSQL y evidencias                  | [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend#readme)                                                                     |
 
 ---
