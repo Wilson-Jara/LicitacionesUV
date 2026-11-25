@@ -66,7 +66,16 @@ true { ok: true, valor: { a: 1 } } { ok: false, motivo: 'ausente' } { ok: false,
 2. **Después de extraer**, las mismas pruebas siguen pasando sin modificarlas: las claves (`licitacionesuv-umbrales`, `licitacionesuv-favoritos`), el formato JSON y los respaldos (configuración inicial, sin favoritos) se mantienen.
 3. `tests/persistenciaLocal.test.js` prueba el contrato del módulo, incluido `obtenerAlmacenamientoLocal` con y sin `window` y con un acceso bloqueado.
 
-Pendiente de verificación humana: otro integrante debe ejecutar el ejemplo de esta página y comprobar uno de los casos iniciales (por ejemplo, abrir `/configuracion/umbrales` en una ventana privada con el almacenamiento bloqueado y ver que la app carga con la configuración inicial).
+### Verificación por otro integrante
+
+Ejecutada por Mauricio Henríquez (QA, @StelleC) el 24-11-2026, sobre `develop`.
+
+| Prueba                                                                                                                                      | Resultado esperado                                                                                           | Resultado obtenido                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Ejemplo ejecutable de esta página (Node 22)                                                                                                 | `true { ok: true, valor: { a: 1 } } { ok: false, motivo: 'ausente' } { ok: false, motivo: 'no-disponible' }` | Idéntico ✅                                                                         |
+| Caso inicial en la app publicada: `licitacionesuv-umbrales` con texto que no es JSON (`{esto no es json`) y abrir `/configuracion/umbrales` | La app no se cae y muestra la configuración inicial                                                          | Cargó las 3 unidades con 3 umbrales cada una y no sobrescribió el valor guardado ✅ |
+
+El caso de almacenamiento bloqueado por el navegador no se probó a mano: lo cubren `tests/persistenciaLocal.test.js` («devuelve null cuando el navegador bloquea el acceso (SecurityError)») y `tests/accesoLocalStorage.test.js`. Tras la prueba se borró la clave para dejar el navegador como estaba.
 
 ## Deuda postergada
 
