@@ -16,11 +16,11 @@
 Estado verificado localmente el 22 de noviembre de 2026:
 
 - Este repositorio contiene solo el frontend; `backend/` se retiró.
-- `npm run test` ejecuta las 209 pruebas del cliente (incluye `tests/licitacionesApi.test.js`, que prueba el cliente HTTP con un `fetch` falso). Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run test` ejecuta las 227 pruebas del cliente (incluye `tests/licitacionesApi.test.js`, que prueba el cliente HTTP con un `fetch` falso). Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
-- `npm run verify` pasa: lint, formato, 209 pruebas y build. La cobertura local alcanza 98,42 % de líneas, 91,70 % de ramas y 97,95 % de funciones. `licitacionUtils.js` mantiene 100 % en las tres métricas.
+- `npm run verify` pasa: lint, formato, 227 pruebas y build. La cobertura local alcanza 98,42 % de líneas, 91,70 % de ramas y 97,95 % de funciones. `licitacionUtils.js` mantiene 100 % en las tres métricas.
 - El contrato rechaza fechas imposibles, la medición de filtros es reproducible y las pruebas del PDF derivan la separación de `PDF_LAYOUT_MM` y cubren enlaces envueltos.
 
 - Manejo de estado de autenticación en cliente con `AuthProvider` y hook `useAuth` (simulación de login/registro), incluyendo el control global del modal de acceso (`isAuthModalOpen`, `openAuthModal`, `closeAuthModal`).
@@ -30,6 +30,7 @@ Estado verificado localmente el 22 de noviembre de 2026:
 - Catálogo de licitaciones obtenido de la API con `LicitacionesProvider` y hook `useLicitaciones` (estados `cargando`, `listo` y `error` con reintento). `features/licitaciones/data/licitaciones.mock.json`, con `sector` opcional y `etiquetas` normalizadas, se conserva como datos de las pruebas del contrato y de los filtros.
 - El acceso seguro a `localStorage` de umbrales y favoritos está centralizado en `src/shared/lib/persistenciaLocal.js` (`obtenerAlmacenamientoLocal`, `leerJson`, `escribirJson`): ninguna función lanza y cada consumidor decide su respaldo. Contrato, indicadores y deuda postergada en `docs/persistencia-local.md`.
 - La API vive en el repositorio independiente `LicitacionesUV-backend`: PostgreSQL mediante `pg`, catálogo ficticio propio, migraciones, pruebas y CI propios. El cliente la consume por HTTP (`services/licitacionesApi.js`) y no importa ni lee sus archivos.
+- Despliegue del frontend como sitio estático en Vercel mediante la CLI; `vercel.json` fija Vite, `npm run build`, la salida `dist` y la reescritura de todas las rutas a `index.html` para React Router. El vínculo local `.vercel/` está excluido de Git.
 - `node_modules/` y `dist/` excluidos del control de versiones.
 
 ## 3. Funcionalidad existente
@@ -52,6 +53,7 @@ Estado verificado localmente el 22 de noviembre de 2026:
   - El enlace entre explorador y estadísticas mantiene los parámetros de la URL. El panel se recalcula con esos parámetros y muestra un estado vacío cuando no hay coincidencias.
   - El sector usa el campo explícito del mock (`tecnologia`, `infraestructura` o `finanzas`); si falta, se deriva de la institución para conservar compatibilidad con datos anteriores.
   - Cada distribución ofrece una alternativa textual accesible (texto para lectores de pantalla y tabla con categorías y valores) además de las barras visuales.
+  - El total y los porcentajes de cada distribución se calculan una sola vez en `calcularFilasDistribucion` (`estadisticasUtils.js`); las barras, la tabla accesible y la alternativa textual leen ese resultado (#134, detalle en `docs/estadisticas-porcentajes.md`).
 - **Detalle de Licitación:**
   - La ruta `/licitaciones/:id` muestra los datos completos, estado vigente/cerrada y enlace a la fuente oficial en una pestaña nueva.
   - Botón "Exportar PDF" que descarga un resumen consolidado (`licitacion-<id>.pdf`) con identificación, organismo, fecha de cierre, presupuesto, tipo, región y enlace a las bases oficiales, en español y formatos locales chilenos. Las filas de región y bases oficiales conservan posiciones verticales separadas incluso cuando el enlace se envuelve.
@@ -101,6 +103,7 @@ Estado verificado localmente el 22 de noviembre de 2026:
 | Archivo                                                            | Responsabilidad actual                                                                                           |
 | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción).         |
+| `vercel.json`                                                      | Configuración de despliegue en Vercel (Vite, `dist` y reescritura de rutas a `index.html`).                      |
 | `index.html`                                                       | Punto de entrada HTML.                                                                                           |
 | `src/main.jsx`                                                     | Punto de montaje de React.                                                                                       |
 | `src/app/App.jsx`                                                  | Componente raíz con proveedores de Auth, Favoritos, Umbrales, catálogo (API) y Router.                           |
@@ -294,6 +297,7 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 
 ## 13. Documentación relacionada
 
+- `docs/modelado/4-componentes.md` y su fuente PlantUML trazan los componentes e interfaces implementados en frontend y backend, incluidos los catálogos independientes, Web Storage, exportación PDF, repositorios en memoria/PostgreSQL y la integración HTTP aún no ensamblada.
 - `docs/separacion-backend.md` describe los límites de ambos repositorios y las verificaciones de separación. La API independiente usa PostgreSQL; el principal contiene solo el cliente y no lo consume todavía.
 - `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
