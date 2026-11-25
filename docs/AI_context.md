@@ -104,6 +104,8 @@ Estado verificado localmente el 22 de noviembre de 2026:
 | Archivo                                                            | Responsabilidad actual                                                                                           |
 | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción).         |
+| `LICENSE`                                                          | Licencia MIT del proyecto con atribución al equipo LicitacionesUV.                                               |
+| `THIRD_PARTY_NOTICES.md`                                           | Licencias y obligaciones de las dependencias de ejecución incluidas en el paquete.                               |
 | `vercel.json`                                                      | Configuración de despliegue en Vercel (Vite, `dist` y reescritura de rutas a `index.html`).                      |
 | `index.html`                                                       | Punto de entrada HTML.                                                                                           |
 | `src/main.jsx`                                                     | Punto de montaje de React.                                                                                       |
