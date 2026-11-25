@@ -20,6 +20,13 @@ Estado verificado localmente el 22 de noviembre de 2026:
 - `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
 - El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
 - Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
+- `npm run verify` pasa: lint, formato, 145 pruebas y build. El contrato rechaza fechas de calendario imposibles, incluidos días inválidos de febrero, y tolera `sector` ausente o nulo. La medición de filtros es reproducible con `npm run bench:filtros` (`scripts/medir-filtros.mjs`), que falla sobre el objetivo de 2 s de REF-01. La cobertura propia del cliente se debe recalcular tras esta entrega; son resultados locales, no del CI remoto.
+- `npm run test` ejecuta las 122 pruebas del cliente. Las pruebas de la API se ejecutan en `LicitacionesUV-backend`.
+- `npm run verify` conserva clean, lint, format:check, test y build. La cobertura general mide únicamente `src/**/*.js`; la crítica mantiene `licitacionUtils.js`.
+- El workflow `.github/workflows/verify.yml` instala y verifica solo el cliente, sin PostgreSQL ni dependencias del backend. Su definición local no acredita una ejecución remota correcta.
+- Los componentes JSX no forman parte de la medición de cobertura de módulos JavaScript.
+- `npm run verify` pasa tras retirar el backend: lint, formato, 133 pruebas y build. La cobertura propia del cliente es 99,13 % líneas, 90,67 % ramas y 99,06 % funciones; la crítica pasa con 100 % en las tres métricas. Son resultados locales, no del CI remoto.
+- `npm run verify` pasa: lint, formato, 209 pruebas y build. La cobertura local alcanza 98,42 % de líneas, 91,70 % de ramas y 97,95 % de funciones. `licitacionUtils.js` mantiene 100 % en las tres métricas.
 - `npm run verify` pasa: lint, formato, 227 pruebas y build. La cobertura local alcanza 98,42 % de líneas, 91,70 % de ramas y 97,95 % de funciones. `licitacionUtils.js` mantiene 100 % en las tres métricas.
 - El contrato rechaza fechas imposibles, la medición de filtros es reproducible y las pruebas del PDF derivan la separación de `PDF_LAYOUT_MM` y cubren enlaces envueltos.
 
@@ -234,6 +241,12 @@ Al añadir funcionalidad, mantener estas convenciones salvo que exista una razó
 El revisor automático `.github/scripts/ai-review.mjs` limita la lectura a 75.000
 caracteres por archivo de contexto y 120.000 caracteres para el diff completo del
 PR. Estos límites se aplican antes de enviar el contenido redactado a DeepSeek.
+El workflow ejecuta el script desde la referencia base, desactiva la persistencia
+de credenciales del checkout, omite drafts/forks y restringe los permisos de
+escritura al job que publica comentarios. La ausencia de `DEEPSEEK_API_KEY` omite
+la revisión sin fallar el workflow. Las pruebas exigen que los permisos de
+escritura existan solo dentro del job y que el CI use la misma versión de Node
+que `verify.yml` (`22.22.0`), compatible con el mínimo `>=20.19.0` de `engines`.
 
 ## 10. Alcance y privacidad del contexto
 

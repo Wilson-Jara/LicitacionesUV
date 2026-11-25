@@ -616,7 +616,7 @@ El repositorio aplica controles automáticos para que ningún cambio llegue a la
 - **Asignación de revisores.** `.github/CODEOWNERS` solicita automáticamente la revisión de QA. Ver [Asignación del revisor](#asignación-del-revisor).
 - **Plantilla de Pull Request:** `.github/pull_request_template.md` recuerda completar propósito, resumen, cómo se verificó y el issue que cierra.
 - **Plantillas de issues:** `.github/ISSUE_TEMPLATE/` incluye historia de usuario, tarea/chore y bug, con _Definition of Ready_ (DoR) y _Definition of Done_ (DoD).
-- **Revisor automático (IA):** el workflow `.github/workflows/ai-review.yml` publica un comentario con la revisión de DeepSeek (`.github/scripts/ai-review.mjs`) al abrir o reabrir un PR/issue y, bajo demanda, al agregar la etiqueta `ai-review`. Redacta secretos antes de enviar el contenido al modelo y responde en español. Requiere el secret `DEEPSEEK_API_KEY`; si no está configurado, la revisión se omite sin bloquear el CI.
+- **Revisor automático (IA):** el workflow `.github/workflows/ai-review.yml` publica un comentario con la revisión de DeepSeek (`.github/scripts/ai-review.mjs`) al abrir, reabrir o marcar como lista para revisión una solicitud interna, y bajo demanda al agregar la etiqueta `ai-review`. Omite drafts, forks y issues de autores externos. Ejecuta el script desde la rama base con `persist-credentials: false`, permisos de escritura limitados al job y un timeout de 8 minutos. Redacta secretos antes de enviar o publicar contenido y responde en español. Requiere el secret `DEEPSEEK_API_KEY`; si no está configurado, la revisión se omite sin bloquear el CI.
 
 La revisión automática de IA aporta sugerencias. Las dos aprobaciones corresponden a revisores humanos.
 
