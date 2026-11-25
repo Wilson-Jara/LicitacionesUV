@@ -486,25 +486,25 @@ El frontend está organizado por funcionalidad (`src/features/<funcionalidad>/`)
 
 ## Evidencias y documentación
 
-| Tema                                                    | Documento                                                                                                                 |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Contexto técnico y reglas para IA                       | [docs/AI_context.md](docs/AI_context.md) · [AGENTS.md](AGENTS.md)                                                         |
-| Arquitectura y separación del backend                   | [docs/Arquitectura.md](docs/Arquitectura.md) · [docs/separacion-backend.md](docs/separacion-backend.md)                   |
-| Modelado (casos de uso, clases, secuencia, componentes) | [docs/modelado/](docs/modelado/README.md)                                                                                 |
-| Criterios de aceptación                                 | [docs/CriteriosAceptacion.md](docs/CriteriosAceptacion.md)                                                                |
-| Requisitos extrafuncionales y calidad                   | [docs/ReqExtrafuncionales.md](docs/ReqExtrafuncionales.md) · [docs/PerfilMedidasCalidad.md](docs/PerfilMedidasCalidad.md) |
-| API y colecciones de Thunder Client                     | [docs/api/](docs/api/README.md) · [docs/thunder-client/](docs/thunder-client/)                                            |
-| Pruebas y cobertura                                     | [docs/cobertura.md](docs/cobertura.md)                                                                                    |
-| Depuración                                              | [docs/depuracion.md](docs/depuracion.md) · [docs/evidencia/depuracion/](docs/evidencia/depuracion/)                       |
-| Contratos y programación defensiva                      | [docs/ejercicio-2-2.md](docs/ejercicio-2-2.md) · [docs/evidencia/contratos/](docs/evidencia/contratos/)                   |
-| Intervención: persistencia local (#124)                 | [docs/persistencia-local.md](docs/persistencia-local.md)                                                                  |
-| Intervención: porcentajes de estadísticas (#134)        | [docs/estadisticas-porcentajes.md](docs/estadisticas-porcentajes.md)                                                      |
-| Exportación a PDF                                       | [docs/evidencia/export-pdf/](docs/evidencia/export-pdf/)                                                                  |
-| Filtros por sector y etiqueta                           | [docs/evidencia/filtros-sector-etiqueta/](docs/evidencia/filtros-sector-etiqueta/)                                        |
-| Mockups                                                 | [docs/mockups/](docs/mockups/)                                                                                            |
-| Roles del equipo                                        | [docs/roles-equipo.md](docs/roles-equipo.md)                                                                              |
-| Licencia y avisos de terceros                           | [LICENSE](LICENSE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)                                                     |
-| Backend: guía, PostgreSQL y evidencias                  | [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend#readme)                                    |
+| Tema                                                    | Documento                                                                                                                                                  |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contexto técnico y reglas para IA                       | [docs/AI_context.md](docs/AI_context.md) · [AGENTS.md](AGENTS.md)                                                                                          |
+| Arquitectura y separación del backend                   | [docs/Arquitectura.md](docs/Arquitectura.md) · [docs/separacion-backend.md](docs/separacion-backend.md) · [docs/modularizacion.md](docs/modularizacion.md) |
+| Modelado (casos de uso, clases, secuencia, componentes) | [docs/modelado/](docs/modelado/README.md)                                                                                                                  |
+| Criterios de aceptación                                 | [docs/CriteriosAceptacion.md](docs/CriteriosAceptacion.md)                                                                                                 |
+| Requisitos extrafuncionales y calidad                   | [docs/ReqExtrafuncionales.md](docs/ReqExtrafuncionales.md) · [docs/PerfilMedidasCalidad.md](docs/PerfilMedidasCalidad.md)                                  |
+| API y colecciones de Thunder Client                     | [docs/api/](docs/api/README.md) · [docs/thunder-client/](docs/thunder-client/)                                                                             |
+| Pruebas y cobertura                                     | [docs/cobertura.md](docs/cobertura.md)                                                                                                                     |
+| Depuración                                              | [docs/depuracion.md](docs/depuracion.md) · [docs/evidencia/depuracion/](docs/evidencia/depuracion/)                                                        |
+| Contratos y programación defensiva                      | [docs/ejercicio-2-2.md](docs/ejercicio-2-2.md) · [docs/evidencia/contratos/](docs/evidencia/contratos/)                                                    |
+| Intervención: persistencia local (#124)                 | [docs/persistencia-local.md](docs/persistencia-local.md)                                                                                                   |
+| Intervención: porcentajes de estadísticas (#134)        | [docs/estadisticas-porcentajes.md](docs/estadisticas-porcentajes.md)                                                                                       |
+| Exportación a PDF                                       | [docs/evidencia/export-pdf/](docs/evidencia/export-pdf/)                                                                                                   |
+| Filtros por sector y etiqueta                           | [docs/evidencia/filtros-sector-etiqueta/](docs/evidencia/filtros-sector-etiqueta/)                                                                         |
+| Mockups                                                 | [docs/mockups/](docs/mockups/)                                                                                                                             |
+| Roles del equipo                                        | [docs/roles-equipo.md](docs/roles-equipo.md)                                                                                                               |
+| Licencia y avisos de terceros                           | [LICENSE](LICENSE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)                                                                                      |
+| Backend: guía, PostgreSQL y evidencias                  | [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend#readme)                                                                     |
 
 ---
 
@@ -643,12 +643,6 @@ La integración de `develop` → `main` **no ocurre con cada feature**. Solo se 
 5. Mantener `develop` como base de trabajo para el siguiente ciclo.
 
 Para correcciones urgentes detectadas en producción se crea una rama `hotfix/[descripcion]` **desde `main`**, se integra a `main` y luego se sincroniza con `develop` (`git checkout develop && git merge main`).
-
----
-
-## 📄 Licencia
-
-Este proyecto se distribuye bajo la licencia **MIT** (ver [`LICENSE`](LICENSE)). Los avisos y obligaciones de las dependencias de terceros empleadas en ejecución se detallan en [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ---
 

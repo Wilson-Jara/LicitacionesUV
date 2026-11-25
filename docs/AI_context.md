@@ -103,8 +103,6 @@ Estado verificado localmente el 22 de noviembre de 2026:
 | Archivo                                                            | Responsabilidad actual                                                                                           |
 | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `AGENTS.md`                                                        | Reglas obligatorias para cualquier IA que trabaje en el repositorio (lectura previa a cualquier acción).         |
-| `LICENSE`                                                          | Licencia MIT del proyecto con atribución al equipo LicitacionesUV.                                               |
-| `THIRD_PARTY_NOTICES.md`                                           | Licencias y obligaciones de las dependencias de ejecución incluidas en el paquete.                               |
 | `vercel.json`                                                      | Configuración de despliegue en Vercel (Vite, `dist` y reescritura de rutas a `index.html`).                      |
 | `index.html`                                                       | Punto de entrada HTML.                                                                                           |
 | `src/main.jsx`                                                     | Punto de montaje de React.                                                                                       |
@@ -301,6 +299,7 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 
 - `docs/modelado/4-componentes.md` y su fuente PlantUML trazan los componentes e interfaces implementados en frontend y backend, incluidos los catálogos independientes, Web Storage, exportación PDF, repositorios en memoria/PostgreSQL y la integración HTTP aún no ensamblada.
 - `docs/separacion-backend.md` describe los límites de ambos repositorios y las verificaciones de separación. La API independiente usa PostgreSQL; el principal contiene solo el cliente y no lo consume todavía.
+- `docs/modularizacion.md` compara los árboles modulares antes (`v1.0.0`) y después de la separación, justifica la organización por features en el frontend y por capas en el backend, documenta las operaciones públicas por módulo y registra el caso «Buscar licitaciones» antes y después.
 - `AGENTS.md` (raíz del repositorio) contiene las reglas innegociables para cualquier IA que trabaje en el proyecto; este documento las refuerza y aporta el contexto técnico.
 - `docs/roles-equipo.md` contiene la organización general del equipo, la distribución de responsabilidades y el proceso de trabajo con GitHub.
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
