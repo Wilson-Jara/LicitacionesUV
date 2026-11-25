@@ -486,25 +486,24 @@ El frontend está organizado por funcionalidad (`src/features/<funcionalidad>/`)
 
 ## Evidencias y documentación
 
-| Tema                                                    | Documento                                                                                                                 |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Contexto técnico y reglas para IA                       | [docs/AI_context.md](docs/AI_context.md) · [AGENTS.md](AGENTS.md)                                                         |
-| Arquitectura y separación del backend                   | [docs/Arquitectura.md](docs/Arquitectura.md) · [docs/separacion-backend.md](docs/separacion-backend.md)                   |
-| Modelado (casos de uso, clases, secuencia, componentes) | [docs/modelado/](docs/modelado/README.md)                                                                                 |
-| Criterios de aceptación                                 | [docs/CriteriosAceptacion.md](docs/CriteriosAceptacion.md)                                                                |
-| Requisitos extrafuncionales y calidad                   | [docs/ReqExtrafuncionales.md](docs/ReqExtrafuncionales.md) · [docs/PerfilMedidasCalidad.md](docs/PerfilMedidasCalidad.md) |
-| API y colecciones de Thunder Client                     | [docs/api/](docs/api/README.md) · [docs/thunder-client/](docs/thunder-client/)                                            |
-| Pruebas y cobertura                                     | [docs/cobertura.md](docs/cobertura.md)                                                                                    |
-| Depuración                                              | [docs/depuracion.md](docs/depuracion.md) · [docs/evidencia/depuracion/](docs/evidencia/depuracion/)                       |
-| Contratos y programación defensiva                      | [docs/ejercicio-2-2.md](docs/ejercicio-2-2.md) · [docs/evidencia/contratos/](docs/evidencia/contratos/)                   |
-| Consolidado de las 3 intervenciones (C1 · C2)           | [docs/intervenciones.md](docs/intervenciones.md)                                                                          |
-| Intervención: persistencia local (#124)                 | [docs/persistencia-local.md](docs/persistencia-local.md)                                                                  |
-| Intervención: porcentajes de estadísticas (#134)        | [docs/estadisticas-porcentajes.md](docs/estadisticas-porcentajes.md)                                                      |
-| Exportación a PDF                                       | [docs/evidencia/export-pdf/](docs/evidencia/export-pdf/)                                                                  |
-| Filtros por sector y etiqueta                           | [docs/evidencia/filtros-sector-etiqueta/](docs/evidencia/filtros-sector-etiqueta/)                                        |
-| Mockups                                                 | [docs/mockups/](docs/mockups/)                                                                                            |
-| Roles del equipo                                        | [docs/roles-equipo.md](docs/roles-equipo.md)                                                                              |
-| Backend: guía, PostgreSQL y evidencias                  | [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend#readme)                                    |
+| Tema                                                    | Documento                                                                                                                                                  |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contexto técnico y reglas para IA                       | [docs/AI_context.md](docs/AI_context.md) · [AGENTS.md](AGENTS.md)                                                                                          |
+| Arquitectura y separación del backend                   | [docs/Arquitectura.md](docs/Arquitectura.md) · [docs/separacion-backend.md](docs/separacion-backend.md) · [docs/modularizacion.md](docs/modularizacion.md) |
+| Modelado (casos de uso, clases, secuencia, componentes) | [docs/modelado/](docs/modelado/README.md)                                                                                                                  |
+| Criterios de aceptación                                 | [docs/CriteriosAceptacion.md](docs/CriteriosAceptacion.md)                                                                                                 |
+| Requisitos extrafuncionales y calidad                   | [docs/ReqExtrafuncionales.md](docs/ReqExtrafuncionales.md) · [docs/PerfilMedidasCalidad.md](docs/PerfilMedidasCalidad.md)                                  |
+| API y colecciones de Thunder Client                     | [docs/api/](docs/api/README.md) · [docs/thunder-client/](docs/thunder-client/)                                                                             |
+| Pruebas y cobertura                                     | [docs/cobertura.md](docs/cobertura.md)                                                                                                                     |
+| Depuración                                              | [docs/depuracion.md](docs/depuracion.md) · [docs/evidencia/depuracion/](docs/evidencia/depuracion/)                                                        |
+| Contratos y programación defensiva                      | [docs/ejercicio-2-2.md](docs/ejercicio-2-2.md) · [docs/evidencia/contratos/](docs/evidencia/contratos/)                                                    |
+| Intervención: persistencia local (#124)                 | [docs/persistencia-local.md](docs/persistencia-local.md)                                                                                                   |
+| Intervención: porcentajes de estadísticas (#134)        | [docs/estadisticas-porcentajes.md](docs/estadisticas-porcentajes.md)                                                                                       |
+| Exportación a PDF                                       | [docs/evidencia/export-pdf/](docs/evidencia/export-pdf/)                                                                                                   |
+| Filtros por sector y etiqueta                           | [docs/evidencia/filtros-sector-etiqueta/](docs/evidencia/filtros-sector-etiqueta/)                                                                         |
+| Mockups                                                 | [docs/mockups/](docs/mockups/)                                                                                                                             |
+| Roles del equipo                                        | [docs/roles-equipo.md](docs/roles-equipo.md)                                                                                                               |
+| Backend: guía, PostgreSQL y evidencias                  | [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend#readme)                                                                     |
 
 ---
 
