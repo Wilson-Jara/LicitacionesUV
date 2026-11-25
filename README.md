@@ -505,6 +505,7 @@ El frontend está organizado por funcionalidad (`src/features/<funcionalidad>/`)
 | Mockups                                                 | [docs/mockups/](docs/mockups/)                                                                                                                             |
 | Roles del equipo                                        | [docs/roles-equipo.md](docs/roles-equipo.md)                                                                                                               |
 | Licencia y avisos de terceros                           | [LICENSE](LICENSE) · [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)                                                                                      |
+| Informe de cierre y notas de versión (C7)               | [docs/informe-cierre.md](docs/informe-cierre.md)                                                                                                           |
 | Backend: guía, PostgreSQL y evidencias                  | [LicitacionesUV-backend](https://github.com/Wilson-Jara/LicitacionesUV-backend#readme)                                                                     |
 
 ---
