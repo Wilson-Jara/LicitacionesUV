@@ -497,6 +497,7 @@ El frontend está organizado por funcionalidad (`src/features/<funcionalidad>/`)
 | Pruebas y cobertura                                     | [docs/cobertura.md](docs/cobertura.md)                                                                                    |
 | Depuración                                              | [docs/depuracion.md](docs/depuracion.md) · [docs/evidencia/depuracion/](docs/evidencia/depuracion/)                       |
 | Contratos y programación defensiva                      | [docs/ejercicio-2-2.md](docs/ejercicio-2-2.md) · [docs/evidencia/contratos/](docs/evidencia/contratos/)                   |
+| Consolidado de las 3 intervenciones (C1 · C2)           | [docs/intervenciones.md](docs/intervenciones.md)                                                                          |
 | Intervención: persistencia local (#124)                 | [docs/persistencia-local.md](docs/persistencia-local.md)                                                                  |
 | Intervención: porcentajes de estadísticas (#134)        | [docs/estadisticas-porcentajes.md](docs/estadisticas-porcentajes.md)                                                      |
 | Exportación a PDF                                       | [docs/evidencia/export-pdf/](docs/evidencia/export-pdf/)                                                                  |
