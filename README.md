@@ -497,6 +497,7 @@ El frontend está organizado por funcionalidad (`src/features/<funcionalidad>/`)
 | Pruebas y cobertura                                     | [docs/cobertura.md](docs/cobertura.md)                                                                                                                     |
 | Depuración                                              | [docs/depuracion.md](docs/depuracion.md) · [docs/evidencia/depuracion/](docs/evidencia/depuracion/)                                                        |
 | Contratos y programación defensiva                      | [docs/ejercicio-2-2.md](docs/ejercicio-2-2.md) · [docs/evidencia/contratos/](docs/evidencia/contratos/)                                                    |
+| Consolidado de las 3 intervenciones (C1 · C2)           | [docs/intervenciones.md](docs/intervenciones.md)                                                                                                           |
 | Intervención: persistencia local (#124)                 | [docs/persistencia-local.md](docs/persistencia-local.md)                                                                                                   |
 | Intervención: porcentajes de estadísticas (#134)        | [docs/estadisticas-porcentajes.md](docs/estadisticas-porcentajes.md)                                                                                       |
 | Exportación a PDF                                       | [docs/evidencia/export-pdf/](docs/evidencia/export-pdf/)                                                                                                   |
@@ -643,6 +644,12 @@ La integración de `develop` → `main` **no ocurre con cada feature**. Solo se 
 5. Mantener `develop` como base de trabajo para el siguiente ciclo.
 
 Para correcciones urgentes detectadas en producción se crea una rama `hotfix/[descripcion]` **desde `main`**, se integra a `main` y luego se sincroniza con `develop` (`git checkout develop && git merge main`).
+
+---
+
+## 📄 Licencia
+
+Este proyecto se distribuye bajo la licencia **MIT** (ver [`LICENSE`](LICENSE)). Los avisos y obligaciones de las dependencias de terceros empleadas en ejecución se detallan en [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ---
 
