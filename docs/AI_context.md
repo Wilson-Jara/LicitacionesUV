@@ -306,7 +306,9 @@ La IA que realice un cambio autorizado en el repositorio es responsable de actua
 - `README.md` (sección "Asignación del revisor") y `.github/CODEOWNERS` describen el flujo de revisión y la asignación automática de revisores de los Pull Requests.
 - `docs/depuracion.md` registra la depuración sistemática del filtro por palabra clave (método, evidencia con el depurador y prueba de regresión).
 - `docs/persistencia-local.md` documenta el módulo compartido de acceso a `localStorage`: contrato, ejemplo ejecutable, indicadores antes y después y deuda postergada.
+- `docs/interfaces-dependencias.md` documenta las operaciones públicas de cada módulo de ambos repositorios, quién las importa, la interfaz REST entre ellos y el caso «Buscar licitaciones» ejecutado con `v1.0.0` y con la versión actual (criterio 4 del Hito 3, #136).
 - `docs/intervenciones.md` consolida las tres intervenciones estructurales del frontend y del backend independiente (`persistenciaLocal`, `calcularFilasDistribucion` y `runInTransaction`), sus indicadores antes y después, pruebas asociadas y limitaciones conocidas.
+- `docs/informe-cierre.md` resume el alcance entregado en ambos repositorios, decisiones y sus efectos, evidencias verificadas y notas de versión preparadas (`v2.0.0` en cliente y `v1.0.0` en API).
 - `docs/ejercicio-2-2.md` documenta los contratos de filtrado, detalle de la API y alta de favoritos, con precondiciones, postcondiciones, invariantes, validaciones y evidencia reproducible sobre el mock. La ficha de filtrado también está disponible, sincronizada, en `docs/Ejercicio_2_2_Ficha_Operacion_1.docx` y `docs/Ejercicio_2_2_Ficha_Operacion_1.pdf`.
 - Este documento describe el estado técnico del repositorio; la guía de roles describe cómo se coordina el equipo. No deben confundirse responsabilidades de equipo con funcionalidades ya implementadas.
 - `docs/mockups/frontend-redesign/` contiene la referencia visual de Licitaciones UV y su documentación de diseño.
