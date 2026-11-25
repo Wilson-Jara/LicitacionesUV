@@ -181,3 +181,9 @@
     font-size: 1.75rem;
   }
 }
+
+.auth-google {
+  display: grid;
+  gap: 0.25rem;
+  min-height: 44px;
+}
