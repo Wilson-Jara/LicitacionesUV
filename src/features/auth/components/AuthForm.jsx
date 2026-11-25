@@ -1,11 +1,12 @@
 import { useId, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useAuth } from '../hooks/useAuth'
+import GoogleSignInButton from './GoogleSignInButton.jsx'
 
 const demoEmail = 'demo@ejemplo.cl'
 
 export default function AuthForm({ onComplete, inDialog = false }) {
-  const { login, register } = useAuth()
+  const { login, register, isGoogleLoginEnabled } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [passwordError, setPasswordError] = useState('')
@@ -132,11 +133,19 @@ export default function AuthForm({ onComplete, inDialog = false }) {
         </p>
       </form>
       <div className="auth-alternatives">
+        {isGoogleLoginEnabled && (
+          <>
+            <p>Acceso con tu cuenta de Google</p>
+            <GoogleSignInButton onComplete={onComplete} />
+          </>
+        )}
         <p>Acceso simulado con</p>
         <div className="auth-social">
-          <button type="button" className="button" onClick={() => simulateProvider('Google')}>
-            Google
-          </button>
+          {!isGoogleLoginEnabled && (
+            <button type="button" className="button" onClick={() => simulateProvider('Google')}>
+              Google
+            </button>
+          )}
           <button type="button" className="button" onClick={() => simulateProvider('GitHub')}>
             GitHub
           </button>

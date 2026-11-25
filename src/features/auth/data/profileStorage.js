@@ -27,7 +27,15 @@ function writeUser(browser, storageName, key, user) {
   }
 }
 
-function withProfile(user, browser) {
+/**
+ * Aplica a una cuenta el perfil editable guardado para su correo (nombre y correo de contacto).
+ * Lo usan tanto la sesión de demostración como la de Google.
+ *
+ * @param {{name: string, email: string}} user - Cuenta con su correo de acceso.
+ * @param {object} [browser] - Objeto `window` (inyectable en pruebas).
+ * @returns {object} La cuenta con `name` y `contactEmail` del perfil, si existe.
+ */
+export function withProfile(user, browser = globalThis.window) {
   const profile = readUser(browser, 'localStorage', PROFILE_KEY_PREFIX + user.email)
   return { ...user, name: profile?.name ?? user.name, contactEmail: profile?.email ?? user.email }
 }
