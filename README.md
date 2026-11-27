@@ -185,7 +185,7 @@ Los mockups de aprobaciones (CR-302) son prototipos HTML de baja fidelidad: se a
 
 ## 🏗️ Diseño Arquitectónico
 
-Ver: [Arquitectura.md](docs/Arquitectura.md)
+Ver: [Arquitectura.md](docs/Arquitectura.md) · [Índice de modelado ISF225](docs/modelado/README.md) · [Guion y matriz de coordinación de Entrega 3](docs/evidencia/entrega-3/guion-demo.md)
 
 La aplicación se construye como una **SPA en React** organizada bajo el enfoque **Feature-Driven** (`src/features/{licitaciones, auth, favoritos}`), con módulos compartidos en `src/shared` y configuración central de rutas en `src/app`.
 
